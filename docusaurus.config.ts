@@ -85,8 +85,8 @@ const config: Config = {
           title: "文档",
           items: [
             {
-              label: "新生必看",
-              to: "新生必看",
+              label: "首页",
+              to: "/",
             },
           ],
         },
