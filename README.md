@@ -10,5 +10,5 @@
 |  Markdown  | <https://daringfireball.net/projects/markdown/syntax> |
 |    MDX     |                  <https://mdxjs.com>                  |
 |   React    |               <https://react.dev/learn>               |
-|  $\KaTeX$  |                  <https://katex.org>                  |
+|  KaTeX  |                  <https://katex.org>                  |
 |  Mermaid   |        <https://mermaid-js.github.io/mermaid>         |
