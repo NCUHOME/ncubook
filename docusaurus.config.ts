@@ -18,8 +18,8 @@ const config: Config = {
   favicon: "img/favicon.ico",
   trailingSlash: false,
   organizationName: "NCUHOME",
-  projectName: "NCU-Book",
-  tagline: "NCUer 的生存指南｜家园工作室出品",
+  projectName: "ncubook",
+  tagline: "南昌大学生存手册 | For NCUer",
   i18n: {
     defaultLocale: "zh-Hans",
     locales: ["zh-Hans"],
@@ -29,7 +29,7 @@ const config: Config = {
       "classic",
       {
         docs: {
-          editUrl: "https://github.com/NCUHOME/NCU-Book/tree/main",
+          editUrl: "https://github.com/NCUHOME/ncubook/tree/main",
           routeBasePath: "/",
           sidebarPath: "./sidebars.ts",
           remarkPlugins: [remarkMath],
@@ -72,7 +72,7 @@ const config: Config = {
       },
       items: [
         {
-          href: "https://github.com/NCUHOME/NCU-Book",
+          href: "https://github.com/NCUHOME/ncubook",
           label: "GitHub",
           position: "right",
         },
@@ -108,7 +108,7 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/NCUHOME/NCU-Book",
+              href: "https://github.com/NCUHOME/ncubook",
             },
           ],
         },
