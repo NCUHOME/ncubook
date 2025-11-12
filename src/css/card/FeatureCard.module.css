@@ -1,0 +1,65 @@
+/* 容器样式，确保卡片间距和适应暗黑模式 */
+.gridContainer {
+  margin-top: 2rem;
+  /* 确保卡片间距在不同设备上合适 */
+}
+
+/* 单个卡片的样式 */
+.card {
+  /* 基础卡片样式 */
+  display: block;
+  padding: 1.5rem;
+  border-radius: var(--ifm-border-radius);
+  border: 2px solid var(--ifm-color-emphasis-200); /* 边框颜色 */
+  text-decoration: none !important;
+  transition: all 0.3s ease-in-out;
+  height: 100%; /* 确保同一行卡片高度一致 */
+  background-color: var(--ifm-background-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 移除所有文本装饰，包括悬停时的下划线 */
+.card,
+.card:hover,
+.card:active,
+.card:visited {
+  text-decoration: none !important;
+}
+
+/* 鼠标悬停效果 */
+.card:hover {
+  border-color: var(--ifm-color-primary); /* 悬停时边框变色 */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); /* 更强的阴影 */
+  transform: translateY(-4px); /* 上浮效果 */
+}
+
+/* 卡片头部布局 */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+/* 标题样式 */
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--ifm-font-color-base); /* 继承基础文字颜色 */
+}
+
+/* 图标样式 */
+.icon {
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.5rem;
+}
+
+/* 描述文字样式 */
+.description {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 0;
+}
