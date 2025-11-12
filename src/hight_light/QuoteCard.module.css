@@ -1,0 +1,81 @@
+/* 引用块容器 */
+.quoteContainer {
+  position: relative;
+  margin: 1.5rem 0;
+  padding: 1rem 1rem 1rem 3rem;
+  border-radius: 12px;
+  background-color: var(--ifm-color-emphasis-100);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.quoteContainer:hover {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+/* 图标样式 - 固定在左上角 */
+.quoteIcon {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* 内容区域 */
+.quoteContent {
+  margin: 0;
+}
+
+/* 引用文本样式 - 覆盖全局p标签的margin */
+.quoteText {
+  margin: 0 !important;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ifm-font-color-base);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 覆盖quoteText内所有一级子元素的margin */
+.quoteText > * {
+  margin: 0.5em 0 !important;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.quoteText > *:first-child {
+  margin-top: 0 !important;
+}
+
+.quoteText > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+.quoteText ul {
+  padding-left: 1rem;
+}
+
+/* 确保粗体、斜体等格式正常显示 */
+.quoteText strong,
+.quoteText b {
+  font-weight: bold;
+}
+
+.quoteText em,
+.quoteText i {
+  font-style: italic;
+}
+
+.quoteText code {
+  font-family: var(--ifm-font-family-monospace);
+}
+
+/* 右下角装饰线 */
+.quoteBorder {
+  display: none;
+}
+
