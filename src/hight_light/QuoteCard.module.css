@@ -9,9 +9,6 @@
   transition: all 0.2s ease;
 }
 
-.quoteContainer:hover {
-  background-color: var(--ifm-color-emphasis-200);
-}
 
 /* 图标样式 - 固定在左上角 */
 .quoteIcon {
@@ -57,21 +54,6 @@
 
 .quoteText ul {
   padding-left: 1rem;
-}
-
-/* 确保粗体、斜体等格式正常显示 */
-.quoteText strong,
-.quoteText b {
-  font-weight: bold;
-}
-
-.quoteText em,
-.quoteText i {
-  font-style: italic;
-}
-
-.quoteText code {
-  font-family: var(--ifm-font-family-monospace);
 }
 
 /* 右下角装饰线 */

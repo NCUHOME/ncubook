@@ -15,6 +15,8 @@
   --ifm-color-primary-lightest: #3cad6e;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* 调整侧边栏宽度 */
+  --doc-sidebar-width: 260px !important;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -27,4 +29,137 @@
   --ifm-color-primary-lighter: #32d8b4;
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* 全局链接样式 - 添加默认padding避免hover时位移 */
+a {
+  text-decoration: none;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+/* 全局链接hover样式 - 移除下划线，添加圆角背景 */
+a:hover {
+  text-decoration: none !important;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* 深色模式下的全局链接hover样式 */
+[data-theme='dark'] a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 移除侧边栏链接的全局hover背景 */
+.menu__link a:hover,
+.menu__list-item-collapsible a:hover {
+  background-color: transparent !important;
+}
+
+/* 自定义info块中的链接样式 */
+.admonition-info a,
+.admonition_node_modules-\@docusaurus-preset-classic-lib-theme-Admonition-styles-module a {
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* 统一侧边栏所有项目高度 - 固定高度36px */
+.menu__link {
+  line-height: 1.5;
+  min-height: 36px !important;
+  height: 36px !important;
+  display: flex;
+  align-items: center;
+  border-radius: 0;
+  margin: 2px 8px;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background-color: transparent !important;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+/* 统一可折叠菜单项的高度和间距 */
+.menu__list-item-collapsible {
+  line-height: 1.5;
+  margin: 2px 8px;
+  position: relative;
+}
+
+.menu__list-item-collapsible > .menu__link {
+  line-height: 1.5;
+  min-height: 36px !important;
+  height: 36px !important;
+  display: flex;
+  align-items: center;
+  padding-right: 12px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 0;
+  margin: 0;
+  background-color: transparent !important;
+  transition: color 0.2s ease;
+}
+
+/* 隐藏折叠按钮图标 */
+.menu__caret {
+  display: none !important;
+}
+
+/* 调整侧边栏容器宽度 */
+.theme-doc-sidebar-container {
+  width: var(--doc-sidebar-width) !important;
+}
+
+/* 移除hover时的背景色,改为文字变绿色 */
+.menu__link:hover {
+  background-color: transparent !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+.menu__list-item-collapsible > .menu__link:hover {
+  background-color: transparent !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* 确保激活状态的链接也没有背景色 */
+.menu__link--active {
+  background-color: transparent !important;
+}
+
+/* 子菜单项字体大小 */
+.menu__list .menu__list .menu__link {
+  font-size: 0.9em;
+  padding-left: 24px !important;
+}
+
+/* 调整子菜单项的缩进 */
+.menu__list .menu__list {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.menu__list-item--collapsed .menu__list {
+  padding-left: 0;
+}
+
+/* 为当前激活页面的顶级父菜单添加左侧绿色竖线 */
+.menu__list-item-collapsible:has(.menu__link--active) > .menu__link::before,
+.menu__list-item:has(.menu__link--active) > .menu__link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background-color: var(--ifm-color-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+/* 确保只有一级菜单显示绿色竖线 */
+.menu__list .menu__list .menu__link::before {
+  display: none;
 }
