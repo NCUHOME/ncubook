@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nanchang University Survival Manual</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1A1A1A",
+                        "accent": "#2B4C7E",
+                        "background-light": "#F9F9F7",
+                        "background-dark": "#101b22", // Kept for config consistency, though design specifies light mode primarily
+                        "surface": "#FFFFFF",
+                        "text-main": "#333333",
+                        "text-muted": "#737373",
+                        "border-subtle": "#E5E5E5",
+                    },
+                    fontFamily: {
+                        "display": ["Playfair Display", "serif"],
+                        "body": ["Lora", "serif"],
+                        "ui": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "none": "0",
+                        "sm": "2px",
+                        "DEFAULT": "4px",
+                        "md": "6px",
+                        "lg": "8px",
+                    },
+                    spacing: {
+                        "section": "80px",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Utilities for Academic Minimalist Look */
+        body {
+            background-color: #F9F9F7;
+            color: #333333;
+        }
+        
+        .academic-border {
+            border: 1px solid #E5E5E5;
+        }
+
+        .academic-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .academic-card:hover {
+            border-color: #2B4C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Input Reset */
+        input:focus {
+            outline: none;
+            box-shadow: none;
+            border-color: #1A1A1A;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body bg-background-light text-text-main selection:bg-accent/20 selection:text-primary">
+<!-- Top Navigation -->
+<nav class="w-full border-b border-border-subtle bg-background-light px-6 py-4 md:px-10">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2 group cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[24px]">school</span>
+<span class="font-display font-bold text-xl text-primary tracking-tight">NCU Manual</span>
+</div>
+<div class="flex items-center gap-6 md:gap-8">
+<a class="font-ui text-sm font-medium text-text-main hover:text-accent transition-colors hidden md:block" href="#">About</a>
+<a class="font-ui text-sm font-medium text-text-main hover:text-accent transition-colors hidden md:block" href="#">Github</a>
+<a class="font-ui text-sm font-medium text-text-main hover:text-accent transition-colors hidden md:block" href="#">Contribute</a>
+<button class="font-ui text-sm font-medium text-text-muted hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">dark_mode</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="flex-grow flex flex-col items-center justify-center w-full px-4 md:px-6 pt-16 pb-24">
+<!-- Hero Section -->
+<div class="max-w-4xl w-full text-center flex flex-col items-center mb-16 md:mb-20">
+<!-- Eyebrow -->
+<div class="mb-6">
+<span class="font-ui text-xs font-semibold tracking-[0.15em] text-text-muted uppercase border border-border-subtle px-3 py-1 rounded-sm bg-surface/50">
+                    Est. 2024 • Unofficial
+                </span>
+</div>
+<!-- Title -->
+<h1 class="font-display font-bold text-primary text-4xl md:text-6xl lg:text-[64px] leading-[1.1] mb-6 tracking-tight">
+                Nanchang University<br/>Survival Manual
+            </h1>
+<!-- Subtitle -->
+<p class="font-body text-lg md:text-xl text-text-muted max-w-2xl mb-10 leading-relaxed">
+                The definitive guide to surviving and thriving on campus. <br class="hidden md:block"/>From dorm wifi setups to finding the best canteen meals.
+            </p>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+<button class="font-ui h-12 px-8 bg-primary text-white text-sm font-medium rounded-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 group">
+<span>Start Here: Freshman Guide</span>
+<span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+<button class="font-ui h-12 px-8 bg-transparent border border-primary text-primary text-sm font-medium rounded-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">map</span>
+<span>Explore Campus Map</span>
+</button>
+</div>
+</div>
+<!-- Search Module -->
+<div class="w-full max-w-[600px] mb-20 relative group z-10">
+<div class="relative flex items-center w-full h-16 bg-surface academic-border rounded-sm shadow-sm group-focus-within:border-primary group-focus-within:ring-1 group-focus-within:ring-primary transition-all">
+<div class="pl-6 pr-4 text-text-muted">
+<span class="material-symbols-outlined text-[24px]">search</span>
+</div>
+<input class="font-ui w-full h-full bg-transparent border-none text-base text-primary placeholder:text-text-muted/70 focus:ring-0 p-0 pr-6" placeholder="Search for 'dorm wifi', 'canteen', 'exams'..." type="text"/>
+<div class="hidden md:flex absolute right-4 items-center pointer-events-none">
+<kbd class="font-ui hidden sm:inline-block border border-border-subtle rounded px-1.5 py-0.5 text-[10px] font-medium text-text-muted bg-background-light">⌘K</kbd>
+</div>
+</div>
+</div>
+<!-- Category Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+<!-- Card 1: Academics -->
+<a class="group academic-card bg-surface academic-border p-8 rounded-sm flex flex-col relative overflow-hidden gap-3" href="#">
+<div class="flex items-center justify-center rounded-sm bg-background-light text-primary group-hover:bg-accent/10 group-hover:text-accent transition-colors w-9 h-9 mb-1">
+<span class="material-symbols-outlined" style="font-size: 20px;">menu_book</span>
+</div>
+<div>
+<h3 class="font-display font-bold text-primary mb-2 group-hover:underline decoration-accent decoration-2 underline-offset-4 text-xl">Academics</h3>
+<p class="font-body text-text-muted leading-relaxed text-sm">Course selection, exams, library access, and GPA calculation rules.</p>
+</div>
+<div class="mt-auto pt-4 flex items-center text-accent text-sm font-ui font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                    Explore Academics <span class="material-symbols-outlined text-[16px] ml-1" style="font-size: 20px;">arrow_forward</span>
+</div>
+</a>
+<!-- Card 2: Life -->
+<a class="group academic-card bg-surface academic-border p-8 rounded-sm flex flex-col relative overflow-hidden gap-3" href="#">
+<div class="flex items-center justify-center rounded-sm bg-background-light text-primary group-hover:bg-accent/10 group-hover:text-accent transition-colors w-9 h-9 mb-1">
+<span class="material-symbols-outlined" style="font-size: 20px;">coffee</span>
+</div>
+<div>
+<h3 class="font-display font-bold text-primary mb-2 group-hover:underline decoration-accent decoration-2 underline-offset-4 text-xl">Campus Life</h3>
+<p class="font-body text-text-muted leading-relaxed text-sm">Dorms, canteens, delivery points, hospital services, and student clubs.</p>
+</div>
+<div class="mt-auto pt-4 flex items-center text-accent text-sm font-ui font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                    Explore Life <span class="material-symbols-outlined text-[16px] ml-1" style="font-size: 20px;">arrow_forward</span>
+</div>
+</a>
+<!-- Card 3: Transport -->
+<a class="group academic-card bg-surface academic-border p-8 rounded-sm flex flex-col relative overflow-hidden gap-3" href="#">
+<div class="flex items-center justify-center rounded-sm bg-background-light text-primary group-hover:bg-accent/10 group-hover:text-accent transition-colors w-9 h-9 mb-1">
+<span class="material-symbols-outlined" style="font-size: 20px;">directions_bus</span>
+</div>
+<div>
+<h3 class="font-display font-bold text-primary mb-2 group-hover:underline decoration-accent decoration-2 underline-offset-4 text-xl">Transport</h3>
+<p class="font-body text-text-muted leading-relaxed text-sm">Internal campus loops, school bus schedules, and city metro connections.</p>
+</div>
+<div class="mt-auto pt-4 flex items-center text-accent text-sm font-ui font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                    View Schedules <span class="material-symbols-outlined text-[16px] ml-1" style="font-size: 20px;">arrow_forward</span>
+</div>
+</a>
+<!-- Card 4: Resources -->
+<a class="group academic-card bg-surface academic-border p-8 rounded-sm flex flex-col relative overflow-hidden gap-3" href="#">
+<div class="flex items-center justify-center rounded-sm bg-background-light text-primary group-hover:bg-accent/10 group-hover:text-accent transition-colors w-9 h-9 mb-1">
+<span class="material-symbols-outlined" style="font-size: 20px;">wifi</span>
+</div>
+<div>
+<h3 class="font-display font-bold text-primary mb-2 group-hover:underline decoration-accent decoration-2 underline-offset-4 text-xl">Resources</h3>
+<p class="font-body text-text-muted leading-relaxed text-sm">Campus VPN setup, software downloads, printing services, and IT help.</p>
+</div>
+<div class="mt-auto pt-4 flex items-center text-accent text-sm font-ui font-medium opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                    Get Connected <span class="material-symbols-outlined text-[16px] ml-1" style="font-size: 20px;">arrow_forward</span>
+</div>
+</a>
+</div>
+</main>
+<!-- Academic Footer -->
+<footer class="w-full border-t border-border-subtle py-12 px-6">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<div class="flex items-center gap-2">
+<span class="font-display font-bold text-lg text-primary">NCU Manual</span>
+<span class="font-ui text-xs text-text-muted px-2 py-0.5 bg-border-subtle/30 rounded-sm">BETA</span>
+</div>
+<p class="font-body text-sm text-text-muted text-center md:text-left">
+                    An open-source initiative maintained by the Student Developers Club.<br/>
+                    Not officially affiliated with Nanchang University.
+                </p>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-text-muted hover:text-primary transition-colors" href="#">
+<span class="sr-only">GitHub</span>
+<svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path>
+</svg>
+</a>
+<div class="h-4 w-[1px] bg-border-subtle"></div>
+<a class="font-ui text-sm text-text-muted hover:text-primary transition-colors" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+</body></html>

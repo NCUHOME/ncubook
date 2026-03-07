@@ -30,7 +30,7 @@ const config: Config = {
       {
         docs: {
           editUrl: "https://github.com/NCUHOME/ncubook/tree/main",
-          routeBasePath: "/",
+          routeBasePath: "/docs",
           sidebarPath: "./sidebars.ts",
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
@@ -71,6 +71,21 @@ const config: Config = {
         src: "favicon.ico",
       },
       items: [
+        {
+          to: "/docs/study/",
+          position: "left",
+          label: "学业概貌",
+        },
+        {
+          to: "/docs/life/",
+          position: "left",
+          label: "校园生活",
+        },
+        {
+          to: "/contributors/contributing",
+          label: "参与贡献",
+          position: "right",
+        },
         {
           href: "https://github.com/NCUHOME/ncubook",
           label: "GitHub",
@@ -127,7 +142,7 @@ const config: Config = {
       /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
       {
         indexBlog: false,
-        docsRouteBasePath: "/",
+        docsRouteBasePath: "/docs",
         hashed: true,
         language: ["en", "zh"],
         highlightSearchTermsOnTargetPage: true,

@@ -4,18 +4,18 @@ import clsx from 'clsx';
 import styles from './FeatureCard.module.css'; // 使用 CSS Modules 进行局部样式隔离
 
 // 这是一个通用的卡片组件，可以传入图标、标题、描述和链接
-export function FeatureCard({ title, description, to, icon, className }) {
+export function FeatureCard({ title, description, to, icon, className = '' }) {
   return (
-    <div className={clsx('col col--6 margin-bottom--md', className)}> {/* col--6 表示在大屏幕上占据 12 列中的 6 列，即两列布局 */}
+    <div className={className}>
       <Link className={styles.card} to={to}>
-        {/* 卡片头部 */}
-        <div className={styles.cardHeader}>
-          {/* 这里可以使用 SVG 或自定义 React Icon 组件 */}
-          <div className={styles.icon}>{icon}</div> 
-          <h3 className={styles.title}>{title}</h3>
+        <div className={styles.iconContainer}>
+          {React.isValidElement(icon) ? icon : React.createElement(icon, { size: 20 })}
         </div>
-        {/* 卡片内容 */}
+        <h3 className={styles.title}>{title}</h3>
         <p className={styles.description}>{description}</p>
+        <div className={styles.actionLink}>
+          Explore <span className={styles.actionIcon}>{React.createElement(icon instanceof Function ? icon : 'span', { size: 16 })}</span>
+        </div>
       </Link>
     </div>
   );
@@ -25,7 +25,7 @@ export function FeatureCard({ title, description, to, icon, className }) {
 export function FeatureGrid({ children }) {
   // Infima 的 row 容器，用于启用 Flexbox/Grid 布局
   return (
-    <div className={clsx('row', styles.gridContainer)}> 
+    <div className={clsx('row', styles.gridContainer)}>
       {children}
     </div>
   );

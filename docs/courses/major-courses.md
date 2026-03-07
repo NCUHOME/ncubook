@@ -3,6 +3,6 @@
 > 按学院划分，每个学院同时配套对应的课程和培养方案
 > 
 
-[培养方案](https://www.notion.so/22c7d60a0dda805da2dfd99025d9c698?pvs=21)
+[培养方案](/docs/courses/curriculum)
 
-[教师评价课程](https://www.notion.so/2587d60a0dda80ffba40db7558e66a46?pvs=21)
+[教师评价课程](#)

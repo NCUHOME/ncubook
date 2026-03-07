@@ -6,13 +6,17 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-font-family-base: Inter, "Source Han Sans SC", sans-serif;
+  --ifm-heading-font-weight: 700;
+  --ifm-color-primary: #2B4C7E;
+  --ifm-color-primary-dark: #274471;
+  --ifm-color-primary-darker: #25406b;
+  --ifm-color-primary-darkest: #1e3558;
+  --ifm-color-primary-light: #2f548b;
+  --ifm-color-primary-lighter: #325892;
+  --ifm-color-primary-lightest: #3f66a2;
+  --ifm-background-color: #F9F9F7;
+  --ifm-font-color-base: #333333;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   /* 调整侧边栏宽度 */
@@ -21,14 +25,21 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-background-color: #121212;
+  --ifm-background-surface-color: #1e1e1e;
+  --ifm-font-color-base: #e0e0e0;
+  --ifm-color-primary: #4A7AC4;
+  --ifm-color-primary-dark: #3b6ab5;
+  --ifm-color-primary-darker: #3663ab;
+  --ifm-color-primary-darkest: #2c518c;
+  --ifm-color-primary-light: #5986c9;
+  --ifm-color-primary-lighter: #628ccb;
+  --ifm-color-primary-lightest: #7ba0d4;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] body {
+  background-color: var(--ifm-background-color) !important;
 }
 
 /* 全局链接样式 - 添加默认padding避免hover时位移 */
@@ -88,7 +99,7 @@ a:hover {
   position: relative;
 }
 
-.menu__list-item-collapsible > .menu__link {
+.menu__list-item-collapsible>.menu__link {
   line-height: 1.5;
   min-height: 36px !important;
   height: 36px !important;
@@ -119,7 +130,7 @@ a:hover {
   color: var(--ifm-color-primary) !important;
 }
 
-.menu__list-item-collapsible > .menu__link:hover {
+.menu__list-item-collapsible>.menu__link:hover {
   background-color: transparent !important;
   color: var(--ifm-color-primary) !important;
 }
@@ -146,8 +157,8 @@ a:hover {
 }
 
 /* 为当前激活页面的顶级父菜单添加左侧绿色竖线 */
-.menu__list-item-collapsible:has(.menu__link--active) > .menu__link::before,
-.menu__list-item:has(.menu__link--active) > .menu__link::before {
+.menu__list-item-collapsible:has(.menu__link--active)>.menu__link::before,
+.menu__list-item:has(.menu__link--active)>.menu__link::before {
   content: '';
   position: absolute;
   left: 0;

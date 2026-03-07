@@ -1,0 +1,27 @@
+{
+    "name": "ncubook-api",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "ingest": "tsx scripts/ingest.ts"
+    },
+    "dependencies": {
+        "@ai-sdk/google": "^3.0.43",
+        "@ai-sdk/openai": "^3.0.41",
+        "@supabase/supabase-js": "^2.49.0",
+        "ai": "^6.0.116",
+        "dotenv": "^17.3.1",
+        "next": "^15.3.0",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.15.0",
+        "@types/react": "^19.1.0",
+        "tsx": "^4.19.0",
+        "typescript": "^5.8.0"
+    }
+}
