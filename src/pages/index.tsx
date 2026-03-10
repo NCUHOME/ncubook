@@ -1,7 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import { GraduationCap, BookOpen, ArrowRightLeft, Calculator, Home as HomeIcon, TrendingUp, Search } from 'lucide-react';
-import { FeatureCard, FeatureGrid } from '../components/FeatureCard'; // We need to move the component later or adjust the path 
+import { FeatureCard, FeatureGrid } from '../components/FeatureCard';
 import styles from '../css/HomepageContent.module.css';
 
 function HomepageHeader() {

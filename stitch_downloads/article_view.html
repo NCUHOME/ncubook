@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Article View - Academic Minimalist Manual</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Lora:ital,wght@0,400;0,500;0,600;1,400&amp;family=Playfair+Display:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1A1A1A", // Deep Charcoal
+                        "background-light": "#F9F9F7", // Warm Paper
+                        "background-dark": "#101b22",
+                        "surface": "#FFFFFF",
+                        "accent": "#2B4C7E", // NCU Blue
+                        "muted": "#737373",
+                        "border-color": "#E5E5E5",
+                    },
+                    fontFamily: {
+                        "display": ["Playfair Display", "serif"],
+                        "body": ["Lora", "serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "2px",
+                        "lg": "4px",
+                        "xl": "8px",
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #e5e5e5;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #d4d4d4;
+        }
+        
+        /* Ensure sticky elements work */
+        .sticky-col {
+            position: sticky;
+            top: 5rem; /* Adjust based on header height */
+            height: calc(100vh - 6rem);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#333333] dark:text-gray-100 font-sans min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-border-color dark:border-gray-800 h-16 flex items-center justify-between px-6 lg:px-12">
+<div class="flex items-center gap-4">
+<div class="text-primary dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 28px;">school</span>
+</div>
+<div class="flex flex-col">
+<h1 class="font-display font-bold text-lg text-primary dark:text-white leading-tight">NCU Manual</h1>
+<span class="text-[10px] uppercase tracking-widest text-muted font-sans font-medium">Est. 2024 • Unofficial</span>
+</div>
+</div>
+<div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+<div class="relative w-full group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-surface dark:bg-gray-800 border border-border-color dark:border-gray-700 text-sm py-2 pl-10 pr-4 rounded focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder:text-gray-400 font-sans" placeholder="Search for 'dorm wifi', 'canteen'..." type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+<kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-muted bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">⌘K</kbd>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6 font-medium text-sm text-primary dark:text-gray-200">
+<a class="hover:text-accent transition-colors" href="#">Home</a>
+<a class="text-accent font-semibold" href="#">Academics</a>
+<a class="hover:text-accent transition-colors" href="#">Life</a>
+<a class="hover:text-accent transition-colors" href="#">Resources</a>
+</nav>
+<button class="bg-primary hover:bg-black text-white px-4 py-2 rounded text-sm font-medium transition-colors">
+                Log In
+            </button>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex-1 w-full max-w-[1440px] mx-auto pt-24 pb-20 px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 relative">
+<!-- Left Sidebar: Navigation (Hidden on mobile, 3 cols wide on large screens) -->
+<aside class="hidden lg:block lg:col-span-3 xl:col-span-2">
+<div class="sticky-col pr-4">
+<nav class="space-y-8">
+<!-- Section 1 -->
+<div>
+<h3 class="font-sans text-xs font-semibold text-muted uppercase tracking-wider mb-4 pl-3">Academics</h3>
+<ul class="space-y-1">
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Course Registration
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm font-medium text-accent bg-accent/5 border-l-2 border-accent rounded-r transition-colors" href="#">
+                                    Library Access
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Exam Schedules
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Grade Calculation
+                                </a>
+</li>
+</ul>
+</div>
+<!-- Section 2 -->
+<div>
+<h3 class="font-sans text-xs font-semibold text-muted uppercase tracking-wider mb-4 pl-3">Campus Life</h3>
+<ul class="space-y-1">
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Dormitory Guide
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Canteen Map
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    Campus Hospital
+                                </a>
+</li>
+</ul>
+</div>
+<!-- Section 3 -->
+<div>
+<h3 class="font-sans text-xs font-semibold text-muted uppercase tracking-wider mb-4 pl-3">Transport</h3>
+<ul class="space-y-1">
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    School Bus Loop
+                                </a>
+</li>
+<li>
+<a class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-black/5 rounded transition-colors" href="#">
+                                    City Connections
+                                </a>
+</li>
+</ul>
+</div>
+</nav>
+</div>
+</aside>
+<!-- Center Column: Article Content (7 cols wide) -->
+<main class="lg:col-span-9 xl:col-span-7 w-full max-w-[720px] mx-auto">
+<!-- Breadcrumbs -->
+<nav class="flex items-center text-xs text-muted font-medium mb-8 overflow-x-auto whitespace-nowrap pb-2">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="mx-2 text-gray-300">/</span>
+<a class="hover:text-primary transition-colors" href="#">Academics</a>
+<span class="mx-2 text-gray-300">/</span>
+<span class="text-primary dark:text-gray-200">Library Access</span>
+</nav>
+<!-- Article Header -->
+<header class="mb-10 border-b border-border-color pb-8">
+<h1 class="font-display text-4xl md:text-[48px] font-bold text-primary dark:text-white leading-[1.15] mb-6 tracking-tight">
+                    Library Access &amp; Hours
+                </h1>
+<div class="flex flex-wrap items-center gap-4 text-sm font-sans text-muted">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Last updated: Oct 12, 2024</span>
+</div>
+<span class="w-1 h-1 rounded-full bg-gray-300"></span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>4 min read</span>
+</div>
+<span class="w-1 h-1 rounded-full bg-gray-300"></span>
+<span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded text-xs font-medium border border-gray-200 dark:border-gray-700">
+                        Qianhu Campus
+                    </span>
+</div>
+</header>
+<!-- Article Body -->
+<article class="prose prose-lg prose-slate dark:prose-invert font-body text-[18px] leading-[1.6] text-[#333333] max-w-none">
+<p class="mb-8 text-gray-600 dark:text-gray-300">
+                    The Qianhu Campus Library is the intellectual heart of Nanchang University. Spanning seven floors, it houses over 2 million volumes and provides diverse study environments ranging from collaborative zones to silent reading rooms. Access is strictly controlled via student ID cards, so ensuring your card is active is the first step to utilizing this resource.
+                </p>
+<div class="relative w-full h-[360px] rounded overflow-hidden mb-10 border border-border-color group">
+<img alt="Interior view of a modern university library with rows of books and study tables" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700" data-alt="Interior view of a modern university library with rows of books and study tables" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXh5IJzsadxBq-VMkMD6NBQzTNEnhaDPp5WaYX7-eGHWtmHIkiTCEk6oiBrHHV5-AwfrzancPXhqNsAf6pVZ2Azs74pXGkinpEmNnT_s3IATQS0mNRky-9rkXEEmjXat558QPLpf_bwvqWZuaN7dzbpGHnPvWtiE61AqIrInmT4oiy8eMVZr3tz4FrlyBWnBEgnV0M0-uOWh9kU4rMldipJNpSD6VRH3-hAjN4IlD0B-OSkIfwvvpTsMl4bfscmLd5PaSk2dVH0_0U"/>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+<p class="text-white text-xs font-sans opacity-90">The central atrium of the main library.</p>
+</div>
+</div>
+<h2 class="font-display text-2xl font-bold text-primary dark:text-white mt-12 mb-6 scroll-mt-24" id="opening-hours">
+                    Opening Hours
+                </h2>
+<p class="mb-6">
+                    The library operates on a seasonal schedule that adjusts slightly during exam weeks and public holidays. Generally, the main circulation desk and study areas follow these hours:
+                </p>
+<ul class="list-disc pl-5 mb-8 space-y-2 text-gray-700 dark:text-gray-300 marker:text-gray-400">
+<li><strong>Weekdays (Mon-Fri):</strong> 07:00 AM – 10:30 PM</li>
+<li><strong>Weekends (Sat-Sun):</strong> 08:00 AM – 10:00 PM</li>
+<li><strong>Public Holidays:</strong> 09:00 AM – 05:00 PM (Subject to notice)</li>
+</ul>
+<!-- Callout Component -->
+<div class="bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-accent p-6 my-8 rounded-r">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-accent mt-0.5">info</span>
+<div>
+<h4 class="font-sans font-bold text-primary dark:text-white text-sm mb-1">Entry Requirement</h4>
+<p class="text-base text-gray-700 dark:text-gray-300 m-0 leading-relaxed">
+                                You must have your physical Campus Card to enter the gates. Using the electronic QR code via the NCU app is currently <strong>only supported at the North Gate entrance</strong>.
+                            </p>
+</div>
+</div>
+</div>
+<h2 class="font-display text-2xl font-bold text-primary dark:text-white mt-12 mb-6 scroll-mt-24" id="study-room-reservations">
+                    Study Room Reservations
+                </h2>
+<p class="mb-6">
+                    During midterms and finals, finding a seat can be competitive. The university utilizes a WeChat mini-program called "NCU Library Seat" (南昌大学图书馆座位) to manage high-demand areas.
+                </p>
+<ol class="list-decimal pl-5 mb-8 space-y-3 text-gray-700 dark:text-gray-300 marker:font-medium marker:text-gray-500">
+<li>Search for <strong>"NCU Library"</strong> in WeChat.</li>
+<li>Navigate to <strong>Service &gt; Seat Reservation</strong>.</li>
+<li>Login with your Student ID and the last 6 digits of your ID card.</li>
+<li>Select a floor, zone, and specific seat number.</li>
+</ol>
+<p class="mb-8">
+                    Once reserved, you have 20 minutes to "check-in" at the library entrance kiosks. Failure to check in three times in a semester will result in a 7-day ban from the reservation system.
+                </p>
+<h2 class="font-display text-2xl font-bold text-primary dark:text-white mt-12 mb-6 scroll-mt-24" id="wifi-access">
+                    Wi-Fi Access
+                </h2>
+<p class="mb-6">
+                    The library is covered by the <code>NCU-WLAN</code> network. For optimal speed, it is recommended to use the 5GHz frequency band. 
+                </p>
+<div class="border border-border-color rounded p-4 bg-surface dark:bg-gray-800 flex items-center justify-between gap-4 mb-8">
+<div>
+<div class="text-sm font-sans font-medium text-muted uppercase tracking-wide mb-1">Network SSID</div>
+<div class="font-mono text-lg text-primary dark:text-white">NCU-WLAN-5G</div>
+</div>
+<button class="text-accent text-sm font-medium hover:underline flex items-center gap-1">
+                        View Setup Guide <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<hr class="border-t border-border-color my-12"/>
+<div class="flex justify-between items-center pt-2">
+<a class="group flex flex-col items-start gap-1 text-right" href="#">
+<span class="text-xs text-muted font-sans uppercase tracking-wide group-hover:text-primary transition-colors">Previous Article</span>
+<div class="flex items-center gap-2 text-primary dark:text-white font-display text-lg group-hover:text-accent transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+                            Course Registration
+                        </div>
+</a>
+<a class="group flex flex-col items-end gap-1 text-right" href="#">
+<span class="text-xs text-muted font-sans uppercase tracking-wide group-hover:text-primary transition-colors">Next Article</span>
+<div class="flex items-center gap-2 text-primary dark:text-white font-display text-lg group-hover:text-accent transition-colors">
+                            Exam Schedules
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</a>
+</div>
+</article>
+</main>
+<!-- Right Sidebar: Table of Contents (Hidden on mobile/tablet, 3 cols wide on large screens) -->
+<aside class="hidden xl:block xl:col-span-3">
+<div class="sticky-col pl-4">
+<div class="border-l border-border-color pl-6 py-2">
+<h4 class="font-sans text-xs font-bold text-primary dark:text-white uppercase tracking-wider mb-4">On this page</h4>
+<ul class="space-y-3 font-sans text-[13px]">
+<li>
+<a class="block text-accent font-medium hover:text-accent transition-colors relative -left-[25px] pl-[21px] border-l-2 border-accent" href="#opening-hours">
+                                Opening Hours
+                            </a>
+</li>
+<li>
+<a class="block text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors" href="#study-room-reservations">
+                                Study Room Reservations
+                            </a>
+</li>
+<li>
+<a class="block text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors" href="#wifi-access">
+                                Wi-Fi Access
+                            </a>
+</li>
+</ul>
+<div class="mt-8 pt-8 border-t border-border-color border-dashed">
+<p class="text-xs text-muted mb-3 font-medium">Was this page helpful?</p>
+<div class="flex gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-border-color rounded bg-white hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[16px]">thumb_up</span> Yes
+                            </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-border-color rounded bg-white hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[16px]">thumb_down</span> No
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>
