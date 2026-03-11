@@ -20,7 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      # 这里改成了官方自带的安装方式，不再使用会被拦截的第三方插件
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
       - uses: actions/setup-node@v4
         with:
