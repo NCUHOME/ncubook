@@ -224,8 +224,7 @@ export default function AiAssistant() {
                 onClick={() => setIsOpen(true)}
                 title="唤出小家园"
             >
-                <span className={styles.pulse}></span>
-                🏠
+                <img src="/img/ai-logo.png" alt="AI 提问" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
             </button>
 
             {/* 聊天窗口 Modal */}
@@ -235,7 +234,7 @@ export default function AiAssistant() {
                         {/* 极简头部 / 标题 */}
                         <div className={styles.windowHeader}>
                             <div className={styles.headerTitle}>
-                                <img src="/img/ai-copilot.png" alt="AI Copilot" className={styles.headerIconImg} /> 小家园 AI 助手
+                                <img src="/img/ai-logo.png" alt="AI Copilot" className={styles.headerIconImg} /> 小家园 AI 助手
                             </div>
                             <button className={styles.closeBtn} onClick={() => setIsOpen(false)} title="关闭面板">
                                 ✕

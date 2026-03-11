@@ -37,7 +37,7 @@ function useAiButton() {
             btn.style.transform = 'translateY(0)';
           };
 
-          btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg> <span style="font-weight: 500;">没找到？让 AI 帮你回答</span>`;
+          btn.innerHTML = `<img src="/img/ai-logo.png" style="width: 16px; height: 16px; border-radius: 50%; object-fit: contain;" /> <span style="font-weight: 500;">没找到？让 AI 帮你回答</span>`;
 
           btn.onclick = (e) => {
             e.preventDefault();
