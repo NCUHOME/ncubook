@@ -4,11 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import styles from './styles.module.css';
 
-// 后端 API 地址（开发环境用 localhost:3001，生产环境改为 Vercel 部署地址）
-const API_URL =
-    typeof window !== 'undefined' && window.location.hostname === 'localhost'
-        ? 'http://localhost:3001/api/chat'
-        : 'https://ncubook-api.vercel.app/api/chat';
+const API_URL = 'https://ncubook-api.vercel.app/api/chat';
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false);
