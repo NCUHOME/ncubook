@@ -62,8 +62,12 @@ export default function AiAssistant() {
         if (!queryText || isLoading) return;
 
         const userMsg = { role: 'user', content: queryText };
-        const newMessages = [...messages, userMsg];
-        setMessages(newMessages);
+        // 使用函数式更新获取最新 messages，避免闭包问题
+        let newMessages;
+        setMessages((prev) => {
+            newMessages = [...prev, userMsg];
+            return newMessages;
+        });
         setInput('');
         setIsLoading(true);
         setStreamingContent('');
@@ -128,7 +132,7 @@ export default function AiAssistant() {
             setStreamingContent('');
             abortControllerRef.current = null;
         }
-    }, [isLoading, messages, location.pathname]);
+    }, [isLoading, location.pathname]);
 
     // 处理待发送的外部查询
     useEffect(() => {
@@ -200,8 +204,14 @@ export default function AiAssistant() {
     const handleStop = useCallback(() => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
+            // 保留已接收的流式内容
+            setStreamingContent((prev) => {
+                if (prev.trim()) {
+                    setMessages((msgs) => [...msgs, { role: 'assistant', content: prev }]);
+                }
+                return '';
+            });
             setIsLoading(false);
-            setStreamingContent('');
         }
     }, []);
 

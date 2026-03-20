@@ -8,7 +8,7 @@ const deepseek = createOpenAI({
 });
 
 /**
- * 使用 Gemini text-embedding-004 生成文本向量 (768 维)
+ * 使用 Gemini embedding-001 生成文本向量 (3072 维)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
     const { embedding } = await embed({

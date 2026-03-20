@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import { generateEmbedding, getChatModel } from "@/lib/gemini";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 // 允许的来源
 const ALLOWED_ORIGINS = [
@@ -58,6 +58,8 @@ export async function POST(req: Request) {
         const queryEmbedding = await generateEmbedding(lastUserMessage.content);
 
         // 2. 向量检索相关文档片段
+        const supabase = getSupabase();
+
         const { data: documents, error: matchError } = await supabase.rpc(
             "match_documents",
             {
