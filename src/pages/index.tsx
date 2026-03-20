@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
-import { GraduationCap, BookOpen, ArrowRightLeft, Calculator, Home as HomeIcon, TrendingUp, Search } from 'lucide-react';
+import { GraduationCap, BookOpen, ArrowRightLeft, Calculator, Home as HomeIcon, TrendingUp } from 'lucide-react';
 import { FeatureCard, FeatureGrid } from '../components/FeatureCard';
 import styles from '../css/HomepageContent.module.css';
 
@@ -29,15 +29,38 @@ function HomepageHeader() {
 }
 
 function HomepageSearch() {
+    const [query, setQuery] = React.useState('');
+
+    const handleSubmit = () => {
+        if (query.trim()) {
+            window.dispatchEvent(new CustomEvent('open-ai-chat', { detail: { query: query.trim() } }));
+            setQuery('');
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
     return (
         <div className={styles.searchModule}>
-            <div className={styles.searchContainer} onClick={() => (document.querySelector('.navbar__search-input') as HTMLElement)?.focus?.()}>
+            <div className={styles.searchContainer}>
                 <div className={styles.searchIcon}>
-                    <Search size={24} />
+                    <img src="/img/ai-logo.png" alt="AI" style={{ width: 24, height: 24, borderRadius: '50%' }} />
                 </div>
-                <input type="text" className={styles.searchInput} placeholder="Search for 'canteen', 'exams', 'wifi'..." readOnly />
+                <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="问我任何关于南大学习、生活的问题..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                />
                 <div className={styles.searchShortcut}>
-                    <span className={styles.shortcutKey}>⌘K</span>
+                    <span className={styles.shortcutKey}>Enter ↵</span>
                 </div>
             </div>
         </div>
