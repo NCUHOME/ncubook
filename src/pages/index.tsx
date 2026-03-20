@@ -15,11 +15,11 @@ function HomepageHeader() {
             </p>
 
             <div className={styles.actionButtons}>
-                <a href="/docs/study/freshmen-guide" className={styles.primaryButton}>
+                <a href="/docs/onboarding/freshmen-guide" className={styles.primaryButton}>
                     Start Here: Freshman Guide
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
-                <a href="/docs/life/" className={styles.secondaryButton}>
+                <a href="/docs/campus-life/" className={styles.secondaryButton}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
                     Explore Campus Map
                 </a>
@@ -50,37 +50,37 @@ function HomepageCards() {
             <FeatureCard
                 title="新生指南"
                 description="报到、军训、选课、防诈骗，这大概是最有用的一集。"
-                to="/docs/study/freshmen-guide"
+                to="/docs/onboarding/freshmen-guide"
                 icon={GraduationCap}
             />
             <FeatureCard
                 title="选课攻略"
                 description="如何在一秒之内抢到你想要的通识课？培养方案里面有什么秘密武器。"
-                to="/docs/study/class-cadre"
+                to="/docs/academics/class-cadre"
                 icon={BookOpen}
             />
             <FeatureCard
                 title="转专业"
                 description="条件、流程、时间节点，早知道早准备，不走弯路。"
-                to="/docs/study/major-change"
+                to="/docs/academics/major-change"
                 icon={ArrowRightLeft}
             />
             <FeatureCard
                 title="绩点与学分"
                 description="解析 GPA 计算奥义，如何高效获取综测与二课分。"
-                to="/docs/study/credits-gpa"
+                to="/docs/academics/credits-gpa"
                 icon={Calculator}
             />
             <FeatureCard
                 title="校园生活"
                 description="宿舍环境、三大食堂、交通换乘指南、校园网配置。"
-                to="/docs/life/"
+                to="/docs/campus-life/"
                 icon={HomeIcon}
             />
             <FeatureCard
                 title="升学就业"
                 description="保研边缘人如何自救？考研和秋招的残酷真相。"
-                to="/docs/study/postgraduate"
+                to="/docs/career/postgraduate"
                 icon={TrendingUp}
             />
         </FeatureGrid>
