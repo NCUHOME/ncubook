@@ -145,17 +145,63 @@ export default function AiAssistant() {
         [history]
     );
 
+    // 旧路径 slug → 新分类的映射
+    const SLUG_TO_CATEGORY = {
+        'freshmen-guide': 'onboarding', 'essentials': 'onboarding', 'dorm-life': 'onboarding',
+        'campus-card': 'onboarding', 'student-id': 'onboarding', 'network': 'onboarding',
+        'credits-gpa': 'academics', 'curriculum': 'academics', 'general-courses': 'academics',
+        'major-courses': 'academics', 'exams': 'academics', 'major-change': 'academics',
+        'double-degree': 'academics', 'attendance': 'academics', 'english': 'academics',
+        'sports': 'academics', 'class-cadre': 'academics',
+        'postgraduate': 'career', 'awards': 'career', 'innovation-research': 'career',
+        'dining': 'campus-life', 'campus-transport': 'campus-life', 'external-transport': 'campus-life',
+        'repair': 'campus-life', 'phone-directory': 'campus-life', 'jiayuan-register': 'campus-life',
+        'software': 'campus-life',
+    };
+
+    const normalizeHref = (href) => {
+        if (!href) return href;
+        let path = href;
+        // 去掉站点域名，变成相对路径
+        path = path.replace(/^https?:\/\/book\.ncuos\.com/, '');
+        // 确保以 /docs/ 开头
+        if (path.startsWith('/') && !path.startsWith('/docs/')) {
+            path = '/docs' + path;
+        }
+        // 映射旧路径 /docs/study/* 和 /docs/life/*
+        const oldPrefixMatch = path.match(/^\/docs\/(study|life)\/(.+?)(\/?)(#.*)?$/);
+        if (oldPrefixMatch) {
+            const slug = oldPrefixMatch[2];
+            const hash = oldPrefixMatch[4] || '';
+            if (oldPrefixMatch[1] === 'life') {
+                return `/docs/campus-life/${slug}${hash}`;
+            }
+            const category = SLUG_TO_CATEGORY[slug];
+            if (category) {
+                return `/docs/${category}/${slug}${hash}`;
+            }
+        }
+        if (path === '/docs/life' || path === '/docs/life/') {
+            return '/docs/campus-life/';
+        }
+        if (path === '/docs/study' || path === '/docs/study/') {
+            return '/docs/academics/';
+        }
+        return path;
+    };
+
     const MarkdownComponents = {
         a: ({ node, ...props }) => {
-            const isInternal = props.href && props.href.startsWith('/');
+            let href = normalizeHref(props.href);
+            const isInternal = href && href.startsWith('/');
             if (isInternal) {
                 return (
                     <a
-                        href={props.href}
+                        href={href}
                         className={styles.pageLink}
                         onClick={(e) => {
                             e.preventDefault();
-                            handleNavigate(props.href);
+                            handleNavigate(href);
                         }}
                     >
                         📄 {props.children}
@@ -163,7 +209,7 @@ export default function AiAssistant() {
                 );
             }
             return (
-                <a href={props.href} target="_blank" rel="noopener noreferrer" className={styles.pageLink}>
+                <a href={href} target="_blank" rel="noopener noreferrer" className={styles.pageLink}>
                     🔗 {props.children}
                 </a>
             );
