@@ -25,6 +25,8 @@ export default function AiAssistant() {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const abortControllerRef = useRef(null);
+    const messagesRef = useRef(messages);
+    messagesRef.current = messages;
     const history = useHistory();
     const location = useLocation();
 
@@ -62,12 +64,8 @@ export default function AiAssistant() {
         if (!queryText || isLoading) return;
 
         const userMsg = { role: 'user', content: queryText };
-        // 使用函数式更新获取最新 messages，避免闭包问题
-        let newMessages;
-        setMessages((prev) => {
-            newMessages = [...prev, userMsg];
-            return newMessages;
-        });
+        const newMessages = [...messagesRef.current, userMsg];
+        setMessages(newMessages);
         setInput('');
         setIsLoading(true);
         setStreamingContent('');
