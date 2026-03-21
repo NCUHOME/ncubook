@@ -22,9 +22,9 @@ let supabase: ReturnType<typeof createClient>;
 let generateEmbedding: (text: string) => Promise<number[]>;
 
 async function initClients() {
-    const { supabase: s } = await import("../lib/supabase");
+    const { getSupabase } = await import("../lib/supabase");
     const { generateEmbedding: ge } = await import("../lib/gemini");
-    supabase = s;
+    supabase = getSupabase();
     generateEmbedding = ge;
 }
 
@@ -43,8 +43,8 @@ interface DocChunk {
 
 /**
  * 将文件路径转换为网站 URL
- * docs/study/credits-gpa.md → /study/credits-gpa
- * docs/README.mdx → /
+ * docs/study/credits-gpa.md → /docs/study/credits-gpa
+ * docs/README.mdx → /docs/
  */
 function filePathToUrl(filePath: string, docsRoot: string): string {
     let relative = path.relative(docsRoot, filePath);
@@ -52,9 +52,9 @@ function filePathToUrl(filePath: string, docsRoot: string): string {
     relative = relative.replace(/\.(mdx?|md)$/, "");
     // README 文件对应目录首页
     relative = relative.replace(/\/README$/, "/");
-    if (relative === "README") return "/";
-    // 统一为 /开头
-    return "/" + relative;
+    if (relative === "README") return "/docs/";
+    // 统一为 /docs/ 开头
+    return "/docs/" + relative;
 }
 
 /**

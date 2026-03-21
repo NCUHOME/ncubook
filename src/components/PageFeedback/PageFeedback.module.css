@@ -57,3 +57,17 @@
 [data-theme='dark'] .btn:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
+.formLink {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.formLink:hover {
+  text-decoration: underline;
+}

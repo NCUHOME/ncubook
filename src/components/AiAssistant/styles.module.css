@@ -522,3 +522,89 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   background: transparent;
 }
+
+/* ============================================
+   快捷提问 Chips
+   ============================================ */
+
+.quickChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-background-color);
+  color: var(--ifm-color-emphasis-800);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.chip:hover {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  background: rgba(46, 133, 85, 0.05);
+}
+
+/* ============================================
+   消息反馈按钮
+   ============================================ */
+
+.feedbackRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.feedbackBtn {
+  background: transparent;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ifm-color-emphasis-500);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.feedbackBtn:hover {
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-emphasis-300);
+  color: var(--ifm-color-emphasis-700);
+}
+
+[data-theme='dark'] .feedbackBtn {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .feedbackBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.feedbackThanks {
+  font-size: 13px;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.feedbackLink {
+  font-size: 13px;
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.feedbackLink:hover {
+  text-decoration: underline;
+}

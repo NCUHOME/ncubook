@@ -3,21 +3,31 @@ import { useHistory, useLocation } from '@docusaurus/router';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import styles from './styles.module.css';
+import { FEEDBACK_FORM_URL } from '@site/src/constants/feedback';
 
 const API_URL = 'https://ncubook-api.vercel.app/api/chat';
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false);
+    const QUICK_QUESTIONS = [
+        '转专业需要什么条件？',
+        '食堂哪家好吃？',
+        '学分绩点怎么算？',
+        '校园网怎么连？',
+        '考研该怎么准备？',
+        '校园卡怎么办理？',
+    ];
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content:
-                '你好！我是小家园 🏠，南昌大学生存手册的 AI 助手。\n问我任何关于南大学习、生活的问题吧！我会根据手册内容为你解答，并推荐相关页面。',
+            content: '你好！我是小家园 🏠，问我任何关于南大的问题吧！',
         },
     ]);
+    const [showChips, setShowChips] = useState(true);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [streamingContent, setStreamingContent] = useState('');
+    const [feedbackMap, setFeedbackMap] = useState({});
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const abortControllerRef = useRef(null);
@@ -58,6 +68,7 @@ export default function AiAssistant() {
 
     const doSend = useCallback(async (queryText) => {
         if (!queryText || isLoading) return;
+        setShowChips(false);
 
         const userMsg = { role: 'user', content: queryText };
         const newMessages = [...messagesRef.current, userMsg];
@@ -227,6 +238,34 @@ export default function AiAssistant() {
         }
     };
 
+    const getAiFeedbackUrl = (idx) => {
+        // 找到该 assistant 消息前最近的 user 消息作为上下文
+        const userQuestion = messages.slice(0, idx).reverse().find(m => m.role === 'user')?.content || '';
+        const question = encodeURIComponent(userQuestion.slice(0, 200));
+        return `${FEEDBACK_FORM_URL}?prefill_来源=AI&prefill_页面=${encodeURIComponent(location.pathname)}&prefill_问题=${question}`;
+    };
+
+    const MessageFeedback = ({ idx }) => {
+        const state = feedbackMap[idx];
+        if (!state) {
+            return (
+                <div className={styles.feedbackRow}>
+                    <button className={styles.feedbackBtn} onClick={() => setFeedbackMap(prev => ({ ...prev, [idx]: 'up' }))}>👍</button>
+                    <button className={styles.feedbackBtn} onClick={() => setFeedbackMap(prev => ({ ...prev, [idx]: 'down' }))}>👎</button>
+                </div>
+            );
+        }
+        if (state === 'up') {
+            return <div className={styles.feedbackRow}><span className={styles.feedbackThanks}>谢谢反馈！</span></div>;
+        }
+        return (
+            <div className={styles.feedbackRow}>
+                <span className={styles.feedbackThanks}>感谢反馈！</span>
+                <a className={styles.feedbackLink} href={getAiFeedbackUrl(idx)} target="_blank" rel="noopener noreferrer">帮助我们改进：填写问卷</a>
+            </div>
+        );
+    };
+
     const handleSend = useCallback(() => {
         doSend(input.trim());
     }, [doSend, input]);
@@ -308,6 +347,20 @@ export default function AiAssistant() {
                                                 <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
                                                     {cleanMarkdown(msg.content)}
                                                 </ReactMarkdown>
+                                                {idx === 0 && showChips && (
+                                                    <div className={styles.quickChips}>
+                                                        {QUICK_QUESTIONS.map((q) => (
+                                                            <button
+                                                                key={q}
+                                                                className={styles.chip}
+                                                                onClick={() => doSend(q)}
+                                                            >
+                                                                {q}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {idx > 0 && !isLoading && <MessageFeedback idx={idx} />}
                                             </div>
                                         )}
                                     </div>
