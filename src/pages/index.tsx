@@ -49,7 +49,7 @@ function HomepageSearch() {
         <div className={styles.searchModule}>
             <div className={styles.searchContainer}>
                 <div className={styles.searchIcon}>
-                    <img src="/img/ai-logo.png" alt="AI" style={{ width: 24, height: 24, borderRadius: '50%' }} />
+                    <img src="/img/ai-logo.svg" alt="AI" style={{ width: 24, height: 24, borderRadius: '50%' }} />
                 </div>
                 <input
                     type="text"

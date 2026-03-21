@@ -68,7 +68,7 @@ const config: Config = {
       title: "南昌大学生存手册",
       logo: {
         alt: "图标",
-        src: "favicon.ico",
+        src: "img/logo.svg",
       },
       items: [
         {
