@@ -7,7 +7,10 @@ export default function PageFeedback() {
     const [voted, setVoted] = useState<'yes' | 'no' | null>(null);
     const location = useLocation();
 
-    const formUrl = `${FEEDBACK_FORM_URL}?prefill_来源=文档页&prefill_页面=${encodeURIComponent(location.pathname)}`;
+    const params = new URLSearchParams();
+    params.set('prefill_来源（自动填写）', '文档页');
+    params.set('prefill_页面（自动填写）', location.pathname);
+    const formUrl = `${FEEDBACK_FORM_URL}?${params.toString()}`;
 
     return (
         <div className={styles.container}>

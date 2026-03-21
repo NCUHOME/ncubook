@@ -241,8 +241,11 @@ export default function AiAssistant() {
     const getAiFeedbackUrl = (idx) => {
         // 找到该 assistant 消息前最近的 user 消息作为上下文
         const userQuestion = messages.slice(0, idx).reverse().find(m => m.role === 'user')?.content || '';
-        const question = encodeURIComponent(userQuestion.slice(0, 200));
-        return `${FEEDBACK_FORM_URL}?prefill_来源=AI&prefill_页面=${encodeURIComponent(location.pathname)}&prefill_问题=${question}`;
+        const params = new URLSearchParams();
+        params.set('prefill_来源（自动填写）', 'AI');
+        params.set('prefill_页面（自动填写）', location.pathname);
+        params.set('prefill_问题（自动填写）', userQuestion.slice(0, 200));
+        return `${FEEDBACK_FORM_URL}?${params.toString()}`;
     };
 
     const MessageFeedback = ({ idx }) => {
