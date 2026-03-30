@@ -7,7 +7,7 @@ import rehypeKatex from "rehype-katex";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "南昌大学生存手册",
+  title: "此间",
   url: "https://book.ncuos.com",
   baseUrl: "/",
   future: {
@@ -15,11 +15,11 @@ const config: Config = {
     experimental_faster: false,
   },
   onBrokenLinks: "warn",
-  favicon: "favicon.ico",
+  favicon: "img/logo.svg",
   trailingSlash: false,
   organizationName: "NCUHOME",
   projectName: "ncubook",
-  tagline: "南昌大学生存手册 | For NCUer",
+  tagline: "把信息、经验和提问放到一起",
   i18n: {
     defaultLocale: "zh-Hans",
     locales: ["zh-Hans"],
@@ -65,84 +65,72 @@ const config: Config = {
       },
     },
     navbar: {
-      title: "南昌大学生存手册",
-      logo: {
-        alt: "图标",
-        src: "img/logo.svg",
-      },
+      title: "此间",
       items: [
         {
-          type: 'search',
-          position: 'left',
-        },
-        {
           to: '/docs/onboarding/',
-          position: 'right',
-          label: '入学指南',
+          position: 'left',
+          label: '新生',
         },
         {
           to: '/docs/academics/',
-          position: 'right',
+          position: 'left',
           label: '学业',
         },
         {
           to: '/docs/campus-life/',
-          position: 'right',
+          position: 'left',
           label: '生活',
         },
         {
           to: '/docs/career/',
-          position: 'right',
-          label: '升学与求职',
+          position: 'left',
+          label: '发展',
         },
         {
-          to: '/docs/contributors/contributing',
-          label: '参与贡献',
-          position: 'right',
+          to: '/moment',
+          label: '此刻',
+          position: 'left',
         },
         {
-          href: 'https://github.com/NCUHOME/ncubook',
-          label: 'GitHub',
+          to: '/docs/contributors/',
+          label: '共建',
+          position: 'left',
+        },
+        {
+          type: 'search',
           position: 'right',
         },
       ],
     },
     footer: {
-      style: "dark",
       links: [
         {
-          title: "文档",
+          title: "栏目",
           items: [
-            {
-              label: "首页",
-              to: "/",
-            },
+            { label: "新生", to: "/docs/onboarding/" },
+            { label: "学业", to: "/docs/academics/" },
+            { label: "生活", to: "/docs/campus-life/" },
+            { label: "发展", to: "/docs/career/" },
+            { label: "此刻", to: "/moment" },
+            { label: "共建", to: "/docs/contributors/" },
           ],
         },
         {
-          title: "社群",
+          title: "项目",
           items: [
-            {
-              label: "南昌大学2025官方新生群",
-              href: "https://u.ncuos.com/freshman-qq",
-            },
-            {
-              label: "2025家园工作室招新群",
-              href: "https://u.ncuos.com/hr-qq-group",
-            },
+            { label: "关于此间", to: "/docs/about" },
+            { label: "参与共建", to: "/docs/contributors/contributing" },
           ],
         },
         {
-          title: "更多",
+          title: "说明",
           items: [
-            {
-              label: "GitHub",
-              href: "https://github.com/NCUHOME/ncubook",
-            },
+            { label: "南大家园", href: "https://github.com/NCUHOME" },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} 家园工作室 NCUHOME｜南昌大学生存手册`,
+      copyright: `让信息回到真实，也回到人。由 ${new Date().getFullYear()} 南大家园维护。`,
     },
     prism: {
       theme: prismThemes.github,
