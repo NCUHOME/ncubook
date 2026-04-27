@@ -34,6 +34,7 @@ const sidebars: SidebarsConfig = {
       label: '学业',
     },
     'academics/credits-gpa',
+    'academics/academic-services',
     'academics/curriculum',
     'academics/general-courses',
     'academics/major-courses',
@@ -57,6 +58,8 @@ const sidebars: SidebarsConfig = {
     'campus-life/external-transport',
     'campus-life/repair',
     'campus-life/phone-directory',
+    'campus-life/medical-insurance',
+    'campus-life/library-services',
     'campus-life/jiayuan-register',
     {
       type: 'category',
@@ -76,6 +79,7 @@ const sidebars: SidebarsConfig = {
     },
     'career/postgraduate',
     'career/awards',
+    'career/employment-services',
     'career/innovation-research',
   ],
 
