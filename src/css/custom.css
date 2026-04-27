@@ -1,28 +1,28 @@
 /**
  * NCU Manual - Custom Styles
  * Design reference: stitch_downloads/article_view.html
- * Fonts: Playfair Display (headings), Lora (body), Inter (UI)
- * Palette: #1A1A1A primary, #F9F9F7 warm paper, #2B4C7E accent
+ * Fonts: Noto Serif SC (headings), Noto Sans SC (body/UI)
+ * Palette: #1A1A1A primary, #FBFAF8 warm paper, #006C49 accent
  */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Playfair+Display:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;800&family=Noto+Serif+SC:wght@400;700;900&display=swap');
 
 /* ============================================
    CSS Variables
    ============================================ */
 
 :root {
-  --ifm-font-family-base: "Lora", serif;
-  --ifm-heading-font-family: "Playfair Display", serif;
+  --ifm-font-family-base: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ifm-heading-font-family: "Noto Serif SC", "Songti SC", serif;
   --ifm-heading-font-weight: 700;
-  --ifm-color-primary: #2B4C7E;
-  --ifm-color-primary-dark: #274471;
-  --ifm-color-primary-darker: #25406b;
-  --ifm-color-primary-darkest: #1e3558;
-  --ifm-color-primary-light: #2f548b;
-  --ifm-color-primary-lighter: #325892;
-  --ifm-color-primary-lightest: #3f66a2;
-  --ifm-background-color: #F9F9F7;
+  --ifm-color-primary: #006c49;
+  --ifm-color-primary-dark: #005f40;
+  --ifm-color-primary-darker: #005539;
+  --ifm-color-primary-darkest: #003e2a;
+  --ifm-color-primary-light: #0b7d58;
+  --ifm-color-primary-lighter: #168d66;
+  --ifm-color-primary-lightest: #10b981;
+  --ifm-background-color: #FBFAF8;
   --ifm-background-surface-color: #FFFFFF;
   --ifm-font-color-base: #333333;
   --ifm-heading-color: #1A1A1A;
@@ -32,26 +32,46 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --doc-sidebar-width: 260px !important;
   /* UI font for sidebar, nav, small text */
-  --ifm-font-family-ui: "Inter", sans-serif;
+  --ifm-font-family-ui: "Noto Sans SC", "Inter", "PingFang SC", sans-serif;
 }
 
 [data-theme='dark'] {
-  --ifm-background-color: #101b22;
-  --ifm-background-surface-color: #1a2028;
+  --ifm-background-color: #111715;
+  --ifm-background-surface-color: #18211e;
   --ifm-font-color-base: #e5e5e5;
   --ifm-heading-color: #ffffff;
-  --ifm-color-primary: #4A7AC4;
-  --ifm-color-primary-dark: #3b6ab5;
-  --ifm-color-primary-darker: #3663ab;
-  --ifm-color-primary-darkest: #2c518c;
-  --ifm-color-primary-light: #5986c9;
-  --ifm-color-primary-lighter: #628ccb;
-  --ifm-color-primary-lightest: #7ba0d4;
+  --ifm-color-primary: #4edea3;
+  --ifm-color-primary-dark: #37c58c;
+  --ifm-color-primary-darker: #2ab47e;
+  --ifm-color-primary-darkest: #17865a;
+  --ifm-color-primary-light: #6ffbbe;
+  --ifm-color-primary-lighter: #86ffc9;
+  --ifm-color-primary-lightest: #a5ffd7;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
 [data-theme='dark'] body {
   background-color: var(--ifm-background-color) !important;
+}
+
+body:has(.cijian-mobile-wrapper) {
+  background: #fbfaf8;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body:has(.cijian-mobile-wrapper) #__docusaurus,
+body:has(.cijian-mobile-wrapper) .main-wrapper,
+body:has(.cijian-mobile-wrapper) .cijian-mobile-wrapper {
+  width: 100vw;
+  max-width: 100vw;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+body:has(.cijian-mobile-wrapper) .navbar,
+body:has(.cijian-mobile-wrapper) .footer {
+  display: none;
 }
 
 /* ============================================
@@ -88,8 +108,8 @@
    ============================================ */
 
 .navbar {
-  background-color: rgba(249, 247, 242, 0.92);
-  border-bottom: 1px solid #ddd8cd;
+  background-color: rgba(251, 250, 248, 0.94);
+  border-bottom: 1px solid rgba(45, 50, 46, 0.1);
   box-shadow: none;
   height: 64px;
   font-family: var(--ifm-font-family-ui);
@@ -97,13 +117,13 @@
 }
 
 [data-theme='dark'] .navbar {
-  background-color: rgba(249, 247, 242, 0.92);
-  border-bottom: 1px solid #ddd8cd;
+  background-color: rgba(17, 23, 21, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .navbar__title {
-  font-family: "DM Serif Display", "Playfair Display", serif;
-  font-weight: 400;
+  font-family: "Noto Serif SC", "Songti SC", serif;
+  font-weight: 800;
   font-size: 1.5rem;
   color: #1d1d1b;
 }
@@ -150,12 +170,12 @@
 
 [data-theme='dark'] .navbar .DocSearch-Button,
 [data-theme='dark'] .navbar [class*="searchBar"] input {
-  border-color: #ddd8cd;
-  background-color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 .navbar-sidebar {
-  background-color: #f9f7f2;
+  background-color: #fbfaf8;
 }
 
 .navbar-sidebar__brand,
@@ -223,13 +243,13 @@ a:hover {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Category headers - uppercase, small, muted */
+/* Category headers */
 .menu__list-item-collapsible>.menu__link {
   font-family: var(--ifm-font-family-ui);
   font-size: 0.6875rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
   color: #737373;
   line-height: 1.5;
   min-height: 36px !important;
@@ -288,13 +308,13 @@ a:hover {
 .menu__link--active:not(.menu__list-item-collapsible > .menu__link) {
   font-weight: 500;
   color: var(--ifm-color-primary) !important;
-  background-color: rgba(43, 76, 126, 0.05) !important;
+  background-color: rgba(0, 108, 73, 0.05) !important;
   border-left: 2px solid var(--ifm-color-primary);
   border-radius: 0 4px 4px 0;
 }
 
 [data-theme='dark'] .menu__link--active:not(.menu__list-item-collapsible > .menu__link) {
-  background-color: rgba(74, 122, 196, 0.1) !important;
+  background-color: rgba(78, 222, 163, 0.12) !important;
 }
 
 /* Hide caret icon */
@@ -331,29 +351,27 @@ a:hover {
 }
 
 /* ============================================
-   Document Content Area - Article Typography
-   (matches article_view.html <article>)
+   Document Content Area
    ============================================ */
 
 .markdown {
-  font-family: "Lora", serif;
+  font-family: var(--ifm-font-family-base);
   font-size: 1.125rem;
-  line-height: 1.6;
+  line-height: 1.75;
   color: var(--ifm-font-color-base);
   max-width: 720px;
 }
 
-/* Article H1 - large Playfair */
 .markdown h1 {
-  font-family: "Playfair Display", serif;
+  font-family: var(--ifm-heading-font-family);
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--ifm-heading-color);
   line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #E5E5E5;
+  letter-spacing: 0;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(45, 50, 46, 0.1);
 }
 
 [data-theme='dark'] .markdown h1 {
@@ -368,28 +386,28 @@ a:hover {
 
 /* Article H2 */
 .markdown h2 {
-  font-family: "Playfair Display", serif;
+  font-family: var(--ifm-heading-font-family);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--ifm-heading-color);
-  margin-top: 3rem;
-  margin-bottom: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
   scroll-margin-top: 6rem;
 }
 
 /* Article H3 */
 .markdown h3 {
-  font-family: "Playfair Display", serif;
+  font-family: var(--ifm-heading-font-family);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ifm-heading-color);
-  margin-top: 2rem;
+  margin-top: 1.75rem;
   margin-bottom: 1rem;
 }
 
 /* Paragraphs */
 .markdown p {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.1rem;
   color: var(--ifm-font-color-base);
 }
 
@@ -405,7 +423,7 @@ a:hover {
 }
 
 .markdown li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
   color: #4b5563;
 }
 
@@ -444,7 +462,7 @@ a:hover {
   background: rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.06);
   padding: 1rem;
-  border-radius: 2px;
+  border-radius: 8px;
   overflow-x: auto;
   margin: 1rem 0 1.5rem 0;
   font-size: 0.8125rem;
@@ -477,8 +495,8 @@ a:hover {
 
 /* Images */
 .markdown img {
-  border-radius: 2px;
-  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  border: 1px solid rgba(45, 50, 46, 0.1);
 }
 
 [data-theme='dark'] .markdown img {
@@ -489,15 +507,31 @@ a:hover {
 .markdown table {
   font-family: var(--ifm-font-family-ui);
   font-size: 0.875rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid rgba(45, 50, 46, 0.1);
+  border-radius: 8px;
+}
+
+.markdown table th {
+  background: rgba(0, 108, 73, 0.06);
+  color: var(--ifm-heading-color);
+  font-weight: 700;
+}
+
+.markdown table :is(th, td) {
+  border-color: rgba(45, 50, 46, 0.1);
+  padding: 0.75rem 0.85rem;
 }
 
 /* Blockquotes */
 .markdown blockquote {
-  border-left: 4px solid var(--ifm-color-primary);
-  background: rgba(43, 76, 126, 0.04);
+  border-left: 3px solid var(--ifm-color-primary);
+  background: rgba(0, 108, 73, 0.04);
   padding: 1rem 1.5rem;
   margin: 1.5rem 0;
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 8px 8px 0;
   color: #4b5563;
 }
 
@@ -512,7 +546,7 @@ a:hover {
    ============================================ */
 
 .admonition {
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 8px 8px 0;
   border: none;
   border-left: 4px solid;
   padding: 1.25rem 1.5rem;
@@ -525,7 +559,7 @@ a:hover {
 .admonition-info,
 .admonition-note {
   border-left-color: var(--ifm-color-primary);
-  background: rgba(43, 76, 126, 0.04);
+  background: rgba(0, 108, 73, 0.04);
 }
 
 [data-theme='dark'] .admonition-info,
@@ -569,7 +603,7 @@ a:hover {
 
 .table-of-contents {
   font-family: var(--ifm-font-family-ui);
-  border-left: 1px solid #E5E5E5;
+  border-left: 1px solid rgba(45, 50, 46, 0.1);
   padding-left: 1.5rem;
 }
 
@@ -610,12 +644,12 @@ a:hover {
 
 /* TOC title */
 .table-of-contents::before {
-  content: "On this page";
+  content: "本页内容";
   display: block;
   font-size: 0.6875rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--ifm-heading-color);
   margin-bottom: 1rem;
 }
@@ -633,8 +667,9 @@ a:hover {
 .breadcrumbs__link {
   font-weight: 500;
   color: #737373;
-  padding: 0 !important;
+  padding: 0.2rem 0.35rem !important;
   margin: 0 !important;
+  border-radius: 6px;
 }
 
 .breadcrumbs__link:hover {
@@ -652,7 +687,7 @@ a:hover {
    ============================================ */
 
 .pagination-nav {
-  border-top: 1px solid #E5E5E5;
+  border-top: 1px solid rgba(45, 50, 46, 0.1);
   margin-top: 3rem;
   padding-top: 1.5rem;
 }
@@ -662,25 +697,28 @@ a:hover {
 }
 
 .pagination-nav__link {
-  border: none;
-  padding: 0;
-  transition: color 0.2s ease;
+  border: 1px solid rgba(45, 50, 46, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .pagination-nav__link:hover {
-  background-color: transparent !important;
+  border-color: rgba(0, 108, 73, 0.24);
+  background-color: var(--ifm-background-surface-color) !important;
 }
 
 .pagination-nav__sublabel {
   font-family: var(--ifm-font-family-ui);
   font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
   color: #737373;
 }
 
 .pagination-nav__label {
-  font-family: "Playfair Display", serif;
+  font-family: var(--ifm-heading-font-family);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--ifm-heading-color);
@@ -702,8 +740,8 @@ a:hover {
 
 /* Article metadata area */
 .theme-doc-markdown header {
-  margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
 }
 
 /* Last updated text */
@@ -713,6 +751,24 @@ a:hover {
   color: #737373;
 }
 
+.markdown .doc-meta {
+  margin-top: -0.9rem;
+  margin-bottom: 2rem;
+  font-family: var(--ifm-font-family-ui);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: #77736a;
+}
+
+.markdown .doc-meta a {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.markdown .doc-meta a:hover {
+  text-decoration: underline;
+}
+
 /* ============================================
    Footer
    ============================================ */
@@ -720,12 +776,12 @@ a:hover {
 .footer {
   font-family: var(--ifm-font-family-ui);
   background: var(--ifm-background-color);
-  border-top: 1px solid #ddd8cd;
+  border-top: 1px solid rgba(45, 50, 46, 0.1);
   color: #5e5a52;
 }
 
 [data-theme='dark'] .footer {
-  border-top-color: #ddd8cd;
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================
@@ -733,6 +789,45 @@ a:hover {
    ============================================ */
 
 @media (max-width: 996px) {
+  html,
+  body,
+  #__docusaurus,
+  .main-wrapper {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .container,
+  .container-fluid,
+  .row,
+  [class*="docItemContainer"],
+  [class*="docMainContainer"],
+  [class*="docPage"] {
+    max-width: 100vw;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .theme-doc-markdown,
+  .markdown {
+    width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .markdown :is(h1, h2, h3, p, li, blockquote) {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .markdown table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
   .markdown h1 {
     font-size: 2rem;
   }

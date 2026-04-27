@@ -4,8 +4,8 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #E5E5E5;
-  border-radius: 2px;
+  border: 1px solid rgba(45, 50, 46, 0.1);
+  border-radius: 8px;
   background: var(--ifm-background-surface-color);
   margin-bottom: 2rem;
 }
@@ -16,17 +16,17 @@
 }
 
 .label {
-  font-family: "Inter", sans-serif;
+  font-family: var(--ifm-font-family-ui);
   font-size: 0.875rem;
   font-weight: 500;
   color: #737373;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0;
   margin-bottom: 0.25rem;
 }
 
 .value {
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--ifm-heading-font-family);
   font-size: 1.125rem;
   font-weight: 500;
   color: var(--ifm-heading-color);
@@ -36,7 +36,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-family: "Inter", sans-serif;
+  font-family: var(--ifm-font-family-ui);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ifm-color-primary) !important;

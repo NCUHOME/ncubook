@@ -8,8 +8,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  /* Dim backdrop */
+  background: rgba(26, 28, 27, 0.22);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +31,7 @@
   width: 75vw;
   max-width: 800px;
   height: 75vh;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -39,7 +39,7 @@
   border: 1px solid var(--ifm-color-emphasis-200);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   animation: revealPanel 0.2s ease-out;
-  font-family: var(--ifm-font-family-base);
+  font-family: var(--ifm-font-family-ui);
 }
 
 [data-theme='dark'] .chatWindow {
@@ -79,7 +79,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
 }
 
 .headerIconImg {
@@ -182,7 +182,7 @@
   color: var(--ifm-color-primary);
   font-size: 14px;
   font-weight: 800;
-  background: var(--ifm-color-primary-lightest);
+  background: var(--ifm-color-primary);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -322,7 +322,6 @@
 .loadingState {
   color: var(--ifm-color-emphasis-500);
   font-size: 14px;
-  font-style: italic;
   display: flex;
   align-items: center;
   margin-top: 8px;

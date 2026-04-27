@@ -15,9 +15,9 @@ function useAiButton() {
           // Styling the button directly for simplicity and robustness
           btn.style.width = 'calc(100% - 16px)';
           btn.style.margin = '8px';
-          btn.style.padding = '10px 16px';
-          btn.style.borderRadius = '6px';
-          btn.style.border = 'none';
+          btn.style.padding = '10px 14px';
+          btn.style.borderRadius = '8px';
+          btn.style.border = '1px solid rgba(0, 108, 73, 0.2)';
           btn.style.backgroundColor = 'var(--ifm-color-primary)';
           btn.style.color = '#fff';
           btn.style.cursor = 'pointer';
@@ -37,7 +37,7 @@ function useAiButton() {
             btn.style.transform = 'translateY(0)';
           };
 
-          btn.innerHTML = `<img src="/img/ai-logo.svg" style="width: 16px; height: 16px; border-radius: 50%; object-fit: contain;" /> <span style="font-weight: 500;">没找到？让 AI 帮你回答</span>`;
+          btn.innerHTML = `<img src="/img/ai-logo.svg" style="width: 16px; height: 16px; border-radius: 6px; object-fit: contain;" /> <span style="font-weight: 700;">没找到？问小家园</span>`;
 
           btn.onclick = (e) => {
             e.preventDefault();

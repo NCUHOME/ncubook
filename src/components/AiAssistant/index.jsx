@@ -6,6 +6,7 @@ import styles from './styles.module.css';
 import { FEEDBACK_FORM_URL } from '@site/src/constants/feedback';
 
 const API_URL = 'https://ncubook-api.vercel.app/api/chat';
+const FEEDBACK_API_URL = 'https://ncubook-api.vercel.app/api/feedback';
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function AiAssistant() {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: '你好！我是小家园 🏠，问我任何关于南大的问题吧！',
+            content: '你好，我是小家园。可以问我南大的流程、生活办事和资料出处。',
         },
     ]);
     const [showChips, setShowChips] = useState(true);
@@ -35,6 +36,7 @@ export default function AiAssistant() {
     messagesRef.current = messages;
     const history = useHistory();
     const location = useLocation();
+    const hideFloatingButton = location.pathname === '/';
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -100,6 +102,10 @@ export default function AiAssistant() {
                 throw new Error(`API 请求失败 (${response.status}): ${errText}`);
             }
 
+            const queryLogId = response.headers.get('X-Ncubook-Query-Id') || '';
+            const retrievalState = response.headers.get('X-Ncubook-Retrieval-State') || '';
+            const sourceCount = Number(response.headers.get('X-Ncubook-Source-Count') || 0);
+
             // 流式读取响应
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -116,7 +122,17 @@ export default function AiAssistant() {
 
             // 流式结束，添加完整消息
             if (fullContent) {
-                setMessages((prev) => [...prev, { role: 'assistant', content: fullContent }]);
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        role: 'assistant',
+                        content: fullContent,
+                        queryLogId,
+                        retrievalState,
+                        sourceCount,
+                        question: queryText,
+                    },
+                ]);
             } else {
                 setMessages((prev) => [
                     ...prev,
@@ -215,13 +231,13 @@ export default function AiAssistant() {
                             handleNavigate(href);
                         }}
                     >
-                        📄 {props.children}
+                        {props.children}
                     </a>
                 );
             }
             return (
                 <a href={href} target="_blank" rel="noopener noreferrer" className={styles.pageLink}>
-                    🔗 {props.children}
+                    {props.children}
                 </a>
             );
         },
@@ -248,17 +264,48 @@ export default function AiAssistant() {
         return `${FEEDBACK_FORM_URL}?${params.toString()}`;
     };
 
+    const sendAiFeedback = async (idx, vote) => {
+        const currentMessages = messagesRef.current;
+        const assistantMessage = currentMessages[idx] || messages[idx];
+        const userQuestion = currentMessages.slice(0, idx).reverse().find(m => m.role === 'user')?.content || assistantMessage?.question || '';
+
+        setFeedbackMap(prev => ({ ...prev, [idx]: vote }));
+
+        try {
+            const response = await fetch(FEEDBACK_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    targetType: 'agent_answer',
+                    queryLogId: assistantMessage?.queryLogId || undefined,
+                    vote,
+                    pagePath: location.pathname,
+                    question: userQuestion,
+                    answer: assistantMessage?.content || '',
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`反馈写入失败：${response.status}`);
+            }
+        } catch (error) {
+            console.warn('AI feedback failed:', error);
+            setFeedbackMap(prev => ({ ...prev, [idx]: 'failed' }));
+        }
+    };
+
     const MessageFeedback = ({ idx }) => {
         const state = feedbackMap[idx];
-        if (!state) {
+        if (!state || state === 'failed') {
             return (
                 <div className={styles.feedbackRow}>
-                    <button className={styles.feedbackBtn} onClick={() => setFeedbackMap(prev => ({ ...prev, [idx]: 'up' }))}>👍</button>
-                    <button className={styles.feedbackBtn} onClick={() => setFeedbackMap(prev => ({ ...prev, [idx]: 'down' }))}>👎</button>
+                    {state === 'failed' && <span className={styles.feedbackThanks}>反馈暂时没有写入成功</span>}
+                    <button className={styles.feedbackBtn} onClick={() => sendAiFeedback(idx, 'helpful')}>有帮助</button>
+                    <button className={styles.feedbackBtn} onClick={() => sendAiFeedback(idx, 'not_helpful')}>没帮助</button>
                 </div>
             );
         }
-        if (state === 'up') {
+        if (state === 'helpful') {
             return <div className={styles.feedbackRow}><span className={styles.feedbackThanks}>谢谢反馈！</span></div>;
         }
         return (
@@ -310,14 +357,15 @@ export default function AiAssistant() {
 
     return (
         <>
-            {/* 悬浮按钮 */}
-            <button
-                className={`${styles.floatingBtn} ${isOpen ? styles.hidden : ''}`}
-                onClick={() => setIsOpen(true)}
-                title="唤出小家园"
-            >
-                <img src="/img/ai-logo.svg" alt="AI 提问" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-            </button>
+            {!hideFloatingButton && (
+                <button
+                    className={`${styles.floatingBtn} ${isOpen ? styles.hidden : ''}`}
+                    onClick={() => setIsOpen(true)}
+                    title="打开小家园"
+                >
+                    <img src="/img/ai-logo.svg" alt="小家园" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                </button>
+            )}
 
             {/* 聊天窗口 Modal */}
             {isOpen && (
@@ -326,7 +374,7 @@ export default function AiAssistant() {
                         {/* 极简头部 / 标题 */}
                         <div className={styles.windowHeader}>
                             <div className={styles.headerTitle}>
-                                <img src="/img/ai-logo.svg" alt="AI Copilot" className={styles.headerIconImg} /> 小家园 AI 助手
+                                <img src="/img/ai-logo.svg" alt="小家园" className={styles.headerIconImg} /> 小家园
                             </div>
                             <button className={styles.closeBtn} onClick={() => setIsOpen(false)} title="关闭面板">
                                 ✕

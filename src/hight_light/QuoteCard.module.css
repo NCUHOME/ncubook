@@ -3,9 +3,9 @@
   position: relative;
   margin: 1.5rem 0;
   padding: 1rem 1rem 1rem 3rem;
-  border-radius: 12px;
-  background-color: var(--ifm-color-emphasis-100);
-  border: none;
+  border-radius: 8px;
+  background-color: rgba(0, 108, 73, 0.06);
+  border: 1px solid rgba(0, 108, 73, 0.12);
   transition: all 0.2s ease;
 }
 
@@ -29,7 +29,7 @@
   margin: 0 !important;
   padding: 0;
   font-size: 0.95rem;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--ifm-font-color-base);
   white-space: normal;
   word-wrap: break-word;
@@ -60,4 +60,3 @@
 .quoteBorder {
   display: none;
 }
-

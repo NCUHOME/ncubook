@@ -93,6 +93,11 @@ const config: Config = {
           position: 'left',
         },
         {
+          to: '/xiaojiayuan',
+          label: '小家园',
+          position: 'left',
+        },
+        {
           to: '/docs/contributors/',
           label: '共建',
           position: 'left',
