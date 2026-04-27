@@ -6,7 +6,12 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "ingest": "tsx scripts/ingest.ts"
+        "ingest": "tsx scripts/ingest.ts",
+        "eval": "tsx scripts/run-eval.ts",
+        "test:source-filter": "tsx scripts/test-official-source-filter.ts",
+        "check:admin": "tsx scripts/run-admin-demo.ts --check",
+        "demo:admin": "tsx scripts/run-admin-demo.ts",
+        "sync:feishu": "tsx scripts/sync-feedback-to-feishu.ts"
     },
     "dependencies": {
         "@ai-sdk/google": "^3.0.43",

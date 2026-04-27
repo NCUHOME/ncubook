@@ -1,0 +1,416 @@
+.shell {
+    min-height: 100vh;
+    padding: 28px;
+    background:
+        linear-gradient(135deg, rgba(0, 111, 76, 0.08), transparent 32rem),
+        #f6f4ef;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+    align-items: end;
+    max-width: 1320px;
+    margin: 0 auto 18px;
+}
+
+.hero h1 {
+    margin: 10px 0 12px;
+    color: #14231d;
+    font-family: "Noto Serif SC", "Songti SC", serif;
+    font-size: clamp(34px, 5vw, 68px);
+    line-height: 1;
+}
+
+.hero p {
+    max-width: 720px;
+    margin: 0;
+    color: #66706a;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.kicker {
+    color: #00734f;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+}
+
+.authBox,
+.metricCard,
+.panel,
+.editorPane,
+.previewPane,
+.qualityBoard,
+.sourceBoard {
+    border: 1px solid rgba(26, 34, 30, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 18px 50px rgba(25, 30, 26, 0.06);
+}
+
+.authBox {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+}
+
+.authBox label {
+    color: #66706a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.authBox input,
+.noteInput,
+.editorPane textarea {
+    width: 100%;
+    border: 1px solid rgba(26, 34, 30, 0.12);
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2421;
+}
+
+.authBox input,
+.noteInput {
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.authBox button,
+.statusLine button,
+.panelHeader button,
+.actionGroup button {
+    min-height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: #00734f;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.authBox button:disabled,
+.statusLine button:disabled,
+.panelHeader button:disabled,
+.actionGroup button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.statusLine {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1320px;
+    margin: 0 auto 16px;
+    color: #66706a;
+    font-size: 14px;
+}
+
+.statusLine button {
+    padding: 0 16px;
+    background: #1f2421;
+}
+
+.metricGrid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 1320px;
+    margin: 0 auto 18px;
+}
+
+.metricCard {
+    min-height: 92px;
+    padding: 14px;
+}
+
+.metricCard strong {
+    display: block;
+    color: #14231d;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.metricCard span {
+    display: block;
+    margin-top: 12px;
+    color: #66706a;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.board,
+.editorBoard {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+    max-width: 1320px;
+    margin: 0 auto 16px;
+}
+
+.editorBoard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.panel,
+.editorPane,
+.previewPane,
+.qualityBoard,
+.sourceBoard {
+    min-width: 0;
+    padding: 16px;
+}
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.panelHeader h2 {
+    margin: 0;
+    color: #14231d;
+    font-size: 18px;
+}
+
+.panelHeader span {
+    color: #89908b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.panelHeader button,
+.actionGroup button {
+    padding: 0 14px;
+}
+
+.actionGroup {
+    display: flex;
+    gap: 8px;
+}
+
+.eventList {
+    display: grid;
+    gap: 10px;
+    max-height: 560px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.eventCard {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    border: 1px solid rgba(26, 34, 30, 0.09);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.activeCard {
+    border-color: rgba(0, 115, 79, 0.45);
+    box-shadow: inset 3px 0 0 #00734f;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #66706a;
+    font-size: 12px;
+}
+
+.metaRow i,
+.metaRow em {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.high {
+    background: #fff1e7;
+    color: #c0531b;
+}
+
+.medium {
+    background: #fff8db;
+    color: #8a6200;
+}
+
+.low {
+    background: #e9f7f0;
+    color: #00734f;
+}
+
+.eventCard strong {
+    color: #14231d;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.eventCard small {
+    color: #66706a;
+    line-height: 1.55;
+}
+
+.detail {
+    display: grid;
+    gap: 14px;
+}
+
+.detail h3 {
+    margin: 0;
+    color: #14231d;
+    font-size: 22px;
+    line-height: 1.35;
+}
+
+.detail p {
+    margin: 0;
+    color: #66706a;
+    line-height: 1.8;
+}
+
+.detail dl {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.detail dl div {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(26, 34, 30, 0.08);
+}
+
+.detail dt {
+    color: #89908b;
+    font-weight: 800;
+}
+
+.detail dd {
+    margin: 0;
+    color: #28302b;
+}
+
+.detail a {
+    color: #00734f;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.editorPane textarea {
+    min-height: 420px;
+    padding: 14px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.noteInput {
+    margin-top: 10px;
+}
+
+.preview {
+    min-height: 480px;
+    max-height: 620px;
+    margin: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    border-radius: 12px;
+    padding: 16px;
+    background: #171d1a;
+    color: #f4f1e8;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.qualityBoard,
+.sourceBoard {
+    max-width: 1320px;
+    margin: 0 auto 16px;
+}
+
+.qualityGrid,
+.sourceGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.qualityGrid h3 {
+    margin: 0 0 10px;
+    color: #14231d;
+    font-size: 15px;
+}
+
+.qualityItem,
+.sourceCard {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+    border: 1px solid rgba(26, 34, 30, 0.08);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+}
+
+.qualityItem strong,
+.sourceCard strong {
+    color: #14231d;
+    line-height: 1.45;
+}
+
+.qualityItem span,
+.sourceCard span,
+.sourceCard b,
+.sourceCard small {
+    color: #66706a;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.sourceCard b {
+    color: #00734f;
+}
+
+.empty {
+    margin: 0;
+    color: #89908b;
+}
+
+@media (max-width: 980px) {
+    .shell {
+        padding: 18px;
+    }
+
+    .hero,
+    .board,
+    .editorBoard {
+        grid-template-columns: 1fr;
+    }
+
+    .metricGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .qualityGrid,
+    .sourceGrid {
+        grid-template-columns: 1fr;
+    }
+}
