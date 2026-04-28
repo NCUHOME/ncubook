@@ -1,6 +1,5 @@
 /**
  * NCU Manual - Custom Styles
- * Design reference: stitch_downloads/article_view.html
  * Fonts: Noto Serif SC (headings), Noto Sans SC (body/UI)
  * Palette: #1A1A1A primary, #FBFAF8 warm paper, #006C49 accent
  */
@@ -75,7 +74,7 @@ body:has(.cijian-mobile-wrapper) .footer {
 }
 
 /* ============================================
-   Custom Scrollbar (matches article_view.html)
+   Custom Scrollbar
    ============================================ */
 
 ::-webkit-scrollbar {
@@ -104,7 +103,7 @@ body:has(.cijian-mobile-wrapper) .footer {
 }
 
 /* ============================================
-   Navbar (matches article_view.html header)
+   Navbar
    ============================================ */
 
 .navbar {
@@ -231,7 +230,7 @@ a:hover {
 }
 
 /* ============================================
-   Left Sidebar (matches article_view.html)
+   Left Sidebar
    ============================================ */
 
 .theme-doc-sidebar-container {
@@ -542,7 +541,7 @@ a:hover {
 
 /* ============================================
    Admonitions / Callouts
-   (matches article_view.html .border-l-4)
+   Blockquote accent
    ============================================ */
 
 .admonition {
@@ -598,7 +597,7 @@ a:hover {
 
 /* ============================================
    Right Sidebar - Table of Contents
-   (matches article_view.html right aside)
+   Right aside
    ============================================ */
 
 .table-of-contents {
@@ -683,7 +682,7 @@ a:hover {
 
 /* ============================================
    Pagination (Prev/Next navigation)
-   (matches article_view.html bottom nav)
+   Bottom navigation
    ============================================ */
 
 .pagination-nav {

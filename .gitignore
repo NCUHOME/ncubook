@@ -90,8 +90,13 @@ web_modules/
 
 # Local agent/design scratch output
 .superpowers/
+stitch_downloads/
 stitch_exports/
 home-mobile-preview.png
+
+# Raw eval outputs may contain user questions or feedback.
+ncubook-api/evals/results/
+ncubook-api/evals/candidates/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
