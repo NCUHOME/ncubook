@@ -8,6 +8,33 @@ import { FEEDBACK_FORM_URL } from '@site/src/constants/feedback';
 const API_URL = 'https://ncubook-api.vercel.app/api/chat';
 const FEEDBACK_API_URL = 'https://ncubook-api.vercel.app/api/feedback';
 
+function parseTopSourcesHeader(value) {
+    if (!value) return [];
+    try {
+        const decoded = decodeURIComponent(value);
+        const parsed = JSON.parse(decoded);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .map((source) => ({
+                title: String(source?.title || source?.heading || '未知来源'),
+                href: String(source?.url || ''),
+                heading: source?.heading ? String(source.heading) : '',
+                similarity: Number(source?.similarity ?? 0),
+            }))
+            .filter((source) => source.href);
+    } catch (error) {
+        console.warn('Failed to parse source header:', error);
+        return [];
+    }
+}
+
+const RETRIEVAL_LABELS = {
+    strong: '高可信命中',
+    partial: '部分命中',
+    weak: '弱命中，需核实',
+    none: '未命中，需补来源',
+};
+
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false);
     const QUICK_QUESTIONS = [
@@ -105,6 +132,7 @@ export default function AiAssistant() {
             const queryLogId = response.headers.get('X-Ncubook-Query-Id') || '';
             const retrievalState = response.headers.get('X-Ncubook-Retrieval-State') || '';
             const sourceCount = Number(response.headers.get('X-Ncubook-Source-Count') || 0);
+            const topSources = parseTopSourcesHeader(response.headers.get('X-Ncubook-Top-Sources'));
 
             // 流式读取响应
             const reader = response.body.getReader();
@@ -130,6 +158,7 @@ export default function AiAssistant() {
                         queryLogId,
                         retrievalState,
                         sourceCount,
+                        topSources,
                         question: queryText,
                     },
                 ]);
@@ -316,6 +345,36 @@ export default function AiAssistant() {
         );
     };
 
+    const MessageEvidence = ({ msg }) => {
+        if (!msg.queryLogId && !msg.retrievalState && !msg.sourceCount) {
+            return null;
+        }
+
+        const topSource = msg.topSources?.[0];
+
+        return (
+            <div className={styles.answerMeta}>
+                <span>{RETRIEVAL_LABELS[msg.retrievalState] || msg.retrievalState || '等待检索'}</span>
+                <span>{Number(msg.sourceCount || 0)} 条来源</span>
+                {msg.queryLogId && <span>ID {msg.queryLogId.slice(0, 8)}</span>}
+                {topSource && (
+                    <a
+                        className={styles.sourcePreview}
+                        href={topSource.href}
+                        onClick={(e) => {
+                            if (topSource.href.startsWith('/')) {
+                                e.preventDefault();
+                                handleNavigate(topSource.href);
+                            }
+                        }}
+                    >
+                        来源：{topSource.title}
+                    </a>
+                )}
+            </div>
+        );
+    };
+
     const handleSend = useCallback(() => {
         doSend(input.trim());
     }, [doSend, input]);
@@ -398,6 +457,7 @@ export default function AiAssistant() {
                                                 <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>
                                                     {cleanMarkdown(msg.content)}
                                                 </ReactMarkdown>
+                                                {idx > 0 && <MessageEvidence msg={msg} />}
                                                 {idx === 0 && showChips && (
                                                     <div className={styles.quickChips}>
                                                         {QUICK_QUESTIONS.map((q) => (

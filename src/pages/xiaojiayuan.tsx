@@ -7,6 +7,7 @@ import {
     ArrowLeft,
     CheckCircle2,
     CircleAlert,
+    ExternalLink,
     MapPin,
     MessageSquareText,
     Search,
@@ -14,6 +15,7 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import styles from '../css/CijianMobile.module.css';
+import { FEEDBACK_FORM_URL } from '../constants/feedback';
 
 const API_URL = 'https://ncubook-api.vercel.app/api/chat';
 const FEEDBACK_API_URL = 'https://ncubook-api.vercel.app/api/feedback';
@@ -60,12 +62,98 @@ const retrievalCopy: Record<string, string> = {
     none: '未命中',
 };
 
+type SourceEvidence = {
+    title: string;
+    href: string;
+    heading?: string;
+    similarity?: number;
+    status?: string;
+};
+
 function cleanMarkdown(text: string) {
     return text
         .replace(/\n{3,}/g, '\n\n')
         .replace(/\n{2,}([-*] )/g, '\n$1')
         .replace(/([-*] .+)\n{2,}([-*] )/g, '$1\n$2')
         .trim();
+}
+
+function parseTopSourcesHeader(value: string | null): SourceEvidence[] {
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const decoded = decodeURIComponent(value);
+        const parsed = JSON.parse(decoded);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed
+            .map((source) => ({
+                title: String(source?.title || source?.heading || '未知来源'),
+                href: String(source?.url || ''),
+                heading: source?.heading ? String(source.heading) : '',
+                similarity: Number(source?.similarity ?? 0),
+                status: '命中来源',
+            }))
+            .filter((source) => source.href);
+    } catch (error) {
+        console.warn('Failed to parse source header:', error);
+        return [];
+    }
+}
+
+function extractAnswerSections(answer: string) {
+    const normalized = cleanMarkdown(answer || '');
+    const sourceStart = normalized.search(/\n?###\s*信息来源/);
+    const followStart = normalized.search(/\n?###\s*继续追问/);
+    const mainEndCandidates = [sourceStart, followStart].filter((index) => index >= 0);
+    const mainEnd = mainEndCandidates.length > 0 ? Math.min(...mainEndCandidates) : normalized.length;
+    const main = cleanMarkdown(normalized.slice(0, mainEnd));
+    const sourceBlock = sourceStart >= 0
+        ? normalized.slice(sourceStart, followStart > sourceStart ? followStart : normalized.length)
+        : '';
+    const followBlock = followStart >= 0 ? normalized.slice(followStart) : '';
+    const sourceLinks: SourceEvidence[] = [];
+    const followUps: string[] = [];
+    const linkPattern = /[-*]\s*\[([^\]]+)\]\(([^)]+)\)/g;
+    let linkMatch = linkPattern.exec(sourceBlock);
+
+    while (linkMatch) {
+        sourceLinks.push({
+            title: linkMatch[1],
+            href: linkMatch[2],
+            status: '回答引用',
+        });
+        linkMatch = linkPattern.exec(sourceBlock);
+    }
+
+    followBlock.split('\n').forEach((line) => {
+        const match = line.match(/^[-*]\s*(.+)$/);
+        if (match?.[1]) {
+            followUps.push(match[1].trim());
+        }
+    });
+
+    return {
+        main,
+        sourceLinks,
+        followUps,
+    };
+}
+
+function getFeedbackUrl(question: string, answer: string) {
+    const params = new URLSearchParams();
+    params.set('prefill_来源（自动填写）', 'AI');
+    params.set('prefill_页面（自动填写）', '/xiaojiayuan');
+    params.set('prefill_问题（自动填写）', question.slice(0, 200));
+    if (answer) {
+        params.set('prefill_回答（自动填写）', answer.slice(0, 500));
+    }
+
+    return `${FEEDBACK_FORM_URL}?${params.toString()}`;
 }
 
 export default function XiaojiayuanPage() {
@@ -76,6 +164,7 @@ export default function XiaojiayuanPage() {
     const [error, setError] = React.useState('');
     const [retrievalState, setRetrievalState] = React.useState('');
     const [sourceCount, setSourceCount] = React.useState<number | null>(null);
+    const [topSources, setTopSources] = React.useState<SourceEvidence[]>([]);
     const [queryId, setQueryId] = React.useState('');
     const [feedbackState, setFeedbackState] = React.useState<'helpful' | 'not_helpful' | 'failed' | null>(null);
 
@@ -91,6 +180,7 @@ export default function XiaojiayuanPage() {
         setError('');
         setRetrievalState('');
         setSourceCount(null);
+        setTopSources([]);
         setQueryId('');
         setFeedbackState(null);
         setIsLoading(true);
@@ -112,6 +202,7 @@ export default function XiaojiayuanPage() {
 
             setRetrievalState(response.headers.get('X-Ncubook-Retrieval-State') || '');
             setQueryId(response.headers.get('X-Ncubook-Query-Id') || '');
+            setTopSources(parseTopSourcesHeader(response.headers.get('X-Ncubook-Top-Sources')));
             const parsedSourceCount = Number(response.headers.get('X-Ncubook-Source-Count'));
             setSourceCount(Number.isFinite(parsedSourceCount) ? parsedSourceCount : null);
 
@@ -181,6 +272,21 @@ export default function XiaojiayuanPage() {
 
     const hasLiveAnswer = Boolean(liveAnswer || isLoading || error);
     const retrievalText = retrievalState ? retrievalCopy[retrievalState] || retrievalState : '等待检索';
+    const answerParts = React.useMemo(() => extractAnswerSections(liveAnswer), [liveAnswer]);
+    const sourceEvidence = React.useMemo(() => {
+        if (!hasLiveAnswer) {
+            return sources.map((source) => ({
+                title: source.title,
+                href: '',
+                heading: source.meta,
+                status: source.status,
+            }));
+        }
+
+        return topSources.length > 0 ? topSources : answerParts.sourceLinks;
+    }, [answerParts.sourceLinks, hasLiveAnswer, topSources]);
+    const followUpSuggestions = answerParts.followUps.length > 0 ? answerParts.followUps : [...suggestions];
+    const feedbackUrl = getFeedbackUrl(liveQuestion, liveAnswer);
 
     return (
         <Layout title="小家园" description="小家园｜此间的校园知识问答助手" wrapperClassName="cijian-mobile-wrapper">
@@ -225,7 +331,7 @@ export default function XiaojiayuanPage() {
                                 <div className={styles.liveError}>{error}</div>
                             ) : (
                                 <div className={styles.markdownAnswer}>
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanMarkdown(liveAnswer || '正在检索知识库并生成回答...')}</ReactMarkdown>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{answerParts.main || '正在检索知识库并生成回答...'}</ReactMarkdown>
                                     {isLoading && <span className={styles.answerCursor}>▊</span>}
                                 </div>
                             )}
@@ -272,23 +378,52 @@ export default function XiaojiayuanPage() {
                 <section className={styles.sectionStack}>
                     <div className={styles.sectionHeader}>
                         <h2>信息来源</h2>
-                        <span className={styles.qaSourceCount}>{hasLiveAnswer ? `${sourceCount ?? 0} 条命中` : '2 条可追溯'}</span>
+                        <span className={styles.qaSourceCount}>{hasLiveAnswer ? `${sourceEvidence.length || sourceCount || 0} 条命中` : '2 条可追溯'}</span>
                     </div>
                     {hasLiveAnswer ? (
-                        <div className={styles.opsMiniGrid}>
-                            <article className={styles.opsMiniCard}>
-                                <strong>{retrievalText}</strong>
-                                <span>检索状态</span>
-                            </article>
-                            <article className={styles.opsMiniCard}>
-                                <strong>{sourceCount ?? 0}</strong>
-                                <span>命中文档</span>
-                            </article>
-                            <article className={styles.opsMiniCard}>
-                                <strong>{queryId ? queryId.slice(0, 8) : '生成中'}</strong>
-                                <span>日志编号</span>
-                            </article>
-                        </div>
+                        <>
+                            <div className={styles.sourceTrustPanel}>
+                                <div>
+                                    <strong>{retrievalText}</strong>
+                                    <span>检索可信度</span>
+                                </div>
+                                <div>
+                                    <strong>{sourceCount ?? sourceEvidence.length}</strong>
+                                    <span>命中文档</span>
+                                </div>
+                                <div>
+                                    <strong>{queryId ? queryId.slice(0, 8) : '生成中'}</strong>
+                                    <span>日志编号</span>
+                                </div>
+                            </div>
+                            {sourceEvidence.length > 0 ? (
+                                <div className={styles.sourceGrid}>
+                                    {sourceEvidence.map((source, index) => (
+                                        <a
+                                            key={`${source.title}-${source.href || index}`}
+                                            className={styles.sourceCard}
+                                            href={source.href || undefined}
+                                            target={source.href?.startsWith('http') ? '_blank' : undefined}
+                                            rel={source.href?.startsWith('http') ? 'noreferrer' : undefined}
+                                        >
+                                            <CheckCircle2 size={16} strokeWidth={1.8} aria-hidden="true" />
+                                            <div>
+                                                <h3>{source.title}</h3>
+                                                <p>{source.heading || source.href || '来自知识库命中片段'}</p>
+                                            </div>
+                                            <span>
+                                                {typeof source.similarity === 'number' && source.similarity > 0
+                                                    ? `${Math.round(source.similarity * 100)}%`
+                                                    : source.status || '来源'}
+                                                {source.href?.startsWith('http') && <ExternalLink size={12} strokeWidth={1.8} aria-hidden="true" />}
+                                            </span>
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className={styles.opsEmptyState}>暂时没有可展示的来源条目。回答中如果提示弱命中，请优先补充知识库或官方来源。</div>
+                            )}
+                        </>
                     ) : (
                         <div className={styles.sourceGrid}>
                             {sources.map((source) => (
@@ -308,7 +443,7 @@ export default function XiaojiayuanPage() {
                 <section className={styles.followUpPanel}>
                     <h2>继续追问</h2>
                     <div className={styles.suggestionRow}>
-                        {suggestions.map((suggestion) => (
+                        {followUpSuggestions.map((suggestion) => (
                             <button key={suggestion} type="button" onClick={() => askQuestion(suggestion)} disabled={isLoading}>
                                 {suggestion}
                             </button>
@@ -333,6 +468,9 @@ export default function XiaojiayuanPage() {
                             <button type="button" onClick={() => submitFeedback('not_helpful')}>
                                 没帮助
                             </button>
+                            <a href={feedbackUrl} target="_blank" rel="noopener noreferrer">
+                                写详细反馈
+                            </a>
                         </div>
                     ) : null}
                 </section>

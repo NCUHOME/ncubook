@@ -17,6 +17,6 @@ export function getCorsHeaders(origin: string | null, methods = "GET, POST, OPTI
         "Access-Control-Allow-Methods": methods,
         "Access-Control-Allow-Headers": "Content-Type, X-Ops-Token",
         "Access-Control-Expose-Headers":
-            "X-Ncubook-Query-Id, X-Ncubook-Retrieval-State, X-Ncubook-Source-Count",
+            "X-Ncubook-Query-Id, X-Ncubook-Retrieval-State, X-Ncubook-Source-Count, X-Ncubook-Top-Sources",
     };
 }

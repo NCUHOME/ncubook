@@ -2,11 +2,14 @@ import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import {
+    BarChart3,
     BookOpen,
     ChevronRight,
     CreditCard,
+    FileSearch,
     GraduationCap,
     IdCard,
+    MessageSquareText,
     MoreHorizontal,
     Search,
     SendHorizontal,
@@ -42,7 +45,39 @@ type LiveUpdate = {
     icon: LucideIcon;
 };
 
+type ProductEntry = {
+    title: string;
+    eyebrow: string;
+    href: string;
+    copy: string;
+    icon: LucideIcon;
+};
+
 const quickPrompts = ['校园卡丢了怎么办？', '绩点怎么算？', '宿舍怎么报修？', '转专业要注意什么？'] as const;
+
+const productEntries: ProductEntry[] = [
+    {
+        title: '学生端问答',
+        eyebrow: '体验入口',
+        href: '/xiaojiayuan',
+        copy: '用真实校园问题触发 RAG 回答、来源展示和反馈记录。',
+        icon: MessageSquareText,
+    },
+    {
+        title: '知识来源',
+        eyebrow: '内容底座',
+        href: '/docs/academics/',
+        copy: '把办事流程、学业规则和同学经验整理成可检索内容。',
+        icon: FileSearch,
+    },
+    {
+        title: '运营看板',
+        eyebrow: '复盘入口',
+        href: '/ops',
+        copy: '追踪弱命中、负反馈和知识缺口，决定下一轮补什么。',
+        icon: BarChart3,
+    },
+];
 
 const channels: Channel[] = [
     {
@@ -190,6 +225,24 @@ const ChannelCard: React.FC<{ channel: Channel }> = ({ channel }) => {
     );
 };
 
+const ProductEntryCard: React.FC<{ entry: ProductEntry }> = ({ entry }) => {
+    const Icon = entry.icon;
+
+    return (
+        <Link className={styles.entryCard} to={entry.href}>
+            <div className={styles.entryIcon} aria-hidden="true">
+                <Icon size={18} strokeWidth={1.8} />
+            </div>
+            <div>
+                <span>{entry.eyebrow}</span>
+                <h3>{entry.title}</h3>
+                <p>{entry.copy}</p>
+            </div>
+            <ChevronRight size={16} strokeWidth={1.8} aria-hidden="true" />
+        </Link>
+    );
+};
+
 function SectionHeader({ title, action, href }: { title: string; action?: string; href?: string }) {
     return (
         <div className={styles.sectionHeader}>
@@ -211,9 +264,19 @@ export default function Home() {
                 <ProductTopbar />
 
                 <section className={styles.heroPanel}>
-                    <p className={styles.eyebrow}>校园攻略、同学经验和小家园问答</p>
+                    <p className={styles.eyebrow}>AI 产品运营项目 · 南昌大学校园知识助手</p>
                     <h1 className={styles.heroTitle}>把校园信息问清楚</h1>
+                    <p className={styles.heroCopy}>学生问得到答案，运营看得到缺口，内容能回流到知识库。</p>
                     <AskComposer />
+                </section>
+
+                <section className={styles.homeEntrySection} aria-label="项目核心入口">
+                    <SectionHeader title="从提问到运营" />
+                    <div className={styles.entryGrid}>
+                        {productEntries.map((entry) => (
+                            <ProductEntryCard key={entry.title} entry={entry} />
+                        ))}
+                    </div>
                 </section>
 
                 <section className={styles.categoryDock} aria-label="常用分类">

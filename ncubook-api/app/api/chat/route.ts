@@ -166,6 +166,7 @@ ${context || "暂无检索到的相关内容"}
         newHeaders.set("X-Ncubook-Query-Id", queryLogId);
         newHeaders.set("X-Ncubook-Retrieval-State", retrieval.retrievalState);
         newHeaders.set("X-Ncubook-Source-Count", String(retrieval.sourceCount));
+        newHeaders.set("X-Ncubook-Top-Sources", encodeURIComponent(JSON.stringify(retrieval.topSources)));
 
         return new Response(response.body, {
             status: response.status,

@@ -73,6 +73,12 @@ type OpsSummary = {
         max_similarity: number;
         latency_ms?: number | null;
         created_at: string;
+        top_sources?: Array<{
+            title?: string;
+            url?: string;
+            heading?: string;
+            similarity?: number;
+        }> | null;
     }>;
 };
 
@@ -183,6 +189,14 @@ const demoSummary: OpsSummary = {
             max_similarity: 0.54,
             latency_ms: 1640,
             created_at: '2026-04-23T09:18:00+08:00',
+            top_sources: [
+                {
+                    title: '校园卡使用指南',
+                    url: '/docs/onboarding/campus-card',
+                    heading: '补办与挂失',
+                    similarity: 0.54,
+                },
+            ],
         },
         {
             id: 'query-major-change',
@@ -193,6 +207,14 @@ const demoSummary: OpsSummary = {
             max_similarity: 0.71,
             latency_ms: 2110,
             created_at: '2026-04-23T08:38:00+08:00',
+            top_sources: [
+                {
+                    title: '转专业说明',
+                    url: '/docs/academics/major-change',
+                    heading: '申请条件',
+                    similarity: 0.71,
+                },
+            ],
         },
     ],
 };
@@ -321,6 +343,15 @@ function percent(part: number, total: number) {
     return `${Math.round((part / total) * 100)}%`;
 }
 
+function getTopSourceLabel(query: OpsSummary['recentQueries'][number]) {
+    const source = query.top_sources?.[0];
+    if (!source) {
+        return '';
+    }
+
+    return source.heading ? `${source.title || '未知来源'} · ${source.heading}` : source.title || source.url || '';
+}
+
 export default function OpsPage() {
     const [summary, setSummary] = React.useState<OpsSummary>(demoSummary);
     const [syncSnapshot, setSyncSnapshot] = React.useState<SyncSnapshot>(demoSyncSnapshot);
@@ -402,6 +433,33 @@ export default function OpsPage() {
             icon: Clock3,
         },
     ];
+    const priorityCards = [
+        {
+            label: '先复盘',
+            title: summary.recentNegativeFeedback[0]?.question || '负反馈回答质量',
+            value: `${summary.metrics.notHelpfulFeedback} 条没帮助`,
+            detail: summary.metrics.notHelpfulFeedback > 0
+                ? '回看原问题、回答和来源，判断是流程不准、信息不全还是语气没帮上忙。'
+                : '暂无负反馈，继续观察真实用户点击。',
+            icon: ThumbsDown,
+        },
+        {
+            label: '再补库',
+            title: summary.recentGaps[0]?.sample_question || '弱命中知识缺口',
+            value: `${summary.metrics.openKnowledgeGaps} 个开放缺口`,
+            detail: `弱命中率 ${percent(summary.metrics.weakOrNoRetrieval, summary.metrics.totalQueries)}，优先补高频且权益相关的问题。`,
+            icon: AlertTriangle,
+        },
+        {
+            label: '同步链路',
+            title: syncSnapshot.recentFailed[0]?.title || '飞书反馈后台',
+            value: `${syncSnapshot.totals.failed} 个失败`,
+            detail: syncSnapshot.totals.failed > 0
+                ? '先检查字段配置和权限，避免用户反馈丢在产品外面。'
+                : `最近一次同步已创建 ${syncSnapshot.totals.created} 条、更新 ${syncSnapshot.totals.updated} 条。`,
+            icon: Link2,
+        },
+    ];
 
     return (
         <Layout title="运营台" description="小家园 Agent 运营台｜查看问题日志、知识缺口和检索质量" wrapperClassName="cijian-mobile-wrapper">
@@ -435,6 +493,32 @@ export default function OpsPage() {
                         </span>
                     </div>
                     {error && <div className={styles.liveError}>{error}</div>}
+                </section>
+
+                <section className={styles.opsPriorityBoard} aria-label="本轮运营优先级">
+                    <div className={styles.opsStatusBoardHeader}>
+                        <div>
+                            <span className={styles.eyebrow}>本轮优先级</span>
+                            <h2>先看哪里，下一步做什么</h2>
+                        </div>
+                        <ListChecks size={22} strokeWidth={1.8} aria-hidden="true" />
+                    </div>
+                    <div className={styles.opsPriorityGrid}>
+                        {priorityCards.map((card) => {
+                            const Icon = card.icon;
+                            return (
+                                <article key={card.label} className={styles.opsPriorityCard}>
+                                    <div className={styles.opsPriorityTopline}>
+                                        <span>{card.label}</span>
+                                        <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+                                    </div>
+                                    <strong>{card.value}</strong>
+                                    <h3>{card.title}</h3>
+                                    <p>{card.detail}</p>
+                                </article>
+                            );
+                        })}
+                    </div>
                 </section>
 
                 <section className={styles.opsStatusBoard} aria-label="知识缺口处理状态">
@@ -667,6 +751,7 @@ export default function OpsPage() {
                                         <span>相似度 {Number(query.max_similarity ?? 0).toFixed(2)}</span>
                                         <span>{formatLatency(Number(query.latency_ms ?? 0))}</span>
                                         <span>{formatDateTime(query.created_at)}</span>
+                                        {getTopSourceLabel(query) && <span>Top 来源：{getTopSourceLabel(query)}</span>}
                                         {query.current_path && <span>{query.current_path}</span>}
                                     </div>
                                 </article>
