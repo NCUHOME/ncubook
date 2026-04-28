@@ -152,3 +152,7 @@ open -> triaged -> in_progress -> resolved / ignored
 3. 给出一周内最高优先级的迭代计划。
 4. 实现必要代码改动。
 5. 最后沉淀 README、项目复盘、简历描述和面试讲述稿。
+
+学习进度和每日产出记录在：
+
+`portfolio/ai-model-ops-learning-tracker.md`
