@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
-import { getChatModel } from "@/lib/gemini";
+import { getChatModel, hasChatModelConfig } from "@/lib/gemini";
 import {
     buildDraftMarkdown,
     classifyOfficialContent,
@@ -79,7 +79,7 @@ async function refineClassificationWithAI(
     },
     base: ContentClassification
 ): Promise<ContentClassification> {
-    if (!process.env.DEEPSEEK_API_KEY || base.status === "ignored") {
+    if (!hasChatModelConfig() || base.status === "ignored") {
         return base;
     }
 
@@ -147,7 +147,7 @@ async function generateMarkdownDraftWithAI(input: {
     classification: ContentClassification;
 }) {
     const fallback = buildDraftMarkdown(input);
-    if (!process.env.DEEPSEEK_API_KEY) {
+    if (!hasChatModelConfig()) {
         return fallback;
     }
 

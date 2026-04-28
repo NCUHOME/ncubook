@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { classifyEvalFailure, type EvalFailureCategory } from "../lib/eval-analysis";
 
 type EvalCase = {
     id: string;
@@ -16,6 +17,9 @@ type EvalResult = {
     passed: boolean;
     score: number;
     checks: Record<string, boolean>;
+    failureCategory: EvalFailureCategory;
+    suggestedAction: string;
+    failureReasons: string[];
     headers: {
         queryLogId: string;
         retrievalState: string;
@@ -70,11 +74,17 @@ function evaluateAnswer(evalCase: EvalCase, answer: string, ok: boolean, headers
 
     const passedCount = Object.values(checks).filter(Boolean).length;
     const score = Math.round((passedCount / Object.keys(checks).length) * 100);
+    const analysis = classifyEvalFailure({
+        checks,
+        retrievalState: headers.retrievalState,
+        risk: evalCase.risk,
+    });
 
     return {
         passed: score >= 75,
         score,
         checks,
+        ...analysis,
     };
 }
 
@@ -99,12 +109,20 @@ async function main() {
     }
 
     const passed = results.filter((result) => result.passed).length;
+    const failureCategoryCounts = results.reduce(
+        (counts, result) => {
+            counts[result.failureCategory] = (counts[result.failureCategory] ?? 0) + 1;
+            return counts;
+        },
+        {} as Record<EvalFailureCategory, number>
+    );
     const summary = {
         apiUrl: API_URL,
         runAt: new Date().toISOString(),
         total: results.length,
         passed,
         passRate: results.length > 0 ? Math.round((passed / results.length) * 100) : 0,
+        failureCategoryCounts,
         results,
     };
 
@@ -113,6 +131,7 @@ async function main() {
     await writeFile(outPath, JSON.stringify(summary, null, 2));
 
     console.log(`\nEval complete: ${passed}/${results.length} passed`);
+    console.log(`Failure categories: ${JSON.stringify(failureCategoryCounts)}`);
     console.log(`Result saved to ${outPath}`);
 
     if (summary.passRate < 75) {
