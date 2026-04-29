@@ -42,7 +42,7 @@
 | RAG 与检索质量 | L2 | 理解 embedding、向量检索、相似度、top-k、`retrieval_state`、`source_count`、`max_similarity`；知道阈值需要用真实数据校准 | 用真实 query log 校准 strong / partial / weak 阈值 |
 | Eval / Badcase 分析 | L2 | 理解 eval 不是自嗨题库，而是产品迭代工具；能区分检索问题、知识库问题、Prompt 问题、Trust Boundary 问题 | 正式发布后从真实 query / feedback 中抽样进入 eval 候选池 |
 | Prompt / Trust Boundary | L1-L2 | 知道强参考问题不能让模型编造；弱命中 / 无命中必须说明资料不足；高风险问题需要提示核实 | 写 Prompt 迭代记录，并用 badcase 证明优化效果 |
-| 模型训练链路 | L1 | 能复述 Pretrain、SFT、RLHF 的基本作用；知道 ncubook 没做模型训练，而是在推理应用层和模型运营层做 RAG、Prompt、Eval、反馈闭环 | 继续补 DPO、推理优化、RAG / Prompt / Eval 在链路中的位置，并练习项目取舍表达 |
+| 模型训练链路 | L1-L2 | 能复述 Pretrain、SFT、RLHF 的基本作用；知道 ncubook 没做模型训练，而是在推理应用层和模型运营层做 RAG、Prompt、Eval、反馈闭环；能初步解释为什么项目仍然能证明模型运营能力 | 继续补 DPO、推理优化、RAG / Prompt / Eval 在链路中的位置，并练习更完整的岗位表达 |
 | 模型策略产品 | L0 | 待学习 | 学会从 eval 结果定位模型能力边界和优化方向 |
 | 训练数据策略 | L0 | 待学习 | 学会样本构造、数据分布、标注规则、质量评估 |
 | Agent 协作与信息验证 | L0 | 待学习 | 学会任务拆解、信息验证、多轮决策；判断 ncubook 是否需要轻量 Agent 流程 |
@@ -273,6 +273,17 @@ ncubook 对应关系：
 
 1. 学 DPO、推理优化和训练链路完整地图。
 2. 写一段“为什么 ncubook 没做训练但仍然符合模型运营岗位”的面试表达。
+
+补充练习：为什么 ncubook 不是训练项目，但仍然能证明模型运营 / 模型策略产品能力？
+
+当前复述：
+
+> ncubook 通过 RAG 降低了模型幻觉、用 Prompt 约束回答边界，用 Query Log、Feedback、Knowledge Gap 和 Eval 分析效果，再把 badcase 转成知识库和产品流程迭代。
+
+纠偏方向：
+
+1. 这句话方向正确，已经能说明 ncubook 的推理应用层和运营闭环价值。
+2. 面试中还要补上“模型策略产品”视角：不是只做功能，而是通过日志、反馈和评测结果判断模型能力边界，并提出数据、检索、Prompt、产品流程上的优化方向。
 
 ## 明天启动项
 
