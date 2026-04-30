@@ -8,6 +8,7 @@
         "start": "next start",
         "ingest": "tsx scripts/ingest.ts",
         "eval": "tsx scripts/run-eval.ts",
+        "test:health": "tsx scripts/test-health.ts",
         "test:eval-analysis": "tsx scripts/test-eval-analysis.ts",
         "eval:candidates": "tsx scripts/export-eval-candidates.ts",
         "test:chat-model-config": "tsx scripts/test-chat-model-config.ts",

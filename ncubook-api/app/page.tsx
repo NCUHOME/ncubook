@@ -7,6 +7,9 @@ export default function Home() {
                 <code>POST /api/chat</code> — AI 对话接口
             </p>
             <p>
+                <code>GET /api/health</code> — 上线配置健康检查
+            </p>
+            <p>
                 <code>GET /admin</code> — 校园信息运营中台
             </p>
             <p>

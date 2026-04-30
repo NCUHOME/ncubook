@@ -16,8 +16,9 @@ Required production-like environment variables:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- Either `OPENAI_COMPATIBLE_API_KEY`, or both `GOOGLE_GENERATIVE_AI_API_KEY`
-  and `DEEPSEEK_API_KEY`
+- Chat model credentials: either `OPENAI_COMPATIBLE_API_KEY` or `DEEPSEEK_API_KEY`
+- Embedding credentials: `GOOGLE_GENERATIVE_AI_API_KEY`, unless the relay also
+  supports embeddings and `OPENAI_COMPATIBLE_EMBEDDING_MODEL` is configured
 - `ADMIN_TOKEN`
 
 Optional environment variables:
@@ -33,7 +34,7 @@ Optional environment variables:
 ## Model Provider
 
 By default, the API can still use Gemini for embeddings and DeepSeek for chat.
-To use an OpenAI-compatible relay for both chat and embeddings, configure:
+To use an OpenAI-compatible relay for chat, configure:
 
 ```bash
 OPENAI_COMPATIBLE_BASE_URL=https://your-relay.example.com/v1
@@ -88,9 +89,28 @@ After running migrations:
 
 ```bash
 npm run check:admin
+npm run test:health
 npm run test:source-filter
 npm run build
 ```
+
+## Launch Health Check
+
+```bash
+npm run test:health
+curl https://your-api-domain.example.com/api/health
+```
+
+`GET /api/health` returns a redacted configuration snapshot for launch checks.
+It verifies whether Supabase, chat model, embedding model, admin protection,
+ops protection, cron protection, and Feishu sync flags are configured without
+exposing secret values.
+
+The endpoint returns:
+
+- `200` with `status: "ok"` when required launch dependencies are configured.
+- `503` with `status: "degraded"` when required dependencies such as Supabase,
+  chat model credentials, or embedding credentials are missing.
 
 ## Admin Workflow
 
