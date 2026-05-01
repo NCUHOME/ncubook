@@ -106,10 +106,14 @@ git commit -m "feat(api): add launch health check"
 
 - [ ] Verify the floating assistant opens on desktop and mobile.
 - [ ] Verify homepage quick prompts open the assistant and submit the query.
-- [ ] Improve low-confidence answer display so weak / none retrieval is obvious to users.
-- [ ] Keep source preview visible and clickable.
-- [ ] Run `pnpm typecheck` and `pnpm build`.
-- [ ] Commit.
+- [x] Improve low-confidence answer display so weak / none retrieval is obvious to users.
+- [x] Keep source preview visible and clickable.
+- [x] Run `pnpm typecheck` and `pnpm build`.
+- [x] Commit.
+
+Implementation note: the first Day 1 pass added a tested retrieval metadata helper
+and upgraded the answer evidence block so students can see retrieval confidence,
+source count, query log id, top sources, and explicit weak / none trust notices.
 
 ## Day 2: Ops Dashboard Credibility
 

@@ -19,6 +19,7 @@
     "notion:import": "node scripts/notion-content-sync.mjs import",
     "notion:export:dry": "node scripts/notion-content-sync.mjs export:dry",
     "notion:export": "node scripts/notion-content-sync.mjs export",
+    "test:ai-assistant-meta": "node scripts/test-ai-assistant-meta.mjs",
     "test:notion-sync": "node scripts/test-notion-content-sync.mjs",
     "typecheck": "tsc"
   },

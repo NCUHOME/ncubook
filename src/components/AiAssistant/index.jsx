@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from '@docusaurus/router';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { AlertTriangle, BookOpenCheck, ShieldCheck } from 'lucide-react';
 import styles from './styles.module.css';
 import { FEEDBACK_FORM_URL } from '@site/src/constants/feedback';
+import { getRetrievalMeta, shouldShowTrustNotice } from './answerMeta.mjs';
 
 const API_URL = 'https://ncubook-api.vercel.app/api/chat';
 const FEEDBACK_API_URL = 'https://ncubook-api.vercel.app/api/feedback';
@@ -27,13 +29,6 @@ function parseTopSourcesHeader(value) {
         return [];
     }
 }
-
-const RETRIEVAL_LABELS = {
-    strong: '高可信命中',
-    partial: '部分命中',
-    weak: '弱命中，需核实',
-    none: '未命中，需补来源',
-};
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false);
@@ -350,26 +345,53 @@ export default function AiAssistant() {
             return null;
         }
 
-        const topSource = msg.topSources?.[0];
+        const meta = getRetrievalMeta(msg.retrievalState, msg.sourceCount);
+        const topSources = Array.isArray(msg.topSources) ? msg.topSources.slice(0, 3) : [];
+        const toneClass = {
+            strong: styles.retrievalStrong,
+            partial: styles.retrievalPartial,
+            weak: styles.retrievalWeak,
+            none: styles.retrievalNone,
+            unknown: styles.retrievalUnknown,
+        }[meta.tone] || styles.retrievalUnknown;
+        const StatusIcon = shouldShowTrustNotice(meta) ? AlertTriangle : ShieldCheck;
 
         return (
-            <div className={styles.answerMeta}>
-                <span>{RETRIEVAL_LABELS[msg.retrievalState] || msg.retrievalState || '等待检索'}</span>
-                <span>{Number(msg.sourceCount || 0)} 条来源</span>
-                {msg.queryLogId && <span>ID {msg.queryLogId.slice(0, 8)}</span>}
-                {topSource && (
-                    <a
-                        className={styles.sourcePreview}
-                        href={topSource.href}
-                        onClick={(e) => {
-                            if (topSource.href.startsWith('/')) {
-                                e.preventDefault();
-                                handleNavigate(topSource.href);
-                            }
-                        }}
-                    >
-                        来源：{topSource.title}
-                    </a>
+            <div className={styles.answerEvidence}>
+                {shouldShowTrustNotice(meta) && (
+                    <div className={`${styles.trustNotice} ${meta.tone === 'none' ? styles.trustNoticeNone : styles.trustNoticeWeak}`}>
+                        <AlertTriangle size={15} strokeWidth={1.9} aria-hidden="true" />
+                        <span>{meta.notice}</span>
+                    </div>
+                )}
+                <div className={styles.answerMeta}>
+                    <span className={`${styles.retrievalPill} ${toneClass}`}>
+                        <StatusIcon size={13} strokeWidth={2} aria-hidden="true" />
+                        {meta.label}
+                    </span>
+                    <span>{Number(msg.sourceCount || 0)} 条来源</span>
+                    {msg.queryLogId && <span>ID {msg.queryLogId.slice(0, 8)}</span>}
+                </div>
+                {topSources.length > 0 && (
+                    <div className={styles.sourceList} aria-label="回答引用来源">
+                        {topSources.map((source, sourceIndex) => (
+                            <a
+                                key={`${source.href}-${sourceIndex}`}
+                                className={styles.sourcePreview}
+                                href={source.href}
+                                onClick={(e) => {
+                                    if (source.href.startsWith('/')) {
+                                        e.preventDefault();
+                                        handleNavigate(source.href);
+                                    }
+                                }}
+                            >
+                                <BookOpenCheck size={13} strokeWidth={1.9} aria-hidden="true" />
+                                <span>{source.title}</span>
+                                {source.heading && <em>{source.heading}</em>}
+                            </a>
+                        ))}
+                    </div>
                 )}
             </div>
         );
