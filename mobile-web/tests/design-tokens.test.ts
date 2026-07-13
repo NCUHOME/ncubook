@@ -39,8 +39,8 @@ describe("editorial monochrome token contract", () => {
     expect(source).toContain("data-review-width={String(width)}");
   });
 
-  it("prevents new review components from bypassing semantic tokens", () => {
-    const roots = [resolve(process.cwd(), "app/design-system"), resolve(process.cwd(), "src/components")];
+  it("prevents application components from bypassing semantic tokens", () => {
+    const roots = [resolve(process.cwd(), "app"), resolve(process.cwd(), "src/components")];
     const files = roots.flatMap((root) => collectTsx(root));
     const forbidden = [
       /#[0-9a-f]{3,8}/i,
