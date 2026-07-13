@@ -53,7 +53,8 @@ type Block =
   | (BaseBlock & { type: "paragraph" | "quote"; richText: RichText })
   | (BaseBlock & { type: "heading"; level: 1 | 2 | 3; richText: RichText })
   | (BaseBlock & { type: "bulleted-list" | "numbered-list"; items: Array<{ id: string; richText: RichText; children: Block[] }> })
-  | (BaseBlock & { type: "callout"; tone: "info" | "warning" | "risk"; icon?: string; richText: RichText })
+  | (BaseBlock & { type: "callout"; tone: "info" | "warning" | "risk"; icon?: string; richText: RichText; children: Block[] })
+  | (BaseBlock & { type: "divider" })
   | (BaseBlock & { type: "table"; hasHeaderRow: boolean; rows: Array<{ id: string; cells: RichText[] }> })
   | (BaseBlock & { type: "image"; assetId: string; caption?: RichText })
   | (BaseBlock & { type: "file"; assetId: string; name: string; caption?: RichText })
@@ -67,6 +68,7 @@ type Block =
 - 已删除块的旧 anchor 返回同页的“内容已更新”提示，并提供最近可用的上级标题；不得默默跳到无关文本。
 - `Block` 判别联合是唯一的发布端块 schema；未知块不得进入 `Block`。同步器必须把它作为发布失败记录，不得用猜测字段或纯文本替代。
 - `columns` 数组顺序就是阅读顺序；手机按数组顺序堆叠。`table.rows` 的第一个 row 在 `hasHeaderRow` 为真时必须为表头。
+- `callout.children` 保留 Notion 提示块内的原始子块顺序；`divider` 只保存稳定身份与锚点，不生成搜索文本。
 - `RichText.href` 是公开外链；`pageId` 是站内页面链接。两者不可同时存在；发布端将 `pageId` 解析为站内路由。
 
 ## Asset 和 embed

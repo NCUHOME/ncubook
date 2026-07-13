@@ -21,3 +21,12 @@
 - 实现 revision：`2662f58405c905e4b923870df46deca6a2128252`
 - 已批准截图目录：`mobile-web/e2e/__screenshots__/mobile-360/`、`mobile-web/e2e/__screenshots__/mobile-390/`、`mobile-web/e2e/__screenshots__/mobile-430/`
 - 备注：项目负责人已明确回复“批准 Gate B”；批准矩阵覆盖首页、板块首页、长文、页面树、关键词搜索和 AI 回答六种状态，每种状态均包含 360/390/430px 真实浏览器截图。
+
+## Gate C：真实内容结构扩展
+
+- 状态：approved
+- 批准人：项目负责人 water
+- 批准日期：2026-07-13
+- 批准范围：首次发布 schema 增加 `divider` 和嵌套 callout；恢复并使用既有 Supabase 项目作为 staging；通过已登录浏览器创建并配置只读 Notion Integration 与 Supabase 服务端运行时凭据；为旧空表 `public.documents` 启用 RLS。
+- 视觉约束：分割线只使用既有边线令牌；callout 子块保留在既有低干扰提示容器内；不得引入卡片化重写、新颜色、新图标或页面私有样式。
+- 批准原话：项目负责人在收到三项授权清单后明确回复“批准全部做掉”。
