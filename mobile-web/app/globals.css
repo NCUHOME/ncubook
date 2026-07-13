@@ -1,70 +1,137 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f8f5ee;
+  --canvas: #ffffff;
   --surface: #ffffff;
-  --surface-soft: #f0ede5;
-  --ink: #171915;
-  --muted: #676b61;
-  --line: #dfd8cc;
-  --green: #0a6b4e;
-  --green-soft: #dcefe6;
-  --amber: #9b5a12;
-  --amber-soft: #f5e6cf;
-  --blue: #2e5f87;
-  --blue-soft: #dbe9f2;
+  --surface-subtle: #f5f5f5;
+  --text: #111111;
+  --text-muted: #666666;
+  --border: #dedede;
+  --action: #111111;
+  --action-subtle: #f2f2f2;
+  --info: #2e5f87;
+  --warning: #9b5a12;
   --danger: #9f3d2e;
+  --focus: #111111;
+  --font-family-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+  --font-family-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-family-display: "Songti SC", STSong, SimSun, serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --font-size-caption: 12px;
+  --font-size-label: 14px;
+  --font-size-body: 16px;
+  --font-size-body-large: 18px;
+  --font-size-title: 22px;
+  --font-size-heading: 28px;
+  --font-size-display: 36px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --line-height-ui: 1.4;
+  --line-height-body: 1.7;
+  --line-height-heading: 1.25;
+  --corner-small: 8px;
+  --corner-medium: 12px;
+  --corner-large: 16px;
+  --corner-round: 999px;
+  --icon-small: 16px;
+  --icon: 20px;
+  --icon-large: 24px;
+  --tap-target: 44px;
+  --border-default: 1px;
+  --elevation-floating: 0 8px 24px rgba(17, 17, 17, 0.14);
+  --layer-base: 0;
+  --layer-header: 10;
+  --layer-floating-action: 20;
+  --layer-drawer: 30;
+  --layer-modal: 40;
+  --motion-fast: 120ms;
+  --motion-standard: 200ms;
 }
 
-* {
-  box-sizing: border-box;
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-line: var(--border);
+  --color-action: var(--action);
+  --color-action-subtle: var(--action-subtle);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
+  --font-sans: var(--font-family-ui);
+  --font-body: var(--font-family-body);
+  --font-display: var(--font-family-display);
+  --spacing-s1: var(--space-1);
+  --spacing-s2: var(--space-2);
+  --spacing-s3: var(--space-3);
+  --spacing-s4: var(--space-4);
+  --spacing-s5: var(--space-5);
+  --spacing-s6: var(--space-6);
+  --spacing-s7: var(--space-7);
+  --spacing-icon-small: var(--icon-small);
+  --spacing-icon: var(--icon);
+  --spacing-icon-large: var(--icon-large);
+  --spacing-tap: var(--tap-target);
+  --text-caption: var(--font-size-caption);
+  --text-label: var(--font-size-label);
+  --text-body: var(--font-size-body);
+  --text-body-large: var(--font-size-body-large);
+  --text-title: var(--font-size-title);
+  --text-heading: var(--font-size-heading);
+  --text-display: var(--font-size-display);
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+  --leading-ui: var(--line-height-ui);
+  --leading-body: var(--line-height-body);
+  --leading-heading: var(--line-height-heading);
+  --radius-small: var(--corner-small);
+  --radius-medium: var(--corner-medium);
+  --radius-large: var(--corner-large);
+  --radius-round: var(--corner-round);
+  --border-width-default: var(--border-default);
+  --shadow-floating: var(--elevation-floating);
+  --duration-fast: var(--motion-fast);
+  --duration-standard: var(--motion-standard);
 }
 
-html {
-  background: var(--paper);
+@utility z-base { z-index: var(--layer-base); }
+@utility z-header { z-index: var(--layer-header); }
+@utility z-floating-action { z-index: var(--layer-floating-action); }
+@utility z-drawer { z-index: var(--layer-drawer); }
+@utility z-modal { z-index: var(--layer-modal); }
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--canvas);
+  color: var(--text);
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    linear-gradient(90deg, rgba(23, 25, 21, 0.035) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(23, 25, 21, 0.025) 1px, transparent 1px),
-    var(--paper);
-  background-size: 22px 22px;
-  color: var(--ink);
-  font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
-  letter-spacing: 0;
+  font-family: var(--font-family-ui);
+  -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input,
-textarea {
-  font: inherit;
-}
-
-.mobile-shell {
-  width: min(100%, 480px);
-  min-height: 100vh;
-  margin: 0 auto;
-  background: rgba(248, 245, 238, 0.92);
-  border-inline: 1px solid rgba(23, 25, 21, 0.06);
-}
-
-.sans {
-  font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif;
-}
-
-.tap-target {
-  min-height: 44px;
-}
-
-.focus-ring:focus-visible {
-  outline: 3px solid rgba(10, 107, 78, 0.24);
-  outline-offset: 2px;
-}
+a { color: inherit; text-decoration: none; }
+button, input, textarea { font: inherit; }
+.font-display { font-family: var(--font-family-display); }
+.font-body { font-family: var(--font-family-body); }
+.tap-target { min-width: var(--tap-target); min-height: var(--tap-target); }
+.focus-ring:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.mobile-shell { width: min(100%, 760px); min-height: 100vh; margin-inline: auto; background: var(--canvas); }

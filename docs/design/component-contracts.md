@@ -14,3 +14,16 @@
 | `CalloutBlock` | 呈现提醒语义 | 以低干扰视觉区分信息/提醒/风险 | 用作营销横幅或替代正文层级 |
 | `TableBlock` | 呈现表格 | 手机横向滚动、固定/清晰表头、可读内容 | 删除列、把数据改写为图形卡片 |
 | `ColumnsBlock` | 呈现并列内容 | 宽屏并列、手机顺序堆叠 | 在窄屏保留不可读的双列 |
+| `AskProvider` | 为首页与文档页提供唯一提问宿主 | 区分页面上下文、持久化草稿/回答、恢复返回状态 | 与关键词搜索复用提交路径 |
+| `QuestionForm` | 发起 AI 提问 | 可见标签、提交状态、调用 `AskProvider` | 导航到 `/search` 或人格化迎宾 |
+| `RichText` | 保留发布富文本语义 | 支持批准的 annotations、站内 pageId 与外链 | 猜测未知标记或同时使用 href/pageId |
+| `ImageBlock` | 渲染站内镜像图片 | 解析 Asset、展示 alt/caption、失败降级 | 使用 Notion 临时 URL |
+| `ListBlock` | 渲染有序/无序嵌套列表 | 保留顺序、层级和 item 稳定锚点 | 拆成卡片或丢弃 children |
+| `FileBlock` | 渲染附件 | 展示文件名、caption 与公开资源链接 | 静默隐藏失败附件 |
+| `EmbedBlock` | 渲染允许的嵌入 | 仅支持 allowlist provider，失败时给外链 | 注入任意 iframe |
+| `PageLinkBlock` | 渲染站内页面引用 | 通过 pageId 解析站内路由 | 将站内链接退化为 Notion 链接 |
+| `HomePageView` | 组合首页提问与场景入口 | 首屏提问优先、入口不超过 6 个 | 最近卡片、营销区或卡片墙抢占首屏 |
+| `SectionPageView` | 组合自由板块导读 | 保留富内容并提供线性子页面入口 | 将板块固定成分类卡片模板 |
+| `DocumentPageView` | 组合阅读器文档页 | 正文优先、工具按需唤起 | 固定双侧栏或重写正文 |
+| `SearchPageView` | 组合关键词搜索结果 | 仅呈现原文命中与锚点 | 调用 AI 或生成摘要 |
+| `ReviewSamples` | 隔离审阅设计系统 | 同时呈现 360/390/430px 与关键状态 | 作为生产页面入口或绕过令牌 |
