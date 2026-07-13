@@ -1,4 +1,6 @@
 create extension if not exists pgcrypto;
+create extension if not exists vector;
+create extension if not exists pg_trgm;
 
 create table if not exists content_versions (
   id text primary key,
@@ -80,12 +82,17 @@ create table if not exists published_search_entries (
   check (anchor = 'b-' || source_block_id)
 );
 
+alter table published_search_entries
+  add column if not exists embedding vector(1536);
+
 create index if not exists published_pages_parent_idx
   on published_pages (content_version, parent_source_page_id);
 create index if not exists published_blocks_page_order_idx
   on published_blocks (content_version, source_page_id, ordinal);
 create index if not exists published_search_entries_vector_idx
   on published_search_entries using gin (search_vector);
+create index if not exists published_search_entries_embedding_idx
+  on published_search_entries using hnsw (embedding vector_cosine_ops);
 
 create table if not exists publication_failures (
   id uuid primary key default gen_random_uuid(),
@@ -265,6 +272,67 @@ grant execute on function commit_published_content_version(text, text, text, jso
 grant execute on function rollback_published_content_version(text, text) to service_role;
 grant execute on function fail_published_content_version(text, text, text, text, text) to service_role;
 grant execute on function unreferenced_published_asset_urls(interval) to service_role;
+
+create or replace function retrieve_published_sources(
+  p_question text,
+  p_query_embedding vector(1536),
+  p_limit integer default 24
+)
+returns table (
+  source_id text,
+  page_id text,
+  page_title text,
+  anchor text,
+  section_path text[],
+  exact_text text,
+  risk_level text,
+  school text,
+  content_version text,
+  lexical_score double precision,
+  vector_score double precision,
+  source_urls jsonb
+)
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select
+    entry.source_block_id,
+    entry.source_page_id,
+    entry.page_title,
+    entry.anchor,
+    entry.section_path,
+    entry.plain_text,
+    coalesce(page.metadata->>'riskLevel', 'normal'),
+    page.metadata->>'school',
+    entry.content_version,
+    greatest(
+      similarity(lower(entry.plain_text), lower(p_question)),
+      case when position(lower(p_question) in lower(entry.plain_text)) > 0 then 1.0 else 0.0 end
+    )::double precision,
+    case when p_query_embedding is null or entry.embedding is null then 0.0
+      else (1 - (entry.embedding <=> p_query_embedding))::double precision end,
+    coalesce(page.metadata->'sourceUrls', '[]'::jsonb)
+  from published_search_entries entry
+  join published_pages page
+    on page.content_version = entry.content_version and page.source_page_id = entry.source_page_id
+  where entry.content_version = (
+      select pointer.content_version
+      from published_content_pointer pointer
+      join content_versions version on version.id = pointer.content_version and version.status = 'published'
+      where pointer.singleton = true
+    )
+    and page.metadata->>'school' = 'ncu'
+  order by
+    (greatest(similarity(lower(entry.plain_text), lower(p_question)), case when position(lower(p_question) in lower(entry.plain_text)) > 0 then 1.0 else 0.0 end)
+      + case when p_query_embedding is null or entry.embedding is null then 0.0 else 2 * (1 - (entry.embedding <=> p_query_embedding)) end) desc,
+    entry.source_block_id asc
+  limit least(greatest(p_limit, 1), 50)
+$$;
+
+revoke all on function retrieve_published_sources(text, vector, integer) from public;
+grant execute on function retrieve_published_sources(text, vector, integer) to service_role;
 
 create or replace function current_published_content_version()
 returns text

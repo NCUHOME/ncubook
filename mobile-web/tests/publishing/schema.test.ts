@@ -58,4 +58,15 @@ describe("versioned published content schema", () => {
     expect(sql).toMatch(/create or replace function rollback_published_content_version\s*\(/i);
     expect(sql).toMatch(/create or replace function fail_published_content_version\s*\(/i);
   });
+
+  it("retrieves grounding sources only through the current NCU content version", () => {
+    const sql = readFileSync(migrationPath, "utf8");
+    expect(sql).toMatch(/create extension if not exists vector/i);
+    expect(sql).toMatch(/add column if not exists embedding vector\(1536\)/i);
+    expect(sql).toMatch(/create or replace function retrieve_published_sources\s*\(/i);
+    const retrieval = sql.slice(sql.indexOf("create or replace function retrieve_published_sources"));
+    expect(retrieval).toContain("published_content_pointer");
+    expect(retrieval).toMatch(/metadata->>'school'\s*=\s*'ncu'/i);
+    expect(retrieval).toContain("source_urls");
+  });
 });

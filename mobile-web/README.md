@@ -69,3 +69,15 @@ npm run test:visual
 ```
 
 正式切换前还需在一次 staging 发布中覆盖所有支持的 Notion block，并在退出 Notion 登录后验证公开页面。
+
+## 可溯源问答发布
+
+`AI_ANSWER_MODE=fixture` 仅供本地交互；`shadow` 会运行检索与模型校验但只向学生返回 insufficient；`production` 才展示经确定性来源校验后的结论。生产部署未明确设置模式时默认 shadow。关键词搜索走独立的 `/api/search`，不会调用 embedding 或聊天模型。
+
+启用 production 前在 staging 运行：
+
+```bash
+ANSWER_EVAL_ENDPOINT=https://staging.example.edu/api/ask npm run eval:answers
+```
+
+评测必须达到 `evals/thresholds.json`，其中 citation 有效率必须为 100%，敏感问题不允许出现无支持事实。模型辅助的语义支持评分只能提供人工复核线索，不能单独批准上线。异常时立即将 `AI_ANSWER_MODE` 改为 `shadow`，再轮换 `AI_PROVIDER_API_KEY`；该操作不影响关键词搜索和文档阅读。

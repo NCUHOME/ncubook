@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --grep-invert @visual",
     "test:visual": "playwright test --grep @visual",
-    "publish:notion": "node scripts/publish-notion.ts"
+    "publish:notion": "node scripts/publish-notion.ts",
+    "eval:answers": "node scripts/run-answer-evals.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.19",
