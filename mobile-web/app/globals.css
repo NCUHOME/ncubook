@@ -130,6 +130,7 @@ body {
 
 a { color: inherit; text-decoration: none; }
 button, input, textarea { font: inherit; }
+blockquote, figure { margin: 0; }
 .font-display { font-family: var(--font-family-display); }
 .font-body { font-family: var(--font-family-body); }
 .tap-target { min-width: var(--tap-target); min-height: var(--tap-target); }

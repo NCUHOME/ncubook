@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">校园交通路线示意</title>
+  <desc id="desc">黑白示意图展示三个校园站点和连接路线</desc>
+  <rect width="720" height="360" fill="white"/>
+  <path d="M80 280 C210 80 360 300 640 80" fill="none" stroke="#111" stroke-width="8"/>
+  <g fill="white" stroke="#111" stroke-width="6">
+    <circle cx="100" cy="250" r="18"/>
+    <circle cx="355" cy="210" r="18"/>
+    <circle cx="620" cy="100" r="18"/>
+  </g>
+  <g font-family="sans-serif" font-size="22" fill="#111">
+    <text x="70" y="315">南门</text><text x="320" y="255">体育馆</text><text x="580" y="65">医学院</text>
+  </g>
+</svg>

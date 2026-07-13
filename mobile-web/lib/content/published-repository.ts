@@ -36,6 +36,20 @@ export function getSectionTree(sectionSlug: string): PageTreeNode[] {
   return childrenOf(section.id);
 }
 
+export function getSectionChildren(sectionSlug: string): Page[] {
+  const section = publishedFixture.pages.find((page) => page.slug === sectionSlug && page.parentId === null);
+  if (!section) return [];
+  return publishedFixture.pages.filter((page) => page.parentId === section.id && page.status === "published");
+}
+
+export function getSectionForPage(pageId: string): Page | null {
+  let page = publishedFixture.pages.find((candidate) => candidate.id === pageId) ?? null;
+  while (page?.parentId) {
+    page = publishedFixture.pages.find((candidate) => candidate.id === page?.parentId) ?? null;
+  }
+  return page?.parentId === null ? page : null;
+}
+
 export function getAsset(assetId: string): Asset | null {
   return publishedFixture.assets.find((asset) => asset.id === assetId) ?? null;
 }
