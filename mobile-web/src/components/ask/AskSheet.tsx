@@ -30,7 +30,7 @@ export function AskSheet({ open, onOpenChange, question, pageContext, draft, onD
             <Dialog.Title className="text-title leading-heading font-semibold">询问此间</Dialog.Title>
             <Dialog.Close asChild><button type="button" className="focus-ring tap-target grid place-items-center rounded-round" aria-label="关闭回答"><X className="size-icon" /></button></Dialog.Close>
           </div>
-          {pageContext ? <div className="border-b border-line py-s4"><p className="text-caption text-muted">正在询问当前文档</p><p className="mt-s1 text-label">{pageContext.pageId}{pageContext.anchor ? ` · ${pageContext.anchor}` : ""}</p></div> : null}
+          {pageContext ? <div className="border-b border-line py-s4"><p className="text-label text-muted">{pageContext.anchor ? "基于当前文档与所在段落" : "基于当前文档"}</p></div> : null}
           <div className="max-h-[58vh] overflow-y-auto py-s5">
             <p className="text-caption text-muted">你的问题</p>
             <p className="mt-s2 font-display text-heading leading-heading font-semibold">{question || "输入你想了解的问题"}</p>

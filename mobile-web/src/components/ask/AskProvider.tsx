@@ -56,8 +56,8 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi }: 
   }, [requestAnswer]);
 
   useEffect(() => {
-    function restore(event: PopStateEvent) {
-      const answerSession = (event.state as { answerSession?: string } | null)?.answerSession;
+    function restoreState(state: unknown) {
+      const answerSession = (state as { answerSession?: string } | null)?.answerSession;
       if (!answerSession) return;
       const serialized = sessionStorage.getItem(`answer-session:${answerSession}`);
       if (!serialized) return;
@@ -75,8 +75,22 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi }: 
         sessionStorage.removeItem(`answer-session:${answerSession}`);
       }
     }
+
+    function restore(event: PopStateEvent) {
+      restoreState(event.state);
+    }
+
+    function restoreCurrentEntry() {
+      restoreState(window.history.state);
+    }
+
+    restoreCurrentEntry();
     window.addEventListener("popstate", restore);
-    return () => window.removeEventListener("popstate", restore);
+    window.addEventListener("pageshow", restoreCurrentEntry);
+    return () => {
+      window.removeEventListener("popstate", restore);
+      window.removeEventListener("pageshow", restoreCurrentEntry);
+    };
   }, []);
 
   const persistSession = useCallback(() => {
