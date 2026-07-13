@@ -37,4 +37,29 @@ describe("article renderer", () => {
     expect(screen.queryByTitle("外部地图")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /打开外部地图/ })).toHaveAttribute("href", unsafe.canonicalUrl);
   });
+
+  it("renders a divider and preserves nested callout content", () => {
+    const blocks: Block[] = [
+      { id: "divider", anchor: "b-divider", type: "divider" },
+      {
+        id: "notice",
+        anchor: "b-notice",
+        type: "callout",
+        tone: "info",
+        richText: [{ plainText: "公告", annotations: {} }],
+        children: [{
+          id: "notice-list",
+          anchor: "b-notice-list",
+          type: "bulleted-list",
+          items: [{ id: "notice-item", richText: [{ plainText: "请每个新生观看新生必看", annotations: {} }], children: [] }],
+        }],
+      },
+    ];
+
+    render(<ArticleRenderer blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />);
+
+    expect(screen.getByRole("separator")).toHaveAttribute("id", "b-divider");
+    expect(screen.getByText("公告")).toBeVisible();
+    expect(screen.getByText("请每个新生观看新生必看")).toBeVisible();
+  });
 });

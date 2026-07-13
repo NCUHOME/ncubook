@@ -1,6 +1,7 @@
 import type { Asset, Block } from "@/lib/content/published-schema";
 import { CalloutBlock } from "@/src/components/article/CalloutBlock";
 import { ColumnsBlock } from "@/src/components/article/ColumnsBlock";
+import { DividerBlock } from "@/src/components/article/DividerBlock";
 import { EmbedBlock } from "@/src/components/article/EmbedBlock";
 import { FileBlock } from "@/src/components/article/FileBlock";
 import { ImageBlock } from "@/src/components/article/ImageBlock";
@@ -16,14 +17,23 @@ export type ArticleRendererProps = {
 };
 
 export function ArticleRenderer({ blocks, getAsset, resolvePageRoute }: ArticleRendererProps) {
-  return <div className="space-y-s5">{blocks.map((block) => {
+  return <ArticleBlockList blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="space-y-s5" />;
+}
+
+function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: ArticleRendererProps & { className: string }) {
+  return <div className={className}>{blocks.map((block) => {
     switch (block.type) {
       case "paragraph": return <p id={block.anchor} key={block.id} className="font-body text-body leading-body"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>;
       case "quote": return <blockquote id={block.anchor} key={block.id} className="border-l border-ink pl-s4 font-body text-body leading-body text-muted"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></blockquote>;
       case "heading": return <HeadingBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
       case "bulleted-list":
       case "numbered-list": return <ListBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
-      case "callout": return <CalloutBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
+      case "callout": return <CalloutBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
+        {block.children.length > 0
+          ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3" />
+          : null}
+      </CalloutBlock>;
+      case "divider": return <DividerBlock key={block.id} block={block} />;
       case "table": return <TableBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
       case "columns": return <ColumnsBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
       case "image": return <ImageBlock key={block.id} block={block} asset={getAsset(block.assetId)} resolvePageRoute={resolvePageRoute} />;

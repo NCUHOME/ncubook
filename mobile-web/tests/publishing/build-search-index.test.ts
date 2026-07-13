@@ -27,16 +27,22 @@ describe("deterministic published search entries", () => {
       { id: "north", anchor: "b-north", type: "heading", level: 3, richText: text("前湖校区") },
       { id: "stop", anchor: "b-stop", type: "paragraph", richText: text("从体育馆上车") },
       { id: "fare", anchor: "b-fare", type: "heading", level: 2, richText: text("收费") },
-      { id: "price", anchor: "b-price", type: "callout", tone: "info", richText: text("单次 0.9 元") },
+      {
+        id: "price", anchor: "b-price", type: "callout", tone: "info", richText: text("单次 0.9 元"),
+        children: [{ id: "payment", anchor: "b-payment", type: "paragraph", richText: text("支持扫码付款") }],
+      },
+      { id: "divider", anchor: "b-divider", type: "divider" },
     ];
 
     const entries = buildSearchIndex(page(), blocks, ["校园生活"]);
 
     expect(entries.map((entry) => entry.id)).toEqual([
-      "content-v2-intro", "content-v2-route", "content-v2-north", "content-v2-stop", "content-v2-fare", "content-v2-price",
+      "content-v2-intro", "content-v2-route", "content-v2-north", "content-v2-stop", "content-v2-fare", "content-v2-price", "content-v2-payment",
     ]);
     expect(entries.find((entry) => entry.id.endsWith("-stop"))?.sectionPath).toEqual(["校园生活", "路线", "前湖校区"]);
     expect(entries.find((entry) => entry.id.endsWith("-price"))?.sectionPath).toEqual(["校园生活", "收费"]);
+    expect(entries.find((entry) => entry.id.endsWith("-payment"))?.plainText).toBe("支持扫码付款");
+    expect(entries.some((entry) => entry.id.endsWith("-divider"))).toBe(false);
   });
 
   it("indexes table rows and list items at their rendered stable anchors", () => {

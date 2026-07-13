@@ -80,7 +80,21 @@ const richBlocks: Block[] = [
     type: "numbered-list",
     items: [{ id: "number-one", richText: text("保留有序步骤"), children: [] }],
   },
-  { id: "rich-callout", anchor: "b-rich-callout", type: "callout", tone: "info", icon: "info", richText: text("这是一条低干扰提示。") },
+  { id: "rich-divider", anchor: "b-rich-divider", type: "divider" },
+  {
+    id: "rich-callout",
+    anchor: "b-rich-callout",
+    type: "callout",
+    tone: "info",
+    icon: "info",
+    richText: text("这是一条低干扰提示。"),
+    children: [{
+      id: "rich-callout-list",
+      anchor: "b-rich-callout-list",
+      type: "bulleted-list",
+      items: [{ id: "rich-callout-item", richText: text("提示块内的原始子内容会被保留。"), children: [] }],
+    }],
+  },
   {
     id: "rich-table",
     anchor: "b-rich-table",

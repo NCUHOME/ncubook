@@ -28,6 +28,7 @@ describe("published document fixture", () => {
         "bulleted-list",
         "numbered-list",
         "callout",
+        "divider",
         "table",
         "image",
         "file",

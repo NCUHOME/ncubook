@@ -81,13 +81,24 @@ describe("Notion block normalization", () => {
       .toThrow(new UnsupportedNotionBlockError("toggle-id", "toggle"));
   });
 
-  it("rejects callout children instead of silently discarding their content", () => {
+  it("preserves dividers and recursive callout children", () => {
     const nestedCallout = node(
       { id: "callout-id", type: "callout", callout: { rich_text: rich("公告"), color: "gray_background" } },
       [node({ id: "nested-item", type: "bulleted_list_item", bulleted_list_item: { rich_text: rich("新生必看") } })],
     );
 
-    expect(() => normalizeNotionBlocks([nestedCallout]))
-      .toThrow(new UnsupportedNotionBlockError("callout-id", "callout_with_children"));
+    expect(normalizeNotionBlocks([
+      node({ id: "divider-id", type: "divider", divider: {} }),
+      nestedCallout,
+    ])).toMatchObject([
+      { id: "divider-id", anchor: "b-divider-id", type: "divider" },
+      {
+        id: "callout-id",
+        anchor: "b-callout-id",
+        type: "callout",
+        richText: [{ plainText: "公告" }],
+        children: [{ type: "bulleted-list", items: [{ id: "nested-item", richText: [{ plainText: "新生必看" }] }] }],
+      },
+    ]);
   });
 });

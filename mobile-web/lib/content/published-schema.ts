@@ -32,7 +32,8 @@ export type Block =
       type: "bulleted-list" | "numbered-list";
       items: Array<{ id: string; richText: RichText; children: Block[] }>;
     })
-  | (BaseBlock & { type: "callout"; tone: "info" | "warning" | "risk"; icon?: string; richText: RichText })
+  | (BaseBlock & { type: "callout"; tone: "info" | "warning" | "risk"; icon?: string; richText: RichText; children: Block[] })
+  | (BaseBlock & { type: "divider" })
   | (BaseBlock & {
       type: "table";
       hasHeaderRow: boolean;

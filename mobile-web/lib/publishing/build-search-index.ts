@@ -36,9 +36,12 @@ export function buildSearchIndex(
       switch (block.type) {
         case "paragraph":
         case "quote":
-        case "callout":
         case "page-link":
           addEntry(block.id, block.anchor, richText(block.richText), block.type);
+          break;
+        case "callout":
+          addEntry(block.id, block.anchor, richText(block.richText), "callout");
+          visit(block.children);
           break;
         case "heading": {
           const title = richText(block.richText);
@@ -74,6 +77,7 @@ export function buildSearchIndex(
           if (block.caption) addEntry(block.id, block.anchor, richText(block.caption), "paragraph");
           break;
         case "embed":
+        case "divider":
           break;
         default:
           assertNever(block);
