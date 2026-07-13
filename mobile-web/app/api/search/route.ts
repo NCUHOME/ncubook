@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSearchIndex, resolvePageRoute } from "@/lib/content/published-repository";
+import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
 import { searchEntries } from "@/lib/search/search-blocks";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
-  const results = searchEntries(query, getSearchIndex(), resolvePageRoute);
+  const repository = await loadPublishedRepository();
+  const results = searchEntries(query, repository.getSearchIndex(), repository.resolvePageRoute);
   return NextResponse.json({ query, results });
 }
 

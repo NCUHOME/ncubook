@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { validateAnswerSession, type AnswerSession } from "@/lib/answers/session";
+import { resolvePageRoute as resolveFixturePageRoute } from "@/lib/content/published-repository";
 import { AskSheet } from "@/src/components/ask/AskSheet";
 
 export type PageContext = { pageId: string; anchor?: string };
@@ -27,7 +28,7 @@ async function requestAnswerFromApi(input: { question: string; pageContext?: Pag
   return response.json() as Promise<AnswerSession>;
 }
 
-export function AskProvider({ children, requestAnswer = requestAnswerFromApi }: { children: ReactNode; requestAnswer?: AnswerRequest }) {
+export function AskProvider({ children, requestAnswer = requestAnswerFromApi, resolvePageRoute = resolveFixturePageRoute }: { children: ReactNode; requestAnswer?: AnswerRequest; resolvePageRoute?: (pageId: string) => string }) {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [pageContext, setPageContext] = useState<PageContext | undefined>();
@@ -129,6 +130,7 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi }: 
         session={session}
         error={error}
         onCitationNavigate={persistSession}
+        resolvePageRoute={resolvePageRoute}
       />
     </AskContext.Provider>
   );

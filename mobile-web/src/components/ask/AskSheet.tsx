@@ -2,7 +2,6 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUp, X } from "lucide-react";
-import { resolvePageRoute } from "@/lib/content/published-repository";
 import type { AnswerSession } from "@/lib/answers/session";
 import type { AskStatus, PageContext } from "@/src/components/ask/AskProvider";
 
@@ -18,9 +17,10 @@ type AskSheetProps = {
   session: AnswerSession | null;
   error: string;
   onCitationNavigate: () => void;
+  resolvePageRoute: (pageId: string) => string;
 };
 
-export function AskSheet({ open, onOpenChange, question, pageContext, draft, onDraftChange, onSubmit, status, session, error, onCitationNavigate }: AskSheetProps) {
+export function AskSheet({ open, onOpenChange, question, pageContext, draft, onDraftChange, onSubmit, status, session, error, onCitationNavigate, resolvePageRoute }: AskSheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>

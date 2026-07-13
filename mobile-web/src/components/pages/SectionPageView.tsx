@@ -9,9 +9,11 @@ type SectionPageViewProps = {
   view: DocumentView;
   children: Page[];
   tree: PageTreeNode[];
+  getPublishedAsset?: typeof getAsset;
+  resolveRoute?: typeof resolvePageRoute;
 };
 
-export function SectionPageView({ view, children, tree }: SectionPageViewProps) {
+export function SectionPageView({ view, children, tree, getPublishedAsset = getAsset, resolveRoute = resolvePageRoute }: SectionPageViewProps) {
   const contentBlocks = view.blocks[0]?.type === "paragraph" ? view.blocks.slice(1) : view.blocks;
   return (
     <>
@@ -24,7 +26,7 @@ export function SectionPageView({ view, children, tree }: SectionPageViewProps) 
         </section>
         {contentBlocks.length > 0 ? (
           <section className="px-s5 py-s6">
-            <ArticleRenderer blocks={contentBlocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
+            <ArticleRenderer blocks={contentBlocks} getAsset={getPublishedAsset} resolvePageRoute={resolveRoute} />
           </section>
         ) : null}
         <section className="px-s5" aria-labelledby="section-pages-title">
@@ -33,7 +35,7 @@ export function SectionPageView({ view, children, tree }: SectionPageViewProps) 
             <span className="text-caption text-muted">{children.length} 篇</span>
           </div>
           {children.map((page) => (
-            <Link key={page.id} href={resolvePageRoute(page.id)} className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-body">
+            <Link key={page.id} href={resolveRoute(page.id)} className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-body">
               <span>{page.title}</span>
               <ChevronRight className="size-icon-small text-muted" strokeWidth={1.9} />
             </Link>
