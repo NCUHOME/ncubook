@@ -1,6 +1,6 @@
 # Requirements：移动端 AI 知识产品重构
 
-状态：草案。未经 `approval.md` 的人类批准，严禁实现。
+状态：已批准，revision `9bfc98aec9de50d4e49c2a903ca9e3620512262f`。
 
 ## R1：首页提问优先
 

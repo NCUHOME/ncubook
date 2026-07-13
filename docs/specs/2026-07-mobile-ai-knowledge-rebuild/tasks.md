@@ -1,6 +1,6 @@
 # Tasks：移动端 AI 知识产品重构
 
-状态：仅在 `approval.md` 记录 requirements、design 与视觉样张批准后执行
+状态：已批准，revision `9bfc98aec9de50d4e49c2a903ca9e3620512262f`；按 `approval.md` 的 Gate A 执行。
 
 ## 阶段 0：治理与基线
 
