@@ -12,8 +12,8 @@
 ## 阶段 1：内容发布能力
 
 - [x] T1.1 按 `docs/product/content-data-contract.md` 实现 page、block-tree、asset、anchor、search-index 的 TypeScript 数据契约。
-- [ ] T1.2 定义 Notion 写作约定及同步映射。
-- [ ] T1.3 实现资源下载/存储、稳定锚点与增量同步。
+- [x] T1.2 定义 Notion 写作约定及同步映射。实现 revisions `686dff1`、`9088bcd`。
+- [x] T1.3 实现资源下载/存储、稳定锚点与增量同步。实现 revisions `896d425`、`755a5b0`、`afb01e2`、`4fbe5e7`、`f443ea2`。
 - [x] T1.4 实现富内容 renderer，并以结构覆盖 fixture 作为首个基准；《新生必看》真实内容 fixture 留待 T3.4。
 
 ## 阶段 2：学生端页面
@@ -28,8 +28,8 @@
 
 - [x] T3.1 为关键组件与页面添加视觉基线。
 - [x] T3.2 为页面树、搜索、锚点、AI 上下文添加交互测试。
-- [ ] T3.3 验证内容同步、关键词索引与 AI 来源链路。
-- [ ] T3.4 迁移首批真实内容；保留 Docusaurus 作为迁移来源直到验收完成。
+- [x] T3.3 验证内容同步、关键词索引与 AI 来源链路。实现 revision `422dcf2`；production AI 仍由 `shadow` 默认开关保护，待 staging 内容版本和评测后启用。
+- [ ] T3.4 迁移首批真实内容；已按 Notion 页面树盘点 37 个公开页面并建立 manifest、parity、资源审计和切换回滚工具（revision `4195e3d`）。真实 staging 发布、逐页内容确认和生产切换尚未执行；Docusaurus 保持可部署。
 
 ## 需求追踪矩阵
 
