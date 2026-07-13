@@ -50,6 +50,7 @@ function normalizeSingle(node: NotionBlockNode, type: string): Block {
     case "heading_3":
       return { ...base, type: "heading", level: Number(type.at(-1)) as 1 | 2 | 3, richText: richText(payload(node, type).rich_text) };
     case "callout": {
+      if (node.children.length > 0) throw new UnsupportedNotionBlockError(node.id, "callout_with_children");
       const value = payload(node, type);
       return { ...base, type: "callout", tone: calloutTone(value.color), icon: calloutIcon(value.icon), richText: richText(value.rich_text) };
     }

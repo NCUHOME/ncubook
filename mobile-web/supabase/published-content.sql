@@ -268,6 +268,10 @@ revoke all on function commit_published_content_version(text, text, text, jsonb,
 revoke all on function rollback_published_content_version(text, text) from public;
 revoke all on function fail_published_content_version(text, text, text, text, text) from public;
 revoke all on function unreferenced_published_asset_urls(interval) from public;
+revoke all on function commit_published_content_version(text, text, text, jsonb, jsonb, jsonb, jsonb) from anon, authenticated;
+revoke all on function rollback_published_content_version(text, text) from anon, authenticated;
+revoke all on function fail_published_content_version(text, text, text, text, text) from anon, authenticated;
+revoke all on function unreferenced_published_asset_urls(interval) from anon, authenticated;
 grant execute on function commit_published_content_version(text, text, text, jsonb, jsonb, jsonb, jsonb) to service_role;
 grant execute on function rollback_published_content_version(text, text) to service_role;
 grant execute on function fail_published_content_version(text, text, text, text, text) to service_role;
@@ -332,6 +336,7 @@ as $$
 $$;
 
 revoke all on function retrieve_published_sources(text, vector, integer) from public;
+revoke all on function retrieve_published_sources(text, vector, integer) from anon, authenticated;
 grant execute on function retrieve_published_sources(text, vector, integer) to service_role;
 
 create or replace function current_published_content_version()
@@ -353,12 +358,17 @@ grant execute on function current_published_content_version() to anon, authentic
 create or replace function reject_published_version_mutation()
 returns trigger
 language plpgsql
+set search_path = public, pg_temp
 as $$
 declare
   target_version text;
   target_status text;
 begin
-  target_version := case when tg_table_name = 'content_versions' then old.id else old.content_version end;
+  if tg_table_name = 'content_versions' then
+    target_version := old.id;
+  else
+    target_version := old.content_version;
+  end if;
   select status into target_status from content_versions where id = target_version;
   if target_status = 'published' then
     raise exception 'Published content version % is immutable', target_version;
