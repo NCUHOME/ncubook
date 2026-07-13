@@ -48,4 +48,14 @@ describe("versioned published content schema", () => {
     expect(policies.match(/content_version = current_published_content_version\(\)/g)).toHaveLength(5);
     expect(policies).not.toMatch(/from (?:content_versions|published_content_pointer)/i);
   });
+
+  it("commits and rolls back pointer changes through database transactions", () => {
+    const sql = readFileSync(migrationPath, "utf8");
+    expect(sql).toMatch(/create or replace function commit_published_content_version\s*\(/i);
+    expect(sql).toMatch(/published_content_pointer[\s\S]*for update/i);
+    expect(sql).toMatch(/insert into published_pages[\s\S]*insert into published_blocks[\s\S]*insert into published_assets[\s\S]*insert into published_search_entries/is);
+    expect(sql).toMatch(/update content_versions[\s\S]*status = 'published'[\s\S]*insert into published_content_pointer/is);
+    expect(sql).toMatch(/create or replace function rollback_published_content_version\s*\(/i);
+    expect(sql).toMatch(/create or replace function fail_published_content_version\s*\(/i);
+  });
 });
