@@ -12,6 +12,7 @@ import {
 } from "@/lib/content/published-repository";
 import { DocumentPageView } from "@/src/components/pages/DocumentPageView";
 import { SectionPageView } from "@/src/components/pages/SectionPageView";
+import { AskProvider } from "@/src/components/ask/AskProvider";
 
 describe("published page views", () => {
   it("renders a free-form section introduction followed by child documents", () => {
@@ -29,15 +30,7 @@ describe("published page views", () => {
     expect(view).not.toBeNull();
     const section = getSectionForPage(view!.page.id);
     expect(section).not.toBeNull();
-    render(
-      <DocumentPageView
-        view={view!}
-        section={section!}
-        tree={getSectionTree(section!.slug)}
-        getAsset={getAsset}
-        resolvePageRoute={resolvePageRoute}
-      />,
-    );
+    render(<AskProvider><DocumentPageView view={view!} section={section!} tree={getSectionTree(section!.slug)} getAsset={getAsset} resolvePageRoute={resolvePageRoute} /></AskProvider>);
 
     expect(screen.getByRole("heading", { name: "校园环游车乘坐指南", level: 1 })).toBeVisible();
     expect(screen.getByText("路线与收费")).toBeVisible();

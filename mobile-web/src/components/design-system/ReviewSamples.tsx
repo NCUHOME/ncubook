@@ -39,7 +39,7 @@ export function ReviewSamples() {
                   <div key={label} className="flex min-h-tap items-center border-b border-line text-label">{label}</div>
                 ))}
               </div>
-              <div className="mt-s6 border-l-2 border-ink bg-surface-subtle p-s4 font-body text-label leading-body">提示、加载、空状态与错误状态都使用同一套语义令牌。</div>
+              <div className="mt-s6 border-l border-ink bg-surface-subtle p-s4 font-body text-label leading-body">提示、加载、空状态与错误状态都使用同一套语义令牌。</div>
             </div>
           </section>
         ))}

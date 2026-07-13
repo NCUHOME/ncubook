@@ -1,6 +1,7 @@
 import type { Asset, Page } from "@/lib/content/published-schema";
 import type { DocumentView, PageTreeNode } from "@/lib/content/published-repository";
 import { ArticleRenderer } from "@/src/components/article/ArticleRenderer";
+import { DocumentAskEntry } from "@/src/components/ask/DocumentAskEntry";
 import { AppHeader } from "@/src/components/navigation/AppHeader";
 
 type DocumentPageViewProps = {
@@ -25,6 +26,7 @@ export function DocumentPageView({ view, section, tree, getAsset, resolvePageRou
           </div>
         </article>
       </main>
+      <DocumentAskEntry pageId={view.page.id} initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor} />
     </>
   );
 }

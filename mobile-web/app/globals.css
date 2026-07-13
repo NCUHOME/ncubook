@@ -136,3 +136,4 @@ blockquote, figure { margin: 0; }
 .tap-target { min-width: var(--tap-target); min-height: var(--tap-target); }
 .focus-ring:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .mobile-shell { width: min(100%, 760px); min-height: 100vh; margin-inline: auto; background: var(--canvas); }
+.safe-area-fab { right: var(--space-4); bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }

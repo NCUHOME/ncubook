@@ -29,7 +29,10 @@ function page(input: Pick<Page, "id" | "parentId" | "title" | "slug"> & { topics
 }
 
 export const pagesFixture: Page[] = [
+  page({ id: "section-onboarding", parentId: null, title: "入学报到", slug: "onboarding", topics: ["新生"] }),
   page({ id: "section-campus-life", parentId: null, title: "校园生活", slug: "campus-life", topics: ["生活"] }),
+  page({ id: "section-academics", parentId: null, title: "学习考试", slug: "academics", topics: ["学习"] }),
+  page({ id: "section-services", parentId: null, title: "办事服务", slug: "services", topics: ["服务"] }),
   page({ id: "page-campus-transport", parentId: "section-campus-life", title: "校园交通", slug: "campus-transport", topics: ["生活", "交通"] }),
   page({ id: "page-campus-shuttle", parentId: "page-campus-transport", title: "校园环游车乘坐指南", slug: "campus-shuttle", topics: ["生活", "交通"] }),
   page({ id: "page-rich-content", parentId: "section-campus-life", title: "富内容展示", slug: "rich-content-guide", topics: ["生活", "示例"] }),
@@ -37,6 +40,18 @@ export const pagesFixture: Page[] = [
 
 const sectionBlocks: Block[] = [
   { id: "section-intro", anchor: "b-section-intro", type: "paragraph", richText: text("从住宿、交通到日常服务，整理在南大生活时最常遇到的信息。") },
+];
+
+const onboardingBlocks: Block[] = [
+  { id: "onboarding-intro", anchor: "b-onboarding-intro", type: "paragraph", richText: text("从报到材料、到校路线到入住宿舍，集中整理新生最先需要的信息。") },
+];
+
+const academicBlocks: Block[] = [
+  { id: "academic-intro", anchor: "b-academic-intro", type: "paragraph", richText: text("课程、考试、成绩与培养环节相关信息。") },
+];
+
+const serviceBlocks: Block[] = [
+  { id: "service-intro", anchor: "b-service-intro", type: "paragraph", richText: text("校园卡、网络、报修与常用办事入口。") },
 ];
 
 const transportBlocks: Block[] = [
@@ -107,7 +122,10 @@ export const searchIndexFixture: SearchIndexEntry[] = [
 export const publishedFixture: PublishedFixture = {
   pages: pagesFixture,
   blocksByPageId: {
+    "section-onboarding": onboardingBlocks,
     "section-campus-life": sectionBlocks,
+    "section-academics": academicBlocks,
+    "section-services": serviceBlocks,
     "page-campus-transport": transportBlocks,
     "page-campus-shuttle": shuttleBlocks,
     "page-rich-content": richBlocks,

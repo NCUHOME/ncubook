@@ -30,6 +30,10 @@ export function getSectionView(slug: string): DocumentView | null {
   return view?.page.parentId === null ? view : null;
 }
 
+export function getPublishedSections(): Page[] {
+  return publishedFixture.pages.filter((page) => page.parentId === null && page.status === "published");
+}
+
 export function getSectionTree(sectionSlug: string): PageTreeNode[] {
   const section = publishedFixture.pages.find((page) => page.slug === sectionSlug && page.parentId === null);
   if (!section) return [];
