@@ -66,7 +66,7 @@ const shuttleBlocks: Block[] = [
 
 const richBlocks: Block[] = [
   { id: "rich-paragraph", anchor: "b-rich-paragraph", type: "paragraph", richText: text("这是一段保留原始结构的正文。") },
-  { id: "rich-quote", anchor: "b-rich-quote", type: "quote", richText: text("内容结构不应在迁移时被压平。") },
+  { id: "rich-quote", anchor: "b-rich-quote", type: "quote", richText: text("内容结构不应在迁移时被压平。"), children: [] },
   { id: "rich-heading", anchor: "b-rich-heading", type: "heading", level: 2, richText: text("富内容示例") },
   {
     id: "rich-bullets",

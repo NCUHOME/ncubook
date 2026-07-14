@@ -52,8 +52,14 @@ function normalizeSingle(node: NotionBlockNode, type: string, options: Normalize
   const base = { id: node.id, anchor: anchor(node.id) };
   switch (type) {
     case "paragraph":
-    case "quote":
       return { ...base, type, richText: richText(payload(node, type).rich_text) };
+    case "quote":
+      return {
+        ...base,
+        type,
+        richText: richText(payload(node, type).rich_text),
+        children: normalizeNotionBlocks(node.children, options),
+      };
     case "heading_1":
     case "heading_2":
     case "heading_3":

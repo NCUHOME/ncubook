@@ -73,7 +73,7 @@ async function loadVersionFixture(contentVersion: string): Promise<PublishedFixt
   for (const row of blocksResult.data ?? []) {
     const value = asRecord(row);
     const pageId = requiredString(value.source_page_id, "Published block page id");
-    const block = asRecord(value.block) as Block;
+    const block = decodePublishedBlock(value.block);
     (blocksByPageId[pageId] ??= []).push(block);
   }
 
@@ -83,6 +83,59 @@ async function loadVersionFixture(contentVersion: string): Promise<PublishedFixt
     assets: (assetsResult.data ?? []).map(parseAssetRow),
     searchIndex: (searchResult.data ?? []).map(parseSearchRow),
   };
+}
+
+export function decodePublishedBlock(input: unknown): Block {
+  const value = asRecord(input);
+  const type = requiredString(value.type, "Published block type");
+  requiredString(value.id, "Published block id");
+  requiredString(value.anchor, "Published block anchor");
+
+  if (type === "quote") {
+    const children = value.children === undefined ? [] : blockArray(value.children, "Published quote children");
+    return { ...(value as Omit<Extract<Block, { type: "quote" }>, "children">), type, children };
+  }
+  if (type === "callout") {
+    return { ...(value as Omit<Extract<Block, { type: "callout" }>, "children">), type, children: blockArray(value.children, "Published callout children") };
+  }
+  if (type === "bulleted-list" || type === "numbered-list") {
+    if (!Array.isArray(value.items)) throw new Error("Published list items must be an array");
+    return {
+      ...(value as Omit<Extract<Block, { type: "bulleted-list" | "numbered-list" }>, "items">),
+      type,
+      items: value.items.map((item) => {
+        const record = asRecord(item);
+        return {
+          ...(record as Omit<Extract<Block, { type: "bulleted-list" | "numbered-list" }>["items"][number], "children">),
+          children: blockArray(record.children, "Published list item children"),
+        };
+      }),
+    };
+  }
+  if (type === "columns") {
+    if (!Array.isArray(value.columns)) throw new Error("Published columns must be an array");
+    return {
+      ...(value as Omit<Extract<Block, { type: "columns" }>, "columns">),
+      type,
+      columns: value.columns.map((column) => {
+        const record = asRecord(column);
+        return {
+          ...(record as Omit<Extract<Block, { type: "columns" }>["columns"][number], "blocks">),
+          blocks: blockArray(record.blocks, "Published column blocks"),
+        };
+      }),
+    };
+  }
+
+  if (["paragraph", "heading", "divider", "table", "image", "file", "embed", "page-link"].includes(type)) {
+    return value as Block;
+  }
+  throw new Error(`Unsupported published block type: ${type}`);
+}
+
+function blockArray(value: unknown, label: string): Block[] {
+  if (!Array.isArray(value)) throw new Error(`${label} must be an array`);
+  return value.map(decodePublishedBlock);
 }
 
 function parsePageRow(row: unknown): Page {

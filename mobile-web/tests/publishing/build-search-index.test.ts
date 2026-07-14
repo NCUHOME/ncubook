@@ -74,7 +74,7 @@ describe("deterministic published search entries", () => {
       { id: "map", anchor: "b-map", type: "image", assetId: "asset-map", caption: text("校园路线图") },
       {
         id: "columns", anchor: "b-columns", type: "columns",
-        columns: [{ id: "left", blocks: [{ id: "left-text", anchor: "b-left-text", type: "quote", richText: text("左侧原文") }] }],
+        columns: [{ id: "left", blocks: [{ id: "left-text", anchor: "b-left-text", type: "quote", richText: text("左侧原文"), children: [] }] }],
       },
     ];
 

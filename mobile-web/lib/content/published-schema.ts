@@ -26,7 +26,8 @@ export type RichText = Array<{
 export type BaseBlock = { id: string; anchor: string };
 
 export type Block =
-  | (BaseBlock & { type: "paragraph" | "quote"; richText: RichText })
+  | (BaseBlock & { type: "paragraph"; richText: RichText })
+  | (BaseBlock & { type: "quote"; richText: RichText; children: Block[] })
   | (BaseBlock & { type: "heading"; level: 1 | 2 | 3; richText: RichText })
   | (BaseBlock & {
       type: "bulleted-list" | "numbered-list";

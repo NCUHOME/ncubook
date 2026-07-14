@@ -1,9 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { publishedFixture } from "@/lib/content/published-fixtures";
 import { createPublishedRepository } from "@/lib/content/published-repository";
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
+import { decodePublishedBlock, loadPublishedRepository } from "@/lib/content/supabase-published-repository";
 
 describe("published repository boundary", () => {
+  it("normalizes a legacy schema-v1 quote without children", () => {
+    expect(decodePublishedBlock({
+      id: "legacy-quote",
+      anchor: "b-legacy-quote",
+      type: "quote",
+      richText: [{ plainText: "旧引用", annotations: {} }],
+    })).toEqual({
+      id: "legacy-quote",
+      anchor: "b-legacy-quote",
+      type: "quote",
+      richText: [{ plainText: "旧引用", annotations: {} }],
+      children: [],
+    });
+  });
+
   it("runs the same selectors against fixtures and a loaded published snapshot", async () => {
     const fixtureRepository = createPublishedRepository(publishedFixture);
     const loadedRepository = await loadPublishedRepository({

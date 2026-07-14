@@ -102,6 +102,25 @@ describe("Notion block normalization", () => {
     ]);
   });
 
+  it("preserves files nested inside a quote in source order", () => {
+    const quote = node(
+      { id: "2467d60a-0dda-809e-99c9-d5dfc89311bd", type: "quote", quote: { rich_text: rich("延伸阅读") } },
+      [
+        node({ id: "2467d60a-0dda-80f5-b9ab-f909b0443fe9", type: "file", file: { name: "金榜题名之后.pdf", caption: [], file: { url: "https://notion-temp/first" } } }),
+        node({ id: "2467d60a-0dda-803f-a040-f9ae759efb97", type: "file", file: { name: "上海交通大学学生生存手册.pdf", caption: [], file: { url: "https://notion-temp/second" } } }),
+      ],
+    );
+
+    expect(normalizeNotionBlocks([quote])).toMatchObject([{
+      id: "2467d60a-0dda-809e-99c9-d5dfc89311bd",
+      type: "quote",
+      children: [
+        { id: "2467d60a-0dda-80f5-b9ab-f909b0443fe9", type: "file", assetId: "asset-2467d60a-0dda-80f5-b9ab-f909b0443fe9", name: "金榜题名之后.pdf" },
+        { id: "2467d60a-0dda-803f-a040-f9ae759efb97", type: "file", assetId: "asset-2467d60a-0dda-803f-a040-f9ae759efb97", name: "上海交通大学学生生存手册.pdf" },
+      ],
+    }]);
+  });
+
   it("skips empty embed placeholders and reports their source identity", () => {
     const onWarning = vi.fn();
 
