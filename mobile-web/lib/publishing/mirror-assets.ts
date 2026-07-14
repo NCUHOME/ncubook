@@ -115,6 +115,7 @@ export async function mirrorNotionAssets(
 function* flatten(nodes: NotionBlockNode[]): Generator<NotionBlockNode> {
   for (const node of nodes) {
     yield node;
+    if (node.type === "child_page") continue;
     yield* flatten(node.children);
   }
 }
@@ -150,10 +151,11 @@ function safePathPart(value: string): string {
 
 function safeFileName(value: string, extension: string): string {
   const withoutPath = value.split(/[\\/]/).at(-1) ?? "asset";
-  const safe = withoutPath.replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^-+|-+$/g, "");
-  const fallback = `asset.${extension}`;
-  if (!safe) return fallback;
-  return safe.includes(".") ? safe : `${safe}.${extension}`;
+  const sourceStem = withoutPath.replace(/\.[^.]*$/, "");
+  const safeStem = sourceStem
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `${safeStem || "asset"}.${extension}`;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

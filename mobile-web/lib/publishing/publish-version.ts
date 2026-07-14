@@ -140,6 +140,7 @@ function validatePublication(contentVersion: string, sourceRootId: string, pages
   if (pages.length === 0) throw new Error("Publication must contain at least one page");
   const pageIds = new Set(pages.map(({ page }) => page.id));
   if (pageIds.size !== pages.length) throw new Error("Publication contains duplicate pages");
+  const publishedAssetIds = new Set<string>();
 
   for (const bundle of pages) {
     const { page, blocks, assets, searchEntries } = bundle;
@@ -150,6 +151,7 @@ function validatePublication(contentVersion: string, sourceRootId: string, pages
 
     const anchors = collectAnchors(blocks);
     const assetIds = new Set(assets.map((asset) => asset.id));
+    const referencedAssetIds = new Set<string>();
     if (assetIds.size !== assets.length) throw new Error(`Page ${page.id} contains duplicate assets`);
 
     walkBlocks(blocks, (block) => {
@@ -159,9 +161,13 @@ function validatePublication(contentVersion: string, sourceRootId: string, pages
       if ((block.type === "image" || block.type === "file") && !assetIds.has(block.assetId)) {
         throw new Error(`Block ${block.id} references missing asset ${block.assetId}`);
       }
+      if (block.type === "image" || block.type === "file") referencedAssetIds.add(block.assetId);
     });
 
     for (const asset of assets) {
+      if (!referencedAssetIds.has(asset.id)) throw new Error(`Page ${page.id} asset ${asset.id} has no rendered block`);
+      if (publishedAssetIds.has(asset.id)) throw new Error(`Publication contains duplicate asset id ${asset.id} across pages`);
+      publishedAssetIds.add(asset.id);
       if (asset.contentVersion !== contentVersion) throw new Error(`Asset ${asset.id} belongs to another content version`);
     }
     for (const entry of searchEntries) {

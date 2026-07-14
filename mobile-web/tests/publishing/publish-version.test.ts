@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Block, Page, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
+import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
 import {
   PointerConflictError,
   publishVersion,
@@ -140,6 +140,47 @@ describe("atomic content publication", () => {
     };
 
     await expect(publishVersion(input)).rejects.toThrow("missing page");
+    expect(state.commits).toEqual([]);
+  });
+
+  it("rejects asset ids duplicated across pages before committing", async () => {
+    const state = memoryStore();
+    const input = baseInput(state.store);
+    const sharedAsset: Asset = {
+      id: "asset-shared",
+      sourceBlockId: "shared",
+      contentVersion: "v2",
+      kind: "image",
+      publicUrl: "https://assets.example.edu/shared.png",
+      checksum: "checksum",
+    };
+    input.buildPage = async (id) => {
+      const value = publication(id, id === "article" ? "section" : null);
+      value.blocks.push({ id: "shared", anchor: "b-shared", type: "image", assetId: "asset-shared" });
+      value.assets = [sharedAsset];
+      return value;
+    };
+
+    await expect(publishVersion(input)).rejects.toThrow("duplicate asset id asset-shared across pages");
+    expect(state.commits).toEqual([]);
+  });
+
+  it("rejects mirrored assets that have no rendered block", async () => {
+    const state = memoryStore();
+    const input = baseInput(state.store);
+    input.buildPage = async (id) => ({
+      ...publication(id, id === "article" ? "section" : null),
+      assets: id === "article" ? [{
+        id: "asset-hidden",
+        sourceBlockId: "hidden",
+        contentVersion: "v2",
+        kind: "file",
+        publicUrl: "https://assets.example.edu/hidden.pdf",
+        checksum: "checksum",
+      }] : [],
+    });
+
+    await expect(publishVersion(input)).rejects.toThrow("asset asset-hidden has no rendered block");
     expect(state.commits).toEqual([]);
   });
 

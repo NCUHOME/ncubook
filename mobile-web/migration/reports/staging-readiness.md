@@ -26,5 +26,7 @@
 
 ## Remaining release work
 
-1. Commit the first real staging content version and verify page, block, asset and search integrity.
-2. Complete parity, citation and rollback rehearsal before marking T3.4 complete.
+1. The first real staging version, `content-20260714030315891`, is published: 37 pages, 848 stored top-level blocks, 92 mirrored assets and 1,067 search entries. All 92 asset URLs are independently reachable; all 1,067 search anchors resolve to rendered block, list-item or table-row anchors; no page, hierarchy, link target or referenced-asset mismatch was found against the 37-page manifest.
+2. A transaction-scoped rollback rehearsal moved the pointer to a synthetic published target, restored `content-20260714030315891` with compare-and-swap protection, and rolled the entire rehearsal back without persistent test data.
+3. The publication emitted 48 non-blocking editorial warnings: 47 images have no alt text and one empty Notion embed placeholder was skipped.
+4. Final parity remains blocked by two PDF files nested inside a Notion quote on `写在前面`. The files are mirrored and reachable, but the approved first-release quote schema has no child blocks, so they have no rendered attachment entry. A new pre-commit invariant now rejects mirrored assets without a rendered block; quote-child rendering requires a separately approved UI/schema extension before republishing.

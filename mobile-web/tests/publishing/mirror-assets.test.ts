@@ -54,7 +54,7 @@ describe("Notion asset mirroring", () => {
     })).rejects.toEqual(new AssetMirrorError("file-one", "file-too-large"));
   });
 
-  it("mirrors zip attachments without treating them as executable content", async () => {
+  it("mirrors zip attachments without putting Unicode display names in the storage key", async () => {
     const upload = vi.fn(async ({ path }: { path: string }) => `https://assets.example.edu/${path}`);
     const file = node({ id: "zip-one", type: "file", file: { name: "学院实施细则.zip", caption: [], file: { url: "https://notion.example/rules" } } });
 
@@ -66,10 +66,13 @@ describe("Notion asset mirroring", () => {
     });
 
     expect(result.assets).toHaveLength(1);
-    expect(upload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringContaining("学院实施细则.zip"), mediaType: "application/zip" }));
+    const path = upload.mock.calls[0]?.[0].path;
+    expect(path).toMatch(/\/asset\.zip$/);
+    expect(path).not.toContain("学院实施细则");
+    expect(result.assets[0].publicUrl).toContain("asset.zip");
   });
 
-  it("preserves legacy Word attachments with their original filename", async () => {
+  it("uses an ASCII-safe storage key for legacy Word attachments", async () => {
     const upload = vi.fn(async ({ path }: { path: string }) => `https://assets.example.edu/${path}`);
     const file = node({ id: "word-one", type: "file", file: { name: "校园长跑评分标准.doc", caption: [], file: { url: "https://notion.example/rules" } } });
 
@@ -80,7 +83,7 @@ describe("Notion asset mirroring", () => {
       download: async () => ({ bytes: new Uint8Array([1, 2, 3]), mediaType: "application/msword" }),
     });
 
-    expect(upload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringContaining("校园长跑评分标准.doc"), mediaType: "application/msword" }));
+    expect(upload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringMatching(/\/asset\.doc$/), mediaType: "application/msword" }));
   });
 
   it("mirrors assets nested inside columns and lists", async () => {
@@ -97,5 +100,21 @@ describe("Notion asset mirroring", () => {
 
     expect(result.assets).toHaveLength(1);
     expect(result.assets[0].id).toBe("asset-nested-image");
+  });
+
+  it("does not mirror assets that belong to a nested child page", async () => {
+    const childImage = node({ id: "child-image", type: "image", image: { caption: [], external: { url: "https://example.edu/child.png" } } });
+    const tree: NotionBlockNode[] = [{ id: "child-page", type: "child_page", child_page: { title: "子页面" }, has_children: true, children: [childImage] }];
+    const upload = vi.fn(async () => "https://assets.example.edu/child.png");
+
+    const result = await mirrorNotionAssets(tree, {
+      contentVersion: "v1",
+      pageId: "parent-page",
+      storage: { upload },
+      download: vi.fn(async () => ({ bytes: new Uint8Array([1]), mediaType: "image/png" })),
+    });
+
+    expect(result.assets).toEqual([]);
+    expect(upload).not.toHaveBeenCalled();
   });
 });
