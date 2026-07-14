@@ -26,7 +26,7 @@
 ## 工程与生产
 
 - [x] Typecheck、相关单测、全量单测、build 和 E2E 通过。
-- [ ] GitHub branch/PR 包含本 Gate 的规格、实现和验证记录。
+- [x] GitHub branch/PR 包含本 Gate 的规格、实现和验证记录（Draft PR #2，revision `90f6c1cf6987abe29aae5558a9cce62ab7c1a668`）。
 - [ ] EdgeOne production deployment 对应已验证 revision。
 - [ ] `https://book.ncuos.com` 展示新版 mobile-web，搜索和 AI 可用。
 - [ ] 已保存旧 Docusaurus revision/build 配置与切换前 DNS/证书/域名环境绑定快照，并完成新版→旧版→新版计时演练；两向 HTTPS 与核心路径均通过，回滚不修改 Supabase 内容指针。

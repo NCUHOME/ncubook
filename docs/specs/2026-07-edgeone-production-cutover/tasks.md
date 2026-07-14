@@ -10,7 +10,7 @@
 - [x] E2.1 运行 AI provider、retrieval、grounding、route 单测与答案评测。
 - [ ] E2.2 增加真实 DeepSeek smoke：固定 5 个带预期 source/anchor 的 answerable 与至少 3 个 unanswerable；运行 Supabase recall@8、1 次 warm-up、20 次 warm 请求，并以同 revision 的 3 次独立 preview deployment 记录冷启动，验证 grounded success、最终 abstention、citation anchor、active contentVersion 和延迟；通过前保持 shadow。
 - [x] E2.3 运行 typecheck、全量单测、production build 和非视觉 E2E。
-- [ ] E3.1 将功能分支推送 GitHub，并在现有 PR 中更新 Gate E revision。
+- [x] E3.1 将功能分支推送 GitHub，并在现有 PR 中更新 Gate E revision。
 - [ ] E3.2 将项目负责人明确批准继续使用的现有 DeepSeek Key只写入 EdgeOne 加密变量；扫描 Git、构建产物、浏览器响应与日志确认无泄露。
 - [ ] E3.3 保存并验证旧 Docusaurus revision/build 配置与当前 DNS/证书/域名环境绑定快照；关闭任意分支自动 preview，配置 Gate E 环境矩阵并创建固定 revision 的受控 preview。
 - [ ] E3.4 在 preview 验证首页、板块、文档、搜索、AI、citation、资源和 360/390/430px 交互。
@@ -26,3 +26,4 @@
 - 本地固定评测：answerable recall@8 = 100%，answerable success = 100%，unanswerable abstention = 100%，citation validity = 100%，failed requests = 0。延迟来自 mock provider，不替代 E2.2 的真实 DeepSeek 数据。
 - Supabase RPC 已完成 forward → rollback → forward 演练：旧函数校验和 `1e3107bea11d35d4b9d87150bca301d9`，新版校验和 `ff67850af00ed9e2e04c4a8ee454106e`；回滚恢复旧校验和，最终重新应用新版。活动内容版本始终为 `content-20260714052438077`。
 - Git 工作树与 `.next` 构建产物的密钥扫描均为 0 命中。
+- GitHub Draft PR #2 已更新至 revision `90f6c1cf6987abe29aae5558a9cce62ab7c1a668`。
