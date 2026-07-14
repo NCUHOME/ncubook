@@ -7,7 +7,7 @@
 - [ ] 服务端实际请求模型为 `deepseek-v4-flash`。
 - [ ] 请求显式设置 `thinking.type=disabled`；5 个固定问题经 1 次 warm-up 后运行 20 次端到端请求，p95 不超过 5 秒且超时/429/5xx 均计失败；另记录 3 次冷启动且单次不超过 8 秒。
 - [ ] 浏览器 bundle、Git 历史和响应中不存在 DeepSeek Key。
-- [ ] 对话中出现的旧 Key 在远端部署前已废止，远端只使用替换 Key。
+- [ ] 项目负责人明确批准继续使用现有 Key；该值只存在于 EdgeOne 加密变量，不存在于 Git、构建产物、浏览器响应或日志。
 - [ ] 无 embedding 配置时，零分/低于阈值候选过滤率 100%，answerable recall@8 不低于 80% 并能形成 grounded citation；unanswerable 最终 abstention 100%，但不强制空召回。
 - [ ] 关键词搜索没有调用 DeepSeek。
 - [ ] answerable grounded success、unanswerable abstention、citation anchor、active contentVersion 均通过；citation 有效率为 100%。

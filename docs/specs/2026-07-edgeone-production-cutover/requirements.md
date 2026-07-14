@@ -27,7 +27,7 @@
 
 - DeepSeek Key 和 Supabase service role key 只存在于 EdgeOne 加密环境变量。本 Gate 不向 EdgeOne 配置 Notion token 或发布管理 token，也不启用生产远程内容发布。
 - 禁止使用 `NEXT_PUBLIC_` 前缀，禁止写入源码、提交记录、构建产物、浏览器响应或日志。
-- 用户在对话中提供的 DeepSeek Key 视为已暴露，不得进入任何远端环境；首次 preview 部署前必须创建并只部署替换 Key，旧 Key 随即废止。
+- 用户明确接受继续使用对话中提供的 DeepSeek Key；该 Key 可以进入 EdgeOne 服务端加密变量，但不得写入 Git、构建产物、浏览器响应、日志或任何非加密配置。项目仍建议上线后尽快轮换。
 
 ## E5：可验证、可回滚地上线
 

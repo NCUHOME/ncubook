@@ -11,7 +11,7 @@
 - [ ] E2.2 增加真实 DeepSeek smoke：按固定 5 问题、1 次 warm-up、20 次 warm 请求和 3 次冷启动验证 answerable grounded success、unanswerable abstention、citation anchor、active contentVersion 和延迟；通过前保持 shadow。
 - [ ] E2.3 运行 typecheck、全量单测、production build 和非视觉 E2E。
 - [ ] E3.1 将功能分支推送 GitHub，并在现有 PR 中更新 Gate E revision。
-- [ ] E3.2 在任何远端部署前废止对话中出现的 DeepSeek Key，创建替换 Key；只将替换 Key写入 EdgeOne 加密变量。
+- [ ] E3.2 将项目负责人明确批准继续使用的现有 DeepSeek Key只写入 EdgeOne 加密变量；扫描 Git、构建产物、浏览器响应与日志确认无泄露。
 - [ ] E3.3 保存并验证旧 Docusaurus revision/build 配置与当前 DNS/证书/域名环境绑定快照；关闭任意分支自动 preview，配置 Gate E 环境矩阵并创建固定 revision 的受控 preview。
 - [ ] E3.4 在 preview 验证首页、板块、文档、搜索、AI、citation、资源和 360/390/430px 交互。
 - [ ] E3.5 确认 EdgeOne 不含 Notion/publisher 凭据，匿名与伪造 token 调用 `/api/admin/publish-notion` 均 fail closed，响应和日志不泄露配置状态。
