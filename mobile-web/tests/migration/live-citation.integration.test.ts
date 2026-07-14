@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { AnswerModel } from "@/lib/ai/provider";
 import { groundAnswer } from "@/lib/ai/ground-answer";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 
 const expectedVersion = process.env.EXPECTED_CONTENT_VERSION;
@@ -29,8 +28,14 @@ describe("live grounded citation", () => {
     expect(session.citations[0]).toMatchObject({ contentVersion: expectedVersion, pageId: source.pageId, anchor: source.anchor });
     expect(source.anchor).toMatch(/^b-/);
 
-    const repository = await loadPublishedRepository({ environment: "production" });
-    const route = repository.resolvePageRoute(source.pageId);
+    const pageResult = await supabase!.from("published_pages")
+      .select("slug,parent_source_page_id")
+      .eq("content_version", expectedVersion!)
+      .eq("source_page_id", source.pageId)
+      .single();
+    expect(pageResult.error).toBeNull();
+    const page = pageResult.data as { slug: string; parent_source_page_id: string | null };
+    const route = `${page.parent_source_page_id === null ? "/sections/" : "/docs/"}${page.slug}`;
     const baseUrl = process.env.PUBLICATION_BASE_URL ?? "http://127.0.0.1:3000";
     const response = await fetch(`${baseUrl}${route}`);
     expect(response.status).toBe(200);

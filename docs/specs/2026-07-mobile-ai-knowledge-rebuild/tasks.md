@@ -29,13 +29,13 @@
 - [x] T3.1 为关键组件与页面添加视觉基线。
 - [x] T3.2 为页面树、搜索、锚点、AI 上下文添加交互测试。
 - [x] T3.3 验证内容同步、关键词索引与 AI 来源链路。实现 revision `422dcf2`；production AI 仍由 `shadow` 默认开关保护，待 staging 内容版本和评测后启用。
-- [ ] T3.4 迁移首批真实内容；37 页 staging 版本 `content-20260714030315891` 已发布并通过 manifest、资源、搜索锚点、citation 跳转和事务级回滚审计。逐页审计发现 `写在前面` 的引用块内嵌套两个 PDF，而已批准 quote schema 不含子块；文件已镜像但尚无正文入口，因此最终 parity 与生产切换仍未完成，Docusaurus 保持可部署。
+- [x] T3.4 迁移首批真实内容；37 页 staging 版本 `content-20260714052438077` 已发布并通过 manifest、92/92 资源、1,069 条搜索锚点、真实 citation 与 B→A→B 持久回滚审计。生产域名切换不在本任务授权范围内，Docusaurus 保持可部署。
   - [x] T3.4.1 扩展首次发布 schema、normalizer、renderer 与索引遍历，支持 `divider` 和嵌套 callout。
   - [x] T3.4.2 在 360/390/430px 隔离样张中审核分割线和嵌套 callout，视觉差异不得超出 Gate C 定义；2026-07-13 人类批准，既有视觉基线未更新。
   - [x] T3.4.3 配置 staging 运行时凭据并执行 37 页权威 dry-run；2026-07-14 使用最小权限 Notion integration 与独立 Supabase publisher key 完成，结果为 37 页、95 条非阻断内容警告、发布事务校验成功。
-  - [ ] T3.4.4 发布 staging 内容版本，完成逐页 parity、资源、搜索、citation 与回滚演练；staging 发布、92/92 资源可达、1067/1067 搜索锚点、真实 citation 跳转及事务回滚已通过，待解决引用块内两个 PDF 的无损渲染后完成。
-  - [ ] T3.4.5 Gate D：扩展 quote children 的 schema、normalizer、renderer、搜索与审计遍历；结构方向已批准，待 390px 样张批准后实现。
-  - [ ] T3.4.6 重新发布 37 页 staging 版本并确认两个引用内 PDF 具有正文入口，再完成最终迁移审计。
+  - [x] T3.4.4 发布 staging 内容版本，完成逐页 parity、资源、搜索、citation 与回滚演练；版本 B 的 92/92 资源、1,069 条搜索锚点、真实 citation 及 B→A→B 持久回滚均通过。
+  - [x] T3.4.5 Gate D：扩展 quote children 的 schema、normalizer、renderer、搜索与审计遍历；360/390/430px 正式组件基线均由项目负责人批准。
+  - [x] T3.4.6 重新发布 37 页 staging 版本并确认两个引用内 PDF 具有正文入口；父 quote 与 sibling 0/1 结构审计无问题。
 
 ## 需求追踪矩阵
 

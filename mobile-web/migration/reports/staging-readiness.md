@@ -24,9 +24,15 @@
 
 - A dedicated modern Supabase publisher key and the read-only Notion token are configured in an ignored, mode-600 local environment file. No runtime secret is stored in Git.
 
+## Gate D staging result
+
+1. The authoritative Gate D dry-run passed as `content-20260714052208220`: 37 pages and 48 non-blocking editorial warnings. The warnings remain 47 missing image alt texts and one skipped empty Notion embed placeholder.
+2. Staging version `content-20260714052438077` is published and is the current pointer: 37 pages, 848 stored top-level blocks, 92 mirrored assets and 1,069 search entries. All 92 asset URLs are reachable, all search anchors resolve, and the manifest, hierarchy, page links and referenced assets have no audit issues.
+3. The two PDFs nested in quote `2467d60a-0dda-809e-99c9-d5dfc89311bd` now render inside that quote. Their source block IDs are `2467d60a-0dda-80f5-b9ab-f909b0443fe9` and `2467d60a-0dda-803f-a040-f9ae759efb97`, with sibling indices 0 and 1 respectively.
+4. A deterministic answer model used real Supabase retrieval against version B and produced a grounded citation whose exact document anchor returned HTTP 200. The same check passed again after restoration.
+5. The persistent rollback rehearsal completed B → A → B: the pointer moved from `content-20260714052438077` to legacy `content-20260714030315891`, the schema-v1 quote decoded with empty children and all legacy invariants passed, then the pointer returned to B and repeated the structure, asset and citation checks with no issues.
+6. The complete local gate passed: 120 unit/component tests, strict typecheck, production build, mobile E2E and all approved visual baselines. Gate D's 360/390/430px screenshots are recorded in `approval.md`.
+
 ## Remaining release work
 
-1. The first real staging version, `content-20260714030315891`, is published: 37 pages, 848 stored top-level blocks, 92 mirrored assets and 1,067 search entries. All 92 asset URLs are independently reachable; all 1,067 search anchors resolve to rendered block, list-item or table-row anchors; no page, hierarchy, link target or referenced-asset mismatch was found against the 37-page manifest.
-2. A transaction-scoped rollback rehearsal moved the pointer to a synthetic published target, restored `content-20260714030315891` with compare-and-swap protection, and rolled the entire rehearsal back without persistent test data.
-3. The publication emitted 48 non-blocking editorial warnings: 47 images have no alt text and one empty Notion embed placeholder was skipped.
-4. Final parity remains blocked by two PDF files nested inside a Notion quote on `写在前面`. The files are mirrored and reachable, but the approved first-release quote schema has no child blocks, so they have no rendered attachment entry. A new pre-commit invariant now rejects mirrored assets without a rendered block; quote-child rendering requires a separately approved UI/schema extension before republishing.
+- Gate D content staging is complete. Production hostname/DNS cutover and enabling production AI remain separately approved operations; Docusaurus stays deployable until that cutover is authorized.
