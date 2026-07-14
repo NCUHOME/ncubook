@@ -5,7 +5,7 @@
 ## 模型与可信度
 
 - [ ] 服务端实际请求模型为 `deepseek-v4-flash`。
-- [ ] 请求显式设置 `thinking.type=disabled`；5 个固定问题经 1 次 warm-up 后运行 20 次端到端请求，p95 不超过 5 秒且超时/429/5xx 均计失败；另记录 3 次冷启动且单次不超过 8 秒。
+- [ ] 请求显式设置 `thinking.type=disabled`；5 个固定 answerable 经 1 次 warm-up 后运行 20 次端到端请求，p95 不超过 5 秒且超时/429/5xx 均计失败；同 revision 的 3 次独立 preview deployment 首请求作为冷启动且单次不超过 8 秒。
 - [ ] 浏览器 bundle、Git 历史和响应中不存在 DeepSeek Key。
 - [ ] 项目负责人明确批准继续使用现有 Key；该值只存在于 EdgeOne 加密变量，不存在于 Git、构建产物、浏览器响应或日志。
 - [ ] 无 embedding 配置时，零分/低于阈值候选过滤率 100%，answerable recall@8 不低于 80% 并能形成 grounded citation；unanswerable 最终 abstention 100%，但不强制空召回。
@@ -21,7 +21,7 @@
 - [ ] 360/390/430px 关键交互无回归。
 - [ ] Preview 是固定已审阅 revision，任意分支自动 preview 已关闭；EdgeOne 未配置 Notion/publisher 写凭据。
 - [ ] 匿名及伪造 token 调用 `/api/admin/publish-notion` 均 fail closed，响应和日志不泄露配置状态。
-- [ ] EdgeOne `/api/ask` 平台级速率限制/WAF 已验证突发请求返回 429，且搜索、文档和静态资源不受影响。
+- [ ] EdgeOne `/api/ask` 平台级 10 requests/min/client IP 已在应用层临时 100/min 时通过 WAF 命中记录/响应标识证明第 11 次由平台返回 429；验证后应用层恢复 10/min，搜索、文档和静态资源不受影响。
 
 ## 工程与生产
 
