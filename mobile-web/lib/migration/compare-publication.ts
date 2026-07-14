@@ -14,6 +14,14 @@ export function comparePagePublication(source: PageSnapshot, target: PageSnapsho
   const targetOrder = blockOrder(target.blocks);
   if (sourceOrder.join("|") !== targetOrder.join("|")) issues.push({ code: "heading-or-order-changed", detail: "Published block order differs from the normalized source" });
 
+  const sourcePaths = structurePaths(source.blocks);
+  const targetPaths = structurePaths(target.blocks);
+  if (sourcePaths.join("|") !== targetPaths.join("|")) {
+    const index = sourcePaths.findIndex((value, itemIndex) => value !== targetPaths[itemIndex]);
+    const mismatch = index >= 0 ? `${sourcePaths[index] ?? "missing"} -> ${targetPaths[index] ?? "missing"}` : "structure length differs";
+    issues.push({ code: "structure-changed", detail: `Published block structure differs at ${mismatch}` });
+  }
+
   const sourceStructure = structureCounts(source.blocks);
   const targetStructure = structureCounts(target.blocks);
   if (JSON.stringify(sourceStructure) !== JSON.stringify(targetStructure)) issues.push({ code: "structure-changed", detail: "List, table, image, file, column, or link counts differ" });
@@ -42,6 +50,28 @@ function blockOrder(blocks: Block[]): string[] {
   return result;
 }
 
+function structurePaths(blocks: Block[], parent = "root"): string[] {
+  const result: string[] = [];
+  blocks.forEach((block, index) => {
+    result.push(`${parent}/${index}:${block.id}`);
+    if (block.type === "quote" || block.type === "callout") result.push(...structurePaths(block.children, block.id));
+    if (block.type === "columns") {
+      block.columns.forEach((column, columnIndex) => {
+        result.push(`${block.id}/column/${columnIndex}:${column.id}`);
+        result.push(...structurePaths(column.blocks, column.id));
+      });
+    }
+    if (block.type === "bulleted-list" || block.type === "numbered-list") {
+      block.items.forEach((item, itemIndex) => {
+        result.push(`${block.id}/item/${itemIndex}:${item.id}`);
+        result.push(...structurePaths(item.children, item.id));
+      });
+    }
+    if (block.type === "table") block.rows.forEach((row, rowIndex) => result.push(`${block.id}/row/${rowIndex}:${row.id}`));
+  });
+  return result;
+}
+
 function anchors(blocks: Block[]): string[] {
   const result: string[] = [];
   walk(blocks, (block) => {
@@ -63,5 +93,6 @@ function walk(blocks: Block[], visit: (block: Block) => void): void {
     visit(block);
     if (block.type === "columns") for (const column of block.columns) walk(column.blocks, visit);
     if (block.type === "bulleted-list" || block.type === "numbered-list") for (const item of block.items) walk(item.children, visit);
+    if (block.type === "callout" || block.type === "quote") walk(block.children, visit);
   }
 }

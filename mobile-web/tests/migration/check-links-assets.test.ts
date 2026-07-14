@@ -16,4 +16,16 @@ describe("logged-out links and assets audit", () => {
     expect(result.ok).toBe(false);
     expect(result.issues.map((issue) => issue.code)).toEqual(expect.arrayContaining(["temporary-notion-url", "unreachable-asset", "missing-page-target"]));
   });
+
+  it("audits asset references nested inside quotes", async () => {
+    const fixture = structuredClone(publishedFixture);
+    fixture.blocksByPageId["page-rich-content"] = [{
+      id: "quote", anchor: "b-quote", type: "quote", richText: [{ plainText: "附件", annotations: {} }],
+      children: [{ id: "missing-file", anchor: "b-missing-file", type: "file", assetId: "asset-missing", name: "缺失.pdf" }],
+    }];
+
+    const result = await auditPublishedFixture(fixture, vi.fn(async () => ({ ok: true, status: 200 })));
+
+    expect(result.issues).toContainEqual({ code: "missing-asset-record", detail: "asset-missing" });
+  });
 });

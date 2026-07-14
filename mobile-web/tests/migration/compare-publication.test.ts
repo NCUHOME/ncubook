@@ -24,4 +24,15 @@ describe("content migration parity", () => {
     expect(report.ok).toBe(false);
     expect(report.issues.map((issue) => issue.code)).toEqual(expect.arrayContaining(["lost-text", "heading-or-order-changed", "structure-changed", "missing-anchor", "missing-asset"]));
   });
+
+  it("reports a block moved out of its quote even when flat order is unchanged", () => {
+    const nested: Block = { id: "pdf", anchor: "b-pdf", type: "file", assetId: "asset-pdf", name: "资料.pdf" };
+    const source: Block[] = [{ id: "quote", anchor: "b-quote", type: "quote", richText: text("延伸阅读"), children: [nested] }];
+    const target: Block[] = [{ id: "quote", anchor: "b-quote", type: "quote", richText: text("延伸阅读"), children: [] }, nested];
+
+    const report = comparePagePublication({ pageId: "page", blocks: source, assetIds: ["asset-pdf"] }, { pageId: "page", blocks: target, assetIds: ["asset-pdf"] });
+
+    expect(report.ok).toBe(false);
+    expect(report.issues).toContainEqual(expect.objectContaining({ code: "structure-changed", detail: expect.stringContaining("pdf") }));
+  });
 });

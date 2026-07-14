@@ -31,17 +31,27 @@ export function buildSearchIndex(
     });
   };
 
-  const visit = (sourceBlocks: Block[]) => {
+  function visitScoped(sourceBlocks: Block[]) {
+    const previousHeadings = [...headings];
+    visit(sourceBlocks);
+    headings.length = 0;
+    headings.push(...previousHeadings);
+  }
+
+  function visit(sourceBlocks: Block[]) {
     for (const block of sourceBlocks) {
       switch (block.type) {
         case "paragraph":
-        case "quote":
         case "page-link":
           addEntry(block.id, block.anchor, richText(block.richText), block.type);
           break;
+        case "quote":
+          addEntry(block.id, block.anchor, richText(block.richText), block.type);
+          visitScoped(block.children);
+          break;
         case "callout":
           addEntry(block.id, block.anchor, richText(block.richText), "callout");
-          visit(block.children);
+          visitScoped(block.children);
           break;
         case "heading": {
           const title = richText(block.richText);
@@ -83,7 +93,7 @@ export function buildSearchIndex(
           assertNever(block);
       }
     }
-  };
+  }
 
   visit(blocks);
   return entries;

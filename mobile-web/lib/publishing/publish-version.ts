@@ -201,6 +201,7 @@ function walkBlocks(blocks: Block[], visit: (block: Block) => void): void {
       for (const item of block.items) walkBlocks(item.children, visit);
     }
     if (block.type === "callout") walkBlocks(block.children, visit);
+    if (block.type === "quote") walkBlocks(block.children, visit);
   }
 }
 

@@ -33,5 +33,6 @@ function walk(blocks: Block[], visit: (block: Block) => void): void {
     visit(block);
     if (block.type === "columns") for (const column of block.columns) walk(column.blocks, visit);
     if (block.type === "bulleted-list" || block.type === "numbered-list") for (const item of block.items) walk(item.children, visit);
+    if (block.type === "callout" || block.type === "quote") walk(block.children, visit);
   }
 }

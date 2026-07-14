@@ -95,4 +95,23 @@ describe("deterministic published search entries", () => {
     expect(oldEntries[0]).toMatchObject({ id: "content-v1-same-source", contentVersion: "content-v1" });
     expect(newEntries[0]).toMatchObject({ id: "content-v2-same-source", contentVersion: "content-v2" });
   });
+
+  it("indexes quote children without leaking nested headings into following content", () => {
+    const blocks: Block[] = [
+      { id: "outer", anchor: "b-outer", type: "heading", level: 2, richText: text("外层章节") },
+      {
+        id: "quote", anchor: "b-quote", type: "quote", richText: text("延伸阅读"),
+        children: [
+          { id: "nested", anchor: "b-nested", type: "heading", level: 3, richText: text("引用内标题") },
+          { id: "guide", anchor: "b-guide", type: "file", assetId: "asset-guide", name: "指南.pdf", caption: text("附件说明") },
+        ],
+      },
+      { id: "after", anchor: "b-after", type: "paragraph", richText: text("引用后的正文") },
+    ];
+
+    const entries = buildSearchIndex(page(), blocks, ["校园生活"]);
+
+    expect(entries.find((entry) => entry.id.endsWith("-guide"))).toMatchObject({ plainText: "附件说明", sectionPath: ["校园生活", "外层章节", "引用内标题"] });
+    expect(entries.find((entry) => entry.id.endsWith("-after"))?.sectionPath).toEqual(["校园生活", "外层章节"]);
+  });
 });

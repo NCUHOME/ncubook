@@ -210,6 +210,24 @@ describe("atomic content publication", () => {
     expect(state.current()).toBe("v2");
   });
 
+  it("validates assets rendered inside quote children", async () => {
+    const state = memoryStore();
+    const input = baseInput(state.store);
+    input.buildPage = async (id) => {
+      const value = publication(id, id === "article" ? "section" : null);
+      if (id === "article") {
+        value.blocks.push({
+          id: "quote", anchor: "b-quote", type: "quote", richText: text("附件"),
+          children: [{ id: "quote-file", anchor: "b-quote-file", type: "file", assetId: "asset-quote-file", name: "资料.pdf" }],
+        });
+        value.assets.push({ id: "asset-quote-file", sourceBlockId: "quote-file", contentVersion: "v2", kind: "file", publicUrl: "https://assets.example.edu/file.pdf", checksum: "file" });
+      }
+      return value;
+    };
+
+    await expect(publishVersion(input)).resolves.toMatchObject({ status: "published" });
+  });
+
   it("rolls the pointer back only to a published version", async () => {
     const state = memoryStore("v2");
     state.published.add("v1");
