@@ -21,7 +21,7 @@
 - 词法召回不得把零相关结果交给模型：候选必须为完整问题子串命中，或 `similarity >= 0.08`；上线前用真实中文问题集复核该阈值，可提高但不得在无评测证据时降低。
 - 回答必须继续遵守 `docs/product/answer-evidence-contract.md`：无可靠来源则返回 `insufficient`，事实性 claim 必须有站内 citation。
 - DeepSeek 明确关闭 thinking 模式，以满足短问答延迟与当前严格 JSON 输出契约。
-- `AI_ANSWER_MODE` 在评测通过前为 `shadow`；只有 answerable grounded success、不可回答问题 abstention、citation 有效率、active `contentVersion` 一致性与真实 provider smoke 均通过后才可设为 `production`。
+- `AI_ANSWER_MODE` 在评测通过前为 `shadow`；只有低于阈值候选过滤率、answerable grounded success、不可回答问题最终 abstention、citation 有效率、active `contentVersion` 一致性与真实 provider smoke 均通过后才可设为 `production`。不可回答问题允许召回主题相关资料，但最终不得输出无依据结论。
 
 ## E4：密钥不进入客户端或 Git
 
@@ -35,3 +35,5 @@
 - preview 通过后再将生产 deployment 指向同一已验证 revision，并绑定现有域名。
 - 任何主路径 5xx、内容版本混合、搜索失效、citation 失效或 AI 无来源事实输出均阻断切换或触发回滚。
 - 切换前必须以可重新构建的旧 Docusaurus revision 完成一次计时的新版→旧版→新版演练；不得只依赖 EdgeOne 最多保留三个成功产物的 deployment history。
+- `/api/ask` 除应用内限流外，必须配置 EdgeOne 平台级速率限制/WAF 规则，防止多实例绕过与 Key 费用滥用。
+- 切换前保存现有 DNS、证书和域名环境绑定快照；切换与回滚都必须复验 HTTPS 和四条核心路径。
