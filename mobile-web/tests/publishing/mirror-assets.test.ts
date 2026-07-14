@@ -54,6 +54,35 @@ describe("Notion asset mirroring", () => {
     })).rejects.toEqual(new AssetMirrorError("file-one", "file-too-large"));
   });
 
+  it("mirrors zip attachments without treating them as executable content", async () => {
+    const upload = vi.fn(async ({ path }: { path: string }) => `https://assets.example.edu/${path}`);
+    const file = node({ id: "zip-one", type: "file", file: { name: "学院实施细则.zip", caption: [], file: { url: "https://notion.example/rules" } } });
+
+    const result = await mirrorNotionAssets([file], {
+      contentVersion: "v1",
+      pageId: "page-1",
+      storage: { upload },
+      download: async () => ({ bytes: new Uint8Array([1, 2, 3]), mediaType: "application/zip" }),
+    });
+
+    expect(result.assets).toHaveLength(1);
+    expect(upload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringContaining("学院实施细则.zip"), mediaType: "application/zip" }));
+  });
+
+  it("preserves legacy Word attachments with their original filename", async () => {
+    const upload = vi.fn(async ({ path }: { path: string }) => `https://assets.example.edu/${path}`);
+    const file = node({ id: "word-one", type: "file", file: { name: "校园长跑评分标准.doc", caption: [], file: { url: "https://notion.example/rules" } } });
+
+    await mirrorNotionAssets([file], {
+      contentVersion: "v1",
+      pageId: "page-1",
+      storage: { upload },
+      download: async () => ({ bytes: new Uint8Array([1, 2, 3]), mediaType: "application/msword" }),
+    });
+
+    expect(upload).toHaveBeenCalledWith(expect.objectContaining({ path: expect.stringContaining("校园长跑评分标准.doc"), mediaType: "application/msword" }));
+  });
+
   it("mirrors assets nested inside columns and lists", async () => {
     const nestedImage = node({ id: "nested-image", type: "image", image: { caption: rich("宿舍照片"), external: { url: "https://example.edu/dorm.png" } } });
     const tree: NotionBlockNode[] = [{ id: "column", type: "column", has_children: true, children: [nestedImage] }];

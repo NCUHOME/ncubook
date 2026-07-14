@@ -107,7 +107,9 @@ export async function runNotionPublicationCommand(command: PublicationCommand): 
       const selectedPage = selected.find((item) => item.node.id === sourcePageId);
       if (!selectedPage) throw new Error(`Unable to find selected Notion page ${sourcePageId}`);
       const page = requireMapValue(normalizedPages, sourcePageId);
-      const blocks = normalizeNotionBlocks(selectedPage.node.children);
+      const blocks = normalizeNotionBlocks(selectedPage.node.children, {
+        onWarning: () => { warningCount += 1; },
+      });
       const mirrored = await mirrorNotionAssets(selectedPage.node.children, {
         contentVersion,
         pageId: sourcePageId,

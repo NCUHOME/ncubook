@@ -10,11 +10,20 @@ export class UnsupportedNotionBlockError extends Error {
   }
 }
 
-export function normalizeNotionBlocks(nodes: NotionBlockNode[]): Block[] {
+type NormalizeBlocksOptions = {
+  onWarning?: (warning: { blockId: string; code: "empty-embed" }) => void;
+};
+
+export function normalizeNotionBlocks(nodes: NotionBlockNode[], options: NormalizeBlocksOptions = {}): Block[] {
   const blocks: Block[] = [];
   for (let index = 0; index < nodes.length;) {
     const node = nodes[index];
     const type = blockType(node);
+    if (type === "embed" && !hasText(payload(node, type).url)) {
+      options.onWarning?.({ blockId: node.id, code: "empty-embed" });
+      index += 1;
+      continue;
+    }
     if (type === "bulleted_list_item" || type === "numbered_list_item") {
       const listNodes: NotionBlockNode[] = [];
       while (index < nodes.length && blockType(nodes[index]) === type) {
@@ -28,18 +37,18 @@ export function normalizeNotionBlocks(nodes: NotionBlockNode[]): Block[] {
         items: listNodes.map((item) => ({
           id: item.id,
           richText: richText(payload(item, type).rich_text),
-          children: normalizeNotionBlocks(item.children),
+          children: normalizeNotionBlocks(item.children, options),
         })),
       });
       continue;
     }
-    blocks.push(normalizeSingle(node, type));
+    blocks.push(normalizeSingle(node, type, options));
     index += 1;
   }
   return blocks;
 }
 
-function normalizeSingle(node: NotionBlockNode, type: string): Block {
+function normalizeSingle(node: NotionBlockNode, type: string, options: NormalizeBlocksOptions): Block {
   const base = { id: node.id, anchor: anchor(node.id) };
   switch (type) {
     case "paragraph":
@@ -57,7 +66,7 @@ function normalizeSingle(node: NotionBlockNode, type: string): Block {
         tone: calloutTone(value.color),
         icon: calloutIcon(value.icon),
         richText: richText(value.rich_text),
-        children: normalizeNotionBlocks(node.children),
+        children: normalizeNotionBlocks(node.children, options),
       };
     }
     case "divider":
@@ -82,7 +91,7 @@ function normalizeSingle(node: NotionBlockNode, type: string): Block {
         type: "columns",
         columns: node.children.map((column) => {
           if (blockType(column) !== "column") throw new UnsupportedNotionBlockError(column.id, blockType(column));
-          return { id: column.id, blocks: normalizeNotionBlocks(column.children) };
+          return { id: column.id, blocks: normalizeNotionBlocks(column.children, options) };
         }),
       };
     case "image":
@@ -102,6 +111,12 @@ function normalizeSingle(node: NotionBlockNode, type: string): Block {
     }
     case "embed":
       return normalizeEmbed(node, payload(node, type));
+    case "bookmark": {
+      const value = payload(node, type);
+      const url = requiredString(value.url, `Notion bookmark ${node.id} URL`);
+      const caption = optionalRichText(value.caption);
+      return { ...base, type: "paragraph", richText: [{ plainText: plainText(caption) || "在新页面打开", href: url, annotations: {} }] };
+    }
     default:
       throw new UnsupportedNotionBlockError(node.id, type);
   }
@@ -194,6 +209,10 @@ function anchor(id: string): string {
 function requiredString(value: unknown, label: string): string {
   if (typeof value !== "string" || !value.trim()) throw new Error(`${label} is required`);
   return value;
+}
+
+function hasText(value: unknown): value is string {
+  return typeof value === "string" && Boolean(value.trim());
 }
 
 function asRecord(value: unknown, label: string): Record<string, unknown> {

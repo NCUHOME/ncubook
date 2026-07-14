@@ -194,6 +194,7 @@ function walkBlocks(blocks: Block[], visit: (block: Block) => void): void {
     if (block.type === "bulleted-list" || block.type === "numbered-list") {
       for (const item of block.items) walkBlocks(item.children, visit);
     }
+    if (block.type === "callout") walkBlocks(block.children, visit);
   }
 }
 

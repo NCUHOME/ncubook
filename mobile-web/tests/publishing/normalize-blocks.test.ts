@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { normalizeNotionBlocks, UnsupportedNotionBlockError } from "@/lib/publishing/normalize-blocks";
 import type { NotionBlockNode, NotionObject } from "@/lib/publishing/notion-client";
 
@@ -100,5 +100,25 @@ describe("Notion block normalization", () => {
         children: [{ type: "bulleted-list", items: [{ id: "nested-item", richText: [{ plainText: "新生必看" }] }] }],
       },
     ]);
+  });
+
+  it("skips empty embed placeholders and reports their source identity", () => {
+    const onWarning = vi.fn();
+
+    expect(normalizeNotionBlocks([
+      node({ id: "empty-embed", type: "embed", embed: { url: "", caption: [] } }),
+      node({ id: "paragraph", type: "paragraph", paragraph: { rich_text: rich("继续阅读") } }),
+    ], { onWarning })).toMatchObject([{ id: "paragraph", type: "paragraph" }]);
+    expect(onWarning).toHaveBeenCalledWith({ blockId: "empty-embed", code: "empty-embed" });
+  });
+
+  it("preserves external bookmarks as source links", () => {
+    expect(normalizeNotionBlocks([
+      node({ id: "cet-link", type: "bookmark", bookmark: { url: "https://cet.neea.edu.cn/", caption: [] } }),
+    ])).toMatchObject([{
+      id: "cet-link",
+      type: "paragraph",
+      richText: [{ plainText: "在新页面打开", href: "https://cet.neea.edu.cn/" }],
+    }]);
   });
 });

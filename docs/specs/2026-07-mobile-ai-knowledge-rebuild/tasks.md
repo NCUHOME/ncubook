@@ -29,10 +29,10 @@
 - [x] T3.1 为关键组件与页面添加视觉基线。
 - [x] T3.2 为页面树、搜索、锚点、AI 上下文添加交互测试。
 - [x] T3.3 验证内容同步、关键词索引与 AI 来源链路。实现 revision `422dcf2`；production AI 仍由 `shadow` 默认开关保护，待 staging 内容版本和评测后启用。
-- [ ] T3.4 迁移首批真实内容；已按 Notion 页面树盘点 37 个公开页面并建立 manifest、parity、资源审计和切换回滚工具（revision `4195e3d`）。Supabase staging 已恢复，发布 schema、Storage bucket、RPC 权限、旧 `public.documents` 表 RLS 和事务冒烟测试已验证；Gate C 的 `divider`/嵌套 callout 扩展已实现并通过完整工程验证。真实 Notion dry-run、逐页内容确认和生产切换尚未执行；Docusaurus 保持可部署。
+- [ ] T3.4 迁移首批真实内容；已按 Notion 页面树盘点 37 个公开页面并建立 manifest、parity、资源审计和切换回滚工具（revision `4195e3d`）。Supabase staging 已恢复，发布 schema、Storage bucket、RPC 权限、旧 `public.documents` 表 RLS 和事务冒烟测试已验证；Gate C 的 `divider`/嵌套 callout 扩展已实现并通过完整工程验证。staging 运行时凭据已在 Git 外配置，37 页权威 dry-run 已通过；逐页内容确认和生产切换尚未执行，Docusaurus 保持可部署。
   - [x] T3.4.1 扩展首次发布 schema、normalizer、renderer 与索引遍历，支持 `divider` 和嵌套 callout。
   - [x] T3.4.2 在 360/390/430px 隔离样张中审核分割线和嵌套 callout，视觉差异不得超出 Gate C 定义；2026-07-13 人类批准，既有视觉基线未更新。
-  - [ ] T3.4.3 配置 staging 运行时凭据并执行 37 页权威 dry-run。
+  - [x] T3.4.3 配置 staging 运行时凭据并执行 37 页权威 dry-run；2026-07-14 使用最小权限 Notion integration 与独立 Supabase publisher key 完成，结果为 37 页、95 条非阻断内容警告、发布事务校验成功。
   - [ ] T3.4.4 发布 staging 内容版本，完成逐页 parity、资源、搜索、citation 与回滚演练。
 
 ## 需求追踪矩阵

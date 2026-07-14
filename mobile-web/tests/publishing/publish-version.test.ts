@@ -143,6 +143,32 @@ describe("atomic content publication", () => {
     expect(state.commits).toEqual([]);
   });
 
+  it("validates search anchors rendered inside nested callout content", async () => {
+    const state = memoryStore();
+    const input = baseInput(state.store);
+    input.buildPage = async (id) => {
+      const value = publication(id, id === "article" ? "section" : null);
+      if (id === "article") {
+        value.blocks.push({
+          id: "notice",
+          anchor: "b-notice",
+          type: "callout",
+          tone: "info",
+          richText: text("公告"),
+          children: [{ id: "nested-line", anchor: "b-nested-line", type: "paragraph", richText: text("嵌套原文") }],
+        });
+        value.searchEntries.push({
+          id: "v2-nested-line", schemaVersion: 1, contentVersion: "v2", pageId: "article", pageTitle: "article",
+          sectionPath: [], anchor: "b-nested-line", plainText: "嵌套原文", blockType: "paragraph", updatedAt: value.page.lastEditedTime,
+        });
+      }
+      return value;
+    };
+
+    await expect(publishVersion(input)).resolves.toMatchObject({ status: "published" });
+    expect(state.current()).toBe("v2");
+  });
+
   it("rolls the pointer back only to a published version", async () => {
     const state = memoryStore("v2");
     state.published.add("v1");

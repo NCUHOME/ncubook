@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { Asset } from "@/lib/content/published-schema";
 import type { NotionBlockNode } from "@/lib/publishing/notion-client";
 
-const DEFAULT_MAX_BYTES = 20 * 1024 * 1024;
+const DEFAULT_MAX_BYTES = 50 * 1024 * 1024;
 
 const allowedMediaTypes = new Map<string, string>([
   ["image/png", "png"],
@@ -11,6 +11,8 @@ const allowedMediaTypes = new Map<string, string>([
   ["image/gif", "gif"],
   ["image/svg+xml", "svg"],
   ["application/pdf", "pdf"],
+  ["application/zip", "zip"],
+  ["application/msword", "doc"],
   ["text/plain", "txt"],
   ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"],
   ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"],
@@ -148,7 +150,7 @@ function safePathPart(value: string): string {
 
 function safeFileName(value: string, extension: string): string {
   const withoutPath = value.split(/[\\/]/).at(-1) ?? "asset";
-  const safe = withoutPath.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  const safe = withoutPath.replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^-+|-+$/g, "");
   const fallback = `asset.${extension}`;
   if (!safe) return fallback;
   return safe.includes(".") ? safe : `${safe}.${extension}`;
