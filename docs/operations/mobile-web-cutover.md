@@ -5,7 +5,7 @@
 ## 交付边界
 
 - 旧入口：现有 Docusaurus 部署，保持可部署、内容冻结但不删除。
-- 新入口：`mobile-web` preview/staging/production 三套环境。
+- 新入口：仓库根 Next.js preview/staging/production 三套环境。
 - 内容真源：Notion 根页面 `24c7d60a-0dda-808b-aaf0-c30129eeff3b`；清单基准为站内发布 37 页，根页面自身不发布。
 - 内容运行源：Supabase 当前 `published_content_pointer` 指向的完整版本。公开请求不访问 Notion。
 - DNS/路由执行人与内容负责人目前均为 `unassigned`，生产切换前必须在演练记录中填写。
@@ -16,7 +16,7 @@ EdgeOne 学生端必须配置：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`
 
 EdgeOne 不配置 `NOTION_TOKEN`、`NOTION_ROOT_PAGE_ID`、`PUBLICATION_ADMIN_TOKEN` 或 `PUBLICATION_ENDPOINT`。`/api/admin/publish-notion` 对匿名及伪造 token 返回同一未授权响应，不能泄露配置状态；内容发布仍从受控本地环境执行。
 
-密钥不得使用 `NEXT_PUBLIC_`。发布 bucket 必须允许公开读取，但只允许服务端写入。应用数据库需应用 `mobile-web/supabase/published-content.sql`。
+密钥不得使用 `NEXT_PUBLIC_`。发布 bucket 必须允许公开读取，但只允许服务端写入。应用数据库需应用 `supabase/published-content.sql`。
 
 ## Staging 演练
 
@@ -26,8 +26,8 @@ EdgeOne 不配置 `NOTION_TOKEN`、`NOTION_ROOT_PAGE_ID`、`PUBLICATION_ADMIN_TO
 4. 发布 staging，记录 `contentVersion`、checksum、页数、资源数、搜索条目数和 Notion edited watermark。
 5. 退出 Notion 登录，验证首页、板块、长文、关键词搜索、图片/附件和 citation 锚点仍可访问。
 6. 运行单测、类型检查、构建、15 条 E2E、3 组视觉基线、迁移 parity、链接/资源审计；AI 启用时再运行评测。
-7. 将 staging alias 指向 mobile-web，观察 30 分钟；随后切回 Docusaurus并记录恢复时间。回滚不得修改内容表。
-8. 再次前进到 mobile-web，复验同一内容版本。两次方向切换都成功后才可申请生产批准。
+7. 将 staging alias 指向根 Next.js 构建，观察 30 分钟；随后切回 Docusaurus并记录恢复时间。回滚不得修改内容表。
+8. 再次前进到根 Next.js 构建，复验同一内容版本。两次方向切换都成功后才可申请生产批准。
 
 ## EdgeOne 入口快照与限流
 

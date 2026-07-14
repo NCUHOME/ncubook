@@ -97,10 +97,10 @@ home-mobile-preview.png
 # Raw eval outputs may contain user questions or feedback.
 ncubook-api/evals/results/
 ncubook-api/evals/candidates/
-mobile-web/test-results/
-mobile-web/migration/reports/*
-!mobile-web/migration/reports/README.md
-!mobile-web/migration/reports/notion-structure-audit.md
+test-results/
+migration/reports/*
+!migration/reports/README.md
+!migration/reports/notion-structure-audit.md
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

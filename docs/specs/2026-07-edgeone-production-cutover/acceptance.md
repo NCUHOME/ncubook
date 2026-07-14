@@ -26,7 +26,8 @@
 ## 工程与生产
 
 - [x] Typecheck、相关单测、全量单测、build 和 E2E 通过。
+- [x] 仓库根目录可由 `npm ci && npm run build` 直接构建 Next.js；旧 Docusaurus 源码归档且固定生产 revision、旧命令与产物目录已记录。
 - [x] GitHub branch/PR 包含本 Gate 的规格、实现和验证记录（Draft PR #2，revision `90f6c1cf6987abe29aae5558a9cce62ab7c1a668`）。
 - [ ] EdgeOne production deployment 对应已验证 revision。
-- [ ] `https://book.ncuos.com` 展示新版 mobile-web，搜索和 AI 可用。
+- [ ] `https://book.ncuos.com` 展示新版根 Next.js 应用，搜索和 AI 可用。
 - [ ] 已保存旧 Docusaurus revision/build 配置与切换前 DNS/证书/域名环境绑定快照，并完成新版→旧版→新版计时演练；两向 HTTPS 与核心路径均通过，回滚不修改 Supabase 内容指针。

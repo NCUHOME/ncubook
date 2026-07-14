@@ -19,7 +19,7 @@
 - 批准人：项目负责人 water
 - 批准日期：2026-07-13
 - 实现 revision：`2662f58405c905e4b923870df46deca6a2128252`
-- 已批准截图目录：`mobile-web/e2e/__screenshots__/mobile-360/`、`mobile-web/e2e/__screenshots__/mobile-390/`、`mobile-web/e2e/__screenshots__/mobile-430/`
+- 已批准截图目录：`e2e/__screenshots__/mobile-360/`、`e2e/__screenshots__/mobile-390/`、`e2e/__screenshots__/mobile-430/`
 - 备注：项目负责人已明确回复“批准 Gate B”；批准矩阵覆盖首页、板块首页、长文、页面树、关键词搜索和 AI 回答六种状态，每种状态均包含 360/390/430px 真实浏览器截图。
 
 ## Gate C：真实内容结构扩展
@@ -40,9 +40,9 @@
 - 视觉约束：复用既有引用线、正文、附件行、Lucide 图标和设计令牌；不新增背景色、卡片、圆角、阴影或页面私有样式。
 - 实现门槛：390px 隔离样张与正式 renderer 的 360/390/430px 实现截图均已由项目负责人批准。
 - 批准原话：项目负责人明确回复“批准 Gate D 方案”。
-- 已批准样张：`mobile-web/e2e/__screenshots__/mobile-390/gate-d-quote.png`
+- 已批准样张：`e2e/__screenshots__/mobile-390/gate-d-quote.png`
 - 样张批准日期：2026-07-14
 - 样张批准原话：项目负责人查看 390px 隔离样张后明确回复“可以了，你先发布我看一下做得怎么样了”。
-- 已批准实现截图：`mobile-web/e2e/__screenshots__/mobile-360/gate-d-quote.png`、`mobile-web/e2e/__screenshots__/mobile-390/gate-d-quote.png`、`mobile-web/e2e/__screenshots__/mobile-430/gate-d-quote.png`
+- 已批准实现截图：`e2e/__screenshots__/mobile-360/gate-d-quote.png`、`e2e/__screenshots__/mobile-390/gate-d-quote.png`、`e2e/__screenshots__/mobile-430/gate-d-quote.png`
 - 实现截图批准日期：2026-07-14
 - 实现截图批准原话：项目负责人查看 360px 与 430px 候选基线后明确回复“批准”。

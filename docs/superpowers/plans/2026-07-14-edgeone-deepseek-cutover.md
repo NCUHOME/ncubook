@@ -4,7 +4,7 @@
 
 **Goal:** Deploy the approved `mobile-web` product to `book.ncuos.com` on Tencent EdgeOne with grounded `deepseek-v4-flash` answers, deterministic search, guarded secrets, and a rehearsed Docusaurus rollback.
 
-**Architecture:** EdgeOne builds `mobile-web/` as a full-stack Next.js 15 project. Supabase remains the published-content runtime; `/api/search` stays deterministic, while `/api/ask` performs thresholded lexical retrieval and then calls DeepSeek Chat Completions with thinking disabled. Production publishing credentials remain absent from EdgeOne.
+**Architecture:** EdgeOne builds `` as a full-stack Next.js 15 project. Supabase remains the published-content runtime; `/api/search` stays deterministic, while `/api/ask` performs thresholded lexical retrieval and then calls DeepSeek Chat Completions with thinking disabled. Production publishing credentials remain absent from EdgeOne.
 
 **Tech Stack:** Next.js 15 App Router, TypeScript, Vitest, Playwright, Supabase/Postgres `pg_trgm`, DeepSeek OpenAI-compatible API, Tencent EdgeOne Pages/Makers, GitHub.
 
@@ -12,24 +12,24 @@
 
 ## File map
 
-- Modify `mobile-web/tests/ai/retrieve.test.ts`: retrieval threshold and optional embedding behavior.
-- Modify `mobile-web/lib/ai/retrieve.ts`: defense-in-depth filtering of weak lexical candidates.
-- Modify `mobile-web/tests/publishing/schema.test.ts`: SQL RPC threshold contract.
-- Modify `mobile-web/supabase/published-content.sql`: filter weak candidates before returning grounding sources.
-- Modify `mobile-web/tests/ai/provider.test.ts`: DeepSeek-compatible chat payload and optional embedding behavior.
-- Modify `mobile-web/lib/ai/provider.ts`: separate answer generation from optional embedding capability.
-- Modify `mobile-web/tests/ai/ask-route.test.ts`: production/shadow failure behavior if needed.
-- Modify `mobile-web/lib/ai/answer-service.ts`: build required chat model and only build embedding model when configured.
-- Modify `mobile-web/.env.example`: exact EdgeOne runtime variables without secrets.
-- Modify `mobile-web/README.md`: DeepSeek and lexical-only production operation.
+- Modify `tests/ai/retrieve.test.ts`: retrieval threshold and optional embedding behavior.
+- Modify `lib/ai/retrieve.ts`: defense-in-depth filtering of weak lexical candidates.
+- Modify `tests/publishing/schema.test.ts`: SQL RPC threshold contract.
+- Modify `supabase/published-content.sql`: filter weak candidates before returning grounding sources.
+- Modify `tests/ai/provider.test.ts`: DeepSeek-compatible chat payload and optional embedding behavior.
+- Modify `lib/ai/provider.ts`: separate answer generation from optional embedding capability.
+- Modify `tests/ai/ask-route.test.ts`: production/shadow failure behavior if needed.
+- Modify `lib/ai/answer-service.ts`: build required chat model and only build embedding model when configured.
+- Modify `.env.example`: exact EdgeOne runtime variables without secrets.
+- Modify `README.md`: DeepSeek and lexical-only production operation.
 - Modify `docs/operations/mobile-web-cutover.md`: EdgeOne environment matrix, DNS snapshot, WAF, smoke and rollback procedure.
-- Create `mobile-web/scripts/smoke-deepseek.ts`: repeatable answerable/unanswerable and latency smoke runner without logging questions or keys.
-- Modify `mobile-web/package.json`: expose the smoke command without adding dependencies.
+- Create `scripts/smoke-deepseek.ts`: repeatable answerable/unanswerable and latency smoke runner without logging questions or keys.
+- Modify `package.json`: expose the smoke command without adding dependencies.
 - Modify `docs/specs/2026-07-edgeone-production-cutover/{tasks,acceptance}.md`: record actual revisions and evidence as tasks pass.
 
 ## Execution convention
 
-All npm commands in Tasks 1–5 run from `mobile-web/` after:
+All npm commands in Tasks 1–5 run from `` after:
 
 ```bash
 cd /Users/water/.config/superpowers/worktrees/ncubook/editorial-mobile-frontend/mobile-web
@@ -40,10 +40,10 @@ Git commands run from the worktree root. No command may print environment-variab
 ### Task 1: Filter unsupported lexical candidates
 
 **Files:**
-- Modify: `mobile-web/tests/ai/retrieve.test.ts`
-- Modify: `mobile-web/lib/ai/retrieve.ts`
-- Modify: `mobile-web/tests/publishing/schema.test.ts`
-- Modify: `mobile-web/supabase/published-content.sql`
+- Modify: `tests/ai/retrieve.test.ts`
+- Modify: `lib/ai/retrieve.ts`
+- Modify: `tests/publishing/schema.test.ts`
+- Modify: `supabase/published-content.sql`
 
 - [ ] **Step 1: Write the failing retrieval test**
 
@@ -92,18 +92,18 @@ Expected: PASS.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add mobile-web/lib/ai/retrieve.ts mobile-web/tests/ai/retrieve.test.ts mobile-web/supabase/published-content.sql mobile-web/tests/publishing/schema.test.ts
+git add lib/ai/retrieve.ts tests/ai/retrieve.test.ts supabase/published-content.sql tests/publishing/schema.test.ts
 git commit -m "fix(ai): reject unrelated grounding candidates"
 ```
 
 ### Task 2: Use DeepSeek V4 Flash without requiring embeddings
 
 **Files:**
-- Modify: `mobile-web/tests/ai/provider.test.ts`
-- Modify: `mobile-web/lib/ai/provider.ts`
-- Modify: `mobile-web/lib/ai/answer-service.ts`
-- Create: `mobile-web/tests/ai/answer-service.test.ts`
-- Modify: `mobile-web/tests/ai/ground-answer.test.ts`
+- Modify: `tests/ai/provider.test.ts`
+- Modify: `lib/ai/provider.ts`
+- Modify: `lib/ai/answer-service.ts`
+- Create: `tests/ai/answer-service.test.ts`
+- Modify: `tests/ai/ground-answer.test.ts`
 
 - [ ] **Step 1: Write failing provider tests**
 
@@ -142,18 +142,18 @@ Expected: PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add mobile-web/lib/ai/provider.ts mobile-web/lib/ai/answer-service.ts mobile-web/tests/ai/provider.test.ts mobile-web/tests/ai/answer-service.test.ts mobile-web/tests/ai/ground-answer.test.ts
+git add lib/ai/provider.ts lib/ai/answer-service.ts tests/ai/provider.test.ts tests/ai/answer-service.test.ts tests/ai/ground-answer.test.ts
 git commit -m "feat(ai): use DeepSeek V4 Flash without embeddings"
 ```
 
 ### Task 3: Document fail-closed EdgeOne runtime
 
 **Files:**
-- Modify: `mobile-web/.env.example`
-- Modify: `mobile-web/README.md`
+- Modify: `.env.example`
+- Modify: `README.md`
 - Modify: `docs/operations/mobile-web-cutover.md`
-- Modify: `mobile-web/tests/publishing/publish-route.test.ts`
-- Modify: `mobile-web/lib/publishing/publish-route.ts` only if the RED test demonstrates a leak
+- Modify: `tests/publishing/publish-route.test.ts`
+- Modify: `lib/publishing/publish-route.ts` only if the RED test demonstrates a leak
 
 - [ ] **Step 1: Locate and extend the admin-route test**
 
@@ -199,17 +199,17 @@ Expected: diff clean; secret scans emit no filenames. Delete captured output aft
 - [ ] **Step 6: Commit**
 
 ```bash
-git add mobile-web/.env.example mobile-web/README.md docs/operations/mobile-web-cutover.md mobile-web/tests/publishing/publish-route.test.ts mobile-web/lib/publishing/publish-route.ts
+git add .env.example README.md docs/operations/mobile-web-cutover.md tests/publishing/publish-route.test.ts lib/publishing/publish-route.ts
 git commit -m "docs: define fail-closed EdgeOne runtime"
 ```
 
 ### Task 4: Add repeatable production smoke validation
 
 **Files:**
-- Create: `mobile-web/scripts/smoke-deepseek.ts`
-- Create: `mobile-web/evals/edgeone-smoke-cases.json`
-- Create: `mobile-web/tests/ai/smoke-report.test.ts`
-- Modify: `mobile-web/package.json`
+- Create: `scripts/smoke-deepseek.ts`
+- Create: `evals/edgeone-smoke-cases.json`
+- Create: `tests/ai/smoke-report.test.ts`
+- Modify: `package.json`
 
 - [ ] **Step 1: Write a failing test for smoke result aggregation**
 
@@ -230,15 +230,15 @@ Expected: aggregator tests pass; mocked run produces a non-secret JSON report.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add mobile-web/scripts/smoke-deepseek.ts mobile-web/evals/edgeone-smoke-cases.json mobile-web/tests/ai/smoke-report.test.ts mobile-web/package.json
+git add scripts/smoke-deepseek.ts evals/edgeone-smoke-cases.json tests/ai/smoke-report.test.ts package.json
 git commit -m "test(ai): add DeepSeek production smoke checks"
 ```
 
 ### Task 5: Full local verification and Supabase RPC deployment
 
 **Files:**
-- Create: `mobile-web/supabase/migrations/20260714_grounding_threshold.sql`
-- Create: `mobile-web/supabase/rollbacks/2026071401_grounding_threshold.sql`
+- Create: `supabase/migrations/20260714_grounding_threshold.sql`
+- Create: `supabase/rollbacks/2026071401_grounding_threshold.sql`
 - Modify: `docs/specs/2026-07-edgeone-production-cutover/tasks.md`
 - Modify: `docs/specs/2026-07-edgeone-production-cutover/acceptance.md`
 
@@ -250,7 +250,7 @@ Expected: PASS.
 
 - [ ] **Step 2: Run all engineering gates**
 
-Run from `mobile-web/`:
+Run from ``:
 
 ```bash
 npm run typecheck

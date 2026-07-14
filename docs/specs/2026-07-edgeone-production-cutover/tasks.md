@@ -3,7 +3,7 @@
 状态：已批准，2026-07-14。
 
 - [x] E0.1 冻结并审阅 Gate E requirements、design、tasks、acceptance 与 approval。
-- [ ] E0.2 将 `mobile-web/` 提升为仓库根 Next.js 项目，移除旧 Docusaurus 根构建入口并记录固定回滚 revision；修正所有路径、CI 和运维说明。
+- [x] E0.2 将 `mobile-web/` 提升为仓库根 Next.js 项目，移除旧 Docusaurus 根构建入口并记录固定回滚 revision；修正所有路径、CI 和运维说明。
 - [x] E1.1 先写失败测试：零相关词法候选被过滤；无 embedding provider 时可召回相关来源；无关问题返回 insufficient。
 - [x] E1.2 为 RPC 增加最低词法相关度过滤，新增 answerable/unanswerable 中文检索评测并验证低分过滤率、recall@8 与最终 abstention 目标。
 - [x] E1.3 拆分 chat 与可选 embedding provider 配置，模型固定 `deepseek-v4-flash` 并显式关闭 thinking。
@@ -28,3 +28,4 @@
 - Supabase RPC 已完成 forward → rollback → forward 演练：旧函数校验和 `1e3107bea11d35d4b9d87150bca301d9`，新版校验和 `ff67850af00ed9e2e04c4a8ee454106e`；回滚恢复旧校验和，最终重新应用新版。活动内容版本始终为 `content-20260714052438077`。
 - Git 工作树与 `.next` 构建产物的密钥扫描均为 0 命中。
 - GitHub Draft PR #2 已更新至 revision `90f6c1cf6987abe29aae5558a9cce62ab7c1a668`。
+- 根目录切换后重新执行：typecheck 通过；Vitest 126 passed、1 skipped；Next.js production build 通过；360/390/430px 非视觉 E2E 18 passed。严格密钥扫描在工作树与根 `.next` 均为 0 命中。

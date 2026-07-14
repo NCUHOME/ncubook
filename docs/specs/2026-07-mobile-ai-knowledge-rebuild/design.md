@@ -4,7 +4,7 @@
 
 ## 技术方向
 
-- `mobile-web/` 是唯一学生端 Next.js 产品前端；Docusaurus 只保留为只读迁移来源，直至 `T3.4` 全部验收。未获单独批准，禁止删除 Docusaurus 页面、路由或内容。
+- 仓库根目录是唯一学生端 Next.js 产品前端；Docusaurus 归档在 `legacy-docusaurus/` 并保留固定生产 revision 作为只读迁移与回滚来源。未获单独批准，禁止删除历史文档内容。
 - 保留现有 API、评测、反馈与运营能力；重构不重写已验证的后端能力。
 - Notion 同步产出站内 page、block-tree、asset、anchor 和 search-index 数据；不以 Markdown 作为发布中间表示。
 - 使用 CSS 设计令牌、Tailwind v4 theme tokens、Lucide 和无样式可访问 primitives 构建设计系统。

@@ -29,6 +29,7 @@ const config: Config = {
       "classic",
       {
         docs: {
+          path: "../docs",
           editUrl: "https://github.com/NCUHOME/ncubook/tree/main",
           routeBasePath: "/docs",
           sidebarPath: "./sidebars.ts",
