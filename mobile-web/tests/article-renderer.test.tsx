@@ -64,4 +64,32 @@ describe("article renderer", () => {
     expect(screen.getByText("公告")).toBeVisible();
     expect(screen.getByText("请每个新生观看新生必看")).toBeVisible();
   });
+
+  it("renders nested quote attachments inside the original quote container", () => {
+    const blocks: Block[] = [{
+      id: "quote",
+      anchor: "b-quote",
+      type: "quote",
+      richText: [{ plainText: "延伸阅读", annotations: {} }],
+      children: [
+        { id: "first-file", anchor: "b-first-file", type: "file", assetId: "asset-first", name: "第一份资料.pdf" },
+        { id: "second-file", anchor: "b-second-file", type: "file", assetId: "asset-second", name: "第二份资料.pdf" },
+      ],
+    }];
+    const assets = new Map([
+      ["asset-first", { id: "asset-first", sourceBlockId: "first-file", contentVersion: "v2", kind: "file" as const, publicUrl: "/first.pdf", checksum: "first" }],
+      ["asset-second", { id: "asset-second", sourceBlockId: "second-file", contentVersion: "v2", kind: "file" as const, publicUrl: "/second.pdf", checksum: "second" }],
+    ]);
+
+    render(<ArticleRenderer blocks={blocks} getAsset={(id) => assets.get(id) ?? null} resolvePageRoute={resolvePageRoute} />);
+
+    const quote = document.getElementById("b-quote");
+    const first = screen.getByRole("link", { name: /第一份资料/ });
+    const second = screen.getByRole("link", { name: /第二份资料/ });
+    expect(quote).toBeInstanceOf(HTMLQuoteElement);
+    expect(quote).toContainElement(first);
+    expect(quote).toContainElement(second);
+    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(first).toHaveAttribute("id", "b-first-file");
+  });
 });

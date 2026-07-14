@@ -7,6 +7,7 @@ import { FileBlock } from "@/src/components/article/FileBlock";
 import { ImageBlock } from "@/src/components/article/ImageBlock";
 import { ListBlock } from "@/src/components/article/ListBlock";
 import { PageLinkBlock } from "@/src/components/article/PageLinkBlock";
+import { QuoteBlock } from "@/src/components/article/QuoteBlock";
 import { RichText } from "@/src/components/article/RichText";
 import { TableBlock } from "@/src/components/article/TableBlock";
 
@@ -24,7 +25,11 @@ function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: Art
   return <div className={className}>{blocks.map((block) => {
     switch (block.type) {
       case "paragraph": return <p id={block.anchor} key={block.id} className="font-body text-body leading-body"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>;
-      case "quote": return <blockquote id={block.anchor} key={block.id} className="border-l border-ink pl-s4 font-body text-body leading-body text-muted"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></blockquote>;
+      case "quote": return <QuoteBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
+        {block.children.length > 0
+          ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3 text-ink" />
+          : null}
+      </QuoteBlock>;
       case "heading": return <HeadingBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
       case "bulleted-list":
       case "numbered-list": return <ListBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
