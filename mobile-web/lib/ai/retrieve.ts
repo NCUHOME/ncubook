@@ -30,6 +30,8 @@ export type RetrievalRepository = {
   }): Promise<RetrievalSource[]>;
 };
 
+const MINIMUM_LEXICAL_SCORE = 0.08;
+
 type RetrieveInput = {
   question: string;
   pageContext?: { pageId: string; anchor?: string };
@@ -62,7 +64,10 @@ export async function retrieveGroundingSources({
   const allowed = new Set(allowedRiskLevels);
 
   return candidates
-    .filter((source) => source.contentVersion === contentVersion && source.school === "ncu" && allowed.has(source.riskLevel))
+    .filter((source) => source.contentVersion === contentVersion
+      && source.school === "ncu"
+      && allowed.has(source.riskLevel)
+      && (source.lexicalScore >= MINIMUM_LEXICAL_SCORE || Boolean(queryEmbedding && source.vectorScore > 0)))
     .map((source) => ({
       source,
       score: source.lexicalScore * 1 + source.vectorScore * 2

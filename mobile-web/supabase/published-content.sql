@@ -328,6 +328,11 @@ as $$
       where pointer.singleton = true
     )
     and page.metadata->>'school' = 'ncu'
+    and (
+      position(lower(p_question) in lower(entry.plain_text)) > 0
+      or similarity(lower(entry.plain_text), lower(p_question)) >= 0.08
+      or (p_query_embedding is not null and entry.embedding is not null)
+    )
   order by
     (greatest(similarity(lower(entry.plain_text), lower(p_question)), case when position(lower(p_question) in lower(entry.plain_text)) > 0 then 1.0 else 0.0 end)
       + case when p_query_embedding is null or entry.embedding is null then 0.0 else 2 * (1 - (entry.embedding <=> p_query_embedding)) end) desc,

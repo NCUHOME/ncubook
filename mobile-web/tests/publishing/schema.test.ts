@@ -87,5 +87,6 @@ describe("versioned published content schema", () => {
     expect(retrieval).toContain("published_content_pointer");
     expect(retrieval).toMatch(/metadata->>'school'\s*=\s*'ncu'/i);
     expect(retrieval).toContain("source_urls");
+    expect(retrieval).toMatch(/position\(lower\(p_question\) in lower\(entry\.plain_text\)\)\s*>\s*0[\s\S]*or\s+similarity\(lower\(entry\.plain_text\),\s*lower\(p_question\)\)\s*>=\s*0\.08[\s\S]*or\s+\(p_query_embedding is not null and entry\.embedding is not null\)/i);
   });
 });

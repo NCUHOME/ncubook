@@ -51,6 +51,18 @@ describe("current-version grounded retrieval", () => {
     expect(results.map((item) => item.id)).toEqual(["current"]);
   });
 
+  it("rejects zero and below-threshold lexical candidates without embeddings", async () => {
+    const repo = repository([
+      source({ id: "zero", lexicalScore: 0 }),
+      source({ id: "below", lexicalScore: 0.079 }),
+      source({ id: "boundary", lexicalScore: 0.08 }),
+    ]);
+
+    const results = await retrieveGroundingSources({ question: "环游车费用", repository: repo });
+
+    expect(results.map((item) => item.id)).toEqual(["boundary"]);
+  });
+
   it("returns an empty list without calling providers for blank questions or empty retrieval", async () => {
     const repo = repository([]);
     const embedding = { embed: vi.fn(async () => [[0.1]]) };
