@@ -238,7 +238,7 @@ git commit -m "test(ai): add DeepSeek production smoke checks"
 
 **Files:**
 - Create: `mobile-web/supabase/migrations/20260714_grounding_threshold.sql`
-- Create: `mobile-web/supabase/migrations/20260714_grounding_threshold.rollback.sql`
+- Create: `mobile-web/supabase/rollbacks/2026071401_grounding_threshold.sql`
 - Modify: `docs/specs/2026-07-edgeone-production-cutover/tasks.md`
 - Modify: `docs/specs/2026-07-edgeone-production-cutover/acceptance.md`
 

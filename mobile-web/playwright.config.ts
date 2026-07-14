@@ -9,7 +9,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run build && npm run start -- --hostname 127.0.0.1 --port 3100",
+    command: "PUBLISHED_CONTENT_ENV=test SUPABASE_URL= SUPABASE_SERVICE_ROLE_KEY= AI_ANSWER_MODE=fixture npm run build && PUBLISHED_CONTENT_ENV=test SUPABASE_URL= SUPABASE_SERVICE_ROLE_KEY= AI_ANSWER_MODE=fixture npm run start -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: !process.env.CI,
   },
