@@ -34,6 +34,8 @@
   - [x] T3.4.2 在 360/390/430px 隔离样张中审核分割线和嵌套 callout，视觉差异不得超出 Gate C 定义；2026-07-13 人类批准，既有视觉基线未更新。
   - [x] T3.4.3 配置 staging 运行时凭据并执行 37 页权威 dry-run；2026-07-14 使用最小权限 Notion integration 与独立 Supabase publisher key 完成，结果为 37 页、95 条非阻断内容警告、发布事务校验成功。
   - [ ] T3.4.4 发布 staging 内容版本，完成逐页 parity、资源、搜索、citation 与回滚演练；staging 发布、92/92 资源可达、1067/1067 搜索锚点、真实 citation 跳转及事务回滚已通过，待解决引用块内两个 PDF 的无损渲染后完成。
+  - [ ] T3.4.5 Gate D：扩展 quote children 的 schema、normalizer、renderer、搜索与审计遍历；结构方向已批准，待 390px 样张批准后实现。
+  - [ ] T3.4.6 重新发布 37 页 staging 版本并确认两个引用内 PDF 具有正文入口，再完成最终迁移审计。
 
 ## 需求追踪矩阵
 

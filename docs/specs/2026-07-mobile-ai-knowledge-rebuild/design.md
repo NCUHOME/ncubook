@@ -36,7 +36,8 @@ flowchart TD
 - `ColumnsBlock` 在手机按逻辑阅读顺序堆叠；`TableBlock` 可水平滚动；资源由站内存储提供。
 - `DividerBlock` 使用既有 `border` 令牌形成单条正文分隔线，不附加图标、标题或卡片容器。
 - `CalloutBlock` 可持有 `children: Block[]`；先呈现提示语，再在同一提示语义容器内按原块树顺序渲染子内容。子内容复用 renderer，不复制另一套富文本规则。
-- `divider` 不进入搜索索引；callout 子块按自身可检索语义进入索引，避免正文因嵌套位置而消失。
+- `quote` 可持有 `children: Block[]`；先呈现引用文字，再在同一引用语义容器中递归渲染附件等子块。无子块 quote 保持 Gate B 视觉不变，详细契约见 `gate-d-quote-children.md`。
+- `divider` 不进入搜索索引；callout 与 quote 子块按自身可检索语义进入索引，避免正文因嵌套位置而消失。
 - AI 检索使用由标题/段落切出的文本和元数据，不改变人读文章；引用、低置信和返回行为遵循 `docs/product/answer-evidence-contract.md`。
 
 ## 视觉实施

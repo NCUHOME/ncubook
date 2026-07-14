@@ -50,7 +50,8 @@ type RichText = Array<{
 type BaseBlock = { id: string; anchor: string }; // "b-" + sourceBlockId
 
 type Block =
-  | (BaseBlock & { type: "paragraph" | "quote"; richText: RichText })
+  | (BaseBlock & { type: "paragraph"; richText: RichText })
+  | (BaseBlock & { type: "quote"; richText: RichText; children: Block[] })
   | (BaseBlock & { type: "heading"; level: 1 | 2 | 3; richText: RichText })
   | (BaseBlock & { type: "bulleted-list" | "numbered-list"; items: Array<{ id: string; richText: RichText; children: Block[] }> })
   | (BaseBlock & { type: "callout"; tone: "info" | "warning" | "risk"; icon?: string; richText: RichText; children: Block[] })
@@ -68,7 +69,8 @@ type Block =
 - 已删除块的旧 anchor 返回同页的“内容已更新”提示，并提供最近可用的上级标题；不得默默跳到无关文本。
 - `Block` 判别联合是唯一的发布端块 schema；未知块不得进入 `Block`。同步器必须把它作为发布失败记录，不得用猜测字段或纯文本替代。
 - `columns` 数组顺序就是阅读顺序；手机按数组顺序堆叠。`table.rows` 的第一个 row 在 `hasHeaderRow` 为真时必须为表头。
-- `callout.children` 保留 Notion 提示块内的原始子块顺序；`divider` 只保存稳定身份与锚点，不生成搜索文本。
+- `callout.children` 和 `quote.children` 保留 Notion 容器内的原始子块顺序；`divider` 只保存稳定身份与锚点，不生成搜索文本。
+- Gate D 是 schema v1 的向后兼容增量。持久化兼容输入使用 `StoredQuoteBlock.children?: StoredBlock[]`，允许读取 Gate D 之前的 v1 数据；运行时 canonical `Block` 始终使用必填的 `quote.children: Block[]`。新发布器必须写出 `children`，Supabase decoder 必须在边界把旧输入归一化为运行时必填数组；renderer 不处理 `undefined`，也不得直接接收未经解码的数据库 JSON。
 - `RichText.href` 是公开外链；`pageId` 是站内页面链接。两者不可同时存在；发布端将 `pageId` 解析为站内路由。
 
 ## Asset 和 embed
