@@ -1,6 +1,6 @@
 import type { EmbeddingModel } from "@/lib/ai/provider";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { assertServerOnly } from "@/lib/server-only";
+import { assertServerOnly } from "../server-only.ts";
 
 assertServerOnly("AI retrieval");
 
