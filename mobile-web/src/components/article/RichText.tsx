@@ -4,6 +4,7 @@ import type { RichText as RichTextValue, RichTextColor } from "@/lib/content/pub
 type RichTextProps = {
   value: RichTextValue;
   resolvePageRoute: (pageId: string) => string;
+  defaultTone?: "ink" | "muted";
 };
 
 const colorClass: Record<RichTextColor, string> = {
@@ -18,10 +19,12 @@ const colorClass: Record<RichTextColor, string> = {
   pink: "text-ink",
 };
 
-export function RichText({ value, resolvePageRoute }: RichTextProps) {
+export function RichText({ value, resolvePageRoute, defaultTone = "ink" }: RichTextProps) {
   return value.map((item, index) => {
     const classes = [
-      colorClass[item.annotations.color ?? "default"],
+      item.annotations.color === undefined || item.annotations.color === "default"
+        ? defaultTone === "muted" ? "text-muted" : "text-ink"
+        : colorClass[item.annotations.color],
       item.annotations.bold ? "font-bold" : "",
       item.annotations.italic ? "italic" : "",
       item.annotations.underline ? "underline underline-offset-4" : "",

@@ -38,8 +38,11 @@
 - 批准日期：2026-07-14
 - 批准范围：quote 原生持有 `children: Block[]`，保留 `写在前面` 引用块内两个 PDF 的父子关系、顺序、原始显示名和站内镜像入口；不得扁平化或修改 Notion 原文。
 - 视觉约束：复用既有引用线、正文、附件行、Lucide 图标和设计令牌；不新增背景色、卡片、圆角、阴影或页面私有样式。
-- 实现门槛：390px 隔离样张仍须由项目负责人批准；批准前不得修改正式 quote renderer。
+- 实现门槛：390px 隔离样张与正式 renderer 的 360/390/430px 实现截图均已由项目负责人批准。
 - 批准原话：项目负责人明确回复“批准 Gate D 方案”。
 - 已批准样张：`mobile-web/e2e/__screenshots__/mobile-390/gate-d-quote.png`
 - 样张批准日期：2026-07-14
 - 样张批准原话：项目负责人查看 390px 隔离样张后明确回复“可以了，你先发布我看一下做得怎么样了”。
+- 已批准实现截图：`mobile-web/e2e/__screenshots__/mobile-360/gate-d-quote.png`、`mobile-web/e2e/__screenshots__/mobile-390/gate-d-quote.png`、`mobile-web/e2e/__screenshots__/mobile-430/gate-d-quote.png`
+- 实现截图批准日期：2026-07-14
+- 实现截图批准原话：项目负责人查看 360px 与 430px 候选基线后明确回复“批准”。
