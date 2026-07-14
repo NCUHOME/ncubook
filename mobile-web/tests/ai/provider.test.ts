@@ -18,6 +18,21 @@ function provider(fetchImpl: typeof fetch, overrides: Partial<Parameters<typeof 
 }
 
 describe("structured AI provider", () => {
+  it("generates non-thinking DeepSeek answers without an embedding model", async () => {
+    const fetchImpl = vi.fn<typeof fetch>()
+      .mockResolvedValue(new Response(JSON.stringify(modelBody(validAnswer)), { status: 200 }));
+    const client = provider(fetchImpl, { chatModel: "deepseek-v4-flash", embeddingModel: undefined });
+
+    await expect(client.generateAnswer({ system: "system", user: "user", maxOutputTokens: 100 })).resolves.toMatchObject({ confidence: "grounded" });
+    expect(client).not.toHaveProperty("embed");
+    const request = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body)) as Record<string, unknown>;
+    expect(request).toMatchObject({
+      model: "deepseek-v4-flash",
+      thinking: { type: "disabled" },
+      response_format: { type: "json_object" },
+    });
+  });
+
   it("parses the strict claim schema and embeddings", async () => {
     const fetchImpl = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(JSON.stringify(modelBody(validAnswer)), { status: 200 }))
@@ -25,7 +40,7 @@ describe("structured AI provider", () => {
     const client = provider(fetchImpl);
 
     await expect(client.generateAnswer({ system: "system", user: "user", maxOutputTokens: 100 })).resolves.toMatchObject({ confidence: "grounded", claims: [{ sourceIds: ["s1"] }] });
-    await expect(client.embed(["环游车"])).resolves.toEqual([[0.1, 0.2]]);
+    await expect(client.embed?.(["环游车"])).resolves.toEqual([[0.1, 0.2]]);
   });
 
   it("rejects non-JSON, schema mismatch, and token truncation", async () => {

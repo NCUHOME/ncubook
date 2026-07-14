@@ -34,7 +34,7 @@ type ProviderOptions = {
   baseUrl: string;
   apiKey: string;
   chatModel: string;
-  embeddingModel: string;
+  embeddingModel?: string;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
   sleep?: (milliseconds: number) => Promise<void>;
@@ -48,8 +48,8 @@ export function createOpenAICompatibleProvider({
   fetchImpl = fetch,
   timeoutMs = 8000,
   sleep = wait,
-}: ProviderOptions): AnswerModel & EmbeddingModel {
-  for (const [label, value] of [["base URL", baseUrl], ["API key", apiKey], ["chat model", chatModel], ["embedding model", embeddingModel]]) {
+}: ProviderOptions): AnswerModel & Partial<EmbeddingModel> {
+  for (const [label, value] of [["base URL", baseUrl], ["API key", apiKey], ["chat model", chatModel]]) {
     if (!value.trim()) throw new Error(`AI provider ${label} is required`);
   }
 
@@ -89,6 +89,7 @@ export function createOpenAICompatibleProvider({
       const response = await request("/chat/completions", {
         model: chatModel,
         messages: [{ role: "system", content: system }, { role: "user", content: user }],
+        thinking: { type: "disabled" },
         response_format: { type: "json_object" },
         temperature: 0,
         max_tokens: maxOutputTokens,
@@ -113,7 +114,7 @@ export function createOpenAICompatibleProvider({
         ? { ...answer, usage: { inputTokens, outputTokens } }
         : answer;
     },
-    async embed(texts) {
+    ...(embeddingModel?.trim() ? { async embed(texts: string[]) {
       if (texts.length === 0) return [];
       const response = await request("/embeddings", { model: embeddingModel, input: texts });
       if (!Array.isArray(response.data)) throw new ProviderError("invalid-response");
@@ -128,7 +129,7 @@ export function createOpenAICompatibleProvider({
       }).sort((left, right) => left.index - right.index);
       if (ordered.length !== texts.length) throw new ProviderError("invalid-response");
       return ordered.map((item) => item.embedding);
-    },
+    } } : {}),
   };
 }
 
