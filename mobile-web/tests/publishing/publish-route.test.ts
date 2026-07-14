@@ -13,6 +13,20 @@ function request(body: unknown, token?: string) {
 }
 
 describe("Notion publication admin route", () => {
+  it("fails closed without revealing whether an admin token is configured", async () => {
+    const run = vi.fn<PublicationCommandRunner>();
+    const handler = createPublishNotionHandler({ expectedToken: undefined, run });
+
+    const anonymous = await handler(request({ operation: "publish", all: true }));
+    const forged = await handler(request({ operation: "publish", all: true }, "forged-token"));
+
+    expect(anonymous.status).toBe(401);
+    expect(forged.status).toBe(401);
+    expect(await anonymous.json()).toEqual({ ok: false, error: "unauthorized" });
+    expect(await forged.json()).toEqual({ ok: false, error: "unauthorized" });
+    expect(run).not.toHaveBeenCalled();
+  });
+
   it("rejects missing and invalid admin tokens", async () => {
     const run = vi.fn<PublicationCommandRunner>();
     const handler = createPublishNotionHandler({ expectedToken: "admin-secret", run });

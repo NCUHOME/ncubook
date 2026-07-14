@@ -13,8 +13,7 @@ type PublishHandlerOptions = {
 
 export function createPublishNotionHandler({ expectedToken, run }: PublishHandlerOptions) {
   return async function handle(request: Request): Promise<Response> {
-    if (!expectedToken) return json({ ok: false, error: "admin_token_not_configured" }, 503);
-    if (!safeTokenEqual(bearerToken(request), expectedToken)) {
+    if (!expectedToken || !safeTokenEqual(bearerToken(request), expectedToken)) {
       return json({ ok: false, error: "unauthorized" }, 401);
     }
 

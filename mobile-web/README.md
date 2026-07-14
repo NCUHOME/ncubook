@@ -81,3 +81,20 @@ ANSWER_EVAL_ENDPOINT=https://staging.example.edu/api/ask npm run eval:answers
 ```
 
 评测必须达到 `evals/thresholds.json`，其中 citation 有效率必须为 100%，敏感问题不允许出现无支持事实。模型辅助的语义支持评分只能提供人工复核线索，不能单独批准上线。异常时立即将 `AI_ANSWER_MODE` 改为 `shadow`，再轮换 `AI_PROVIDER_API_KEY`；该操作不影响关键词搜索和文档阅读。
+
+## EdgeOne 学生端运行时
+
+生产站由 EdgeOne 直接运行本目录的 Next.js 应用。学生端环境只配置读取已发布内容和问答所需变量：
+
+```dotenv
+PUBLISHED_CONTENT_ENV=production
+AI_ANSWER_MODE=shadow
+AI_PROVIDER_BASE_URL=https://api.deepseek.com
+AI_CHAT_MODEL=deepseek-v4-flash
+AI_REQUEST_TIMEOUT_MS=8000
+AI_RATE_LIMIT_PER_MINUTE=10
+```
+
+`AI_PROVIDER_API_KEY` 与 `SUPABASE_SERVICE_ROLE_KEY` 只写入 EdgeOne 加密环境变量，绝不使用 `NEXT_PUBLIC_` 前缀。DeepSeek 不提供当前 schema 需要的 embedding，因此本次不设置 `AI_EMBEDDING_MODEL`；问答使用发布库的 trigram/substring 词法召回，低于批准阈值的候选会在数据库和 TypeScript 两层被过滤。
+
+EdgeOne 不配置 `NOTION_TOKEN`、`NOTION_ROOT_PAGE_ID`、`PUBLICATION_ADMIN_TOKEN` 或 `PUBLICATION_ENDPOINT`。因此远程发布路由始终 fail closed；内容发布继续由受控本地流程执行。关键词搜索仍完全独立，不调用 DeepSeek。
