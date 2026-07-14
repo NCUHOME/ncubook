@@ -11,3 +11,11 @@
 - 审阅修正：Gate E 不启用远程 Notion 发布，也不向 EdgeOne 配置 Notion/publisher 写凭据。
 - 回滚约束：旧 Docusaurus deployment 必须保留可恢复。
 - 批准原话：项目负责人明确表示“对啊，就应该这样。使用 deepseek v4 flash 的模型……改完后上传 github 部署到 edgeone 上”。
+
+## Gate E 根目录部署修正
+
+- 状态：approved
+- 批准人：项目负责人 water
+- 批准日期：2026-07-14
+- 决策：新版 Next.js 从 `mobile-web/` 提升为仓库根项目，继续沿用 EdgeOne 对根目录和 `main` 的 Git 自动部署；旧 Docusaurus 通过固定 Git revision 保持可重建回滚，不与新版共享根构建入口。
+- 批准上下文：项目负责人询问“那为什么不把我们新网站放在最外层”，在收到上述迁移与回滚方案后回复“嗯”。

@@ -3,6 +3,7 @@
 状态：已批准，2026-07-14。
 
 - [x] E0.1 冻结并审阅 Gate E requirements、design、tasks、acceptance 与 approval。
+- [ ] E0.2 将 `mobile-web/` 提升为仓库根 Next.js 项目，移除旧 Docusaurus 根构建入口并记录固定回滚 revision；修正所有路径、CI 和运维说明。
 - [x] E1.1 先写失败测试：零相关词法候选被过滤；无 embedding provider 时可召回相关来源；无关问题返回 insufficient。
 - [x] E1.2 为 RPC 增加最低词法相关度过滤，新增 answerable/unanswerable 中文检索评测并验证低分过滤率、recall@8 与最终 abstention 目标。
 - [x] E1.3 拆分 chat 与可选 embedding provider 配置，模型固定 `deepseek-v4-flash` 并显式关闭 thinking。

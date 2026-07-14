@@ -5,7 +5,8 @@
 ## E1：生产入口保持不变
 
 - 学生继续通过 `https://book.ncuos.com` 访问产品。
-- 腾讯 EdgeOne Pages/Makers 是新版 `mobile-web` 的生产部署平台；Vercel 预览地址不得成为对外正式入口。
+- 腾讯 EdgeOne Pages/Makers 是新版 Next.js 学生端的生产部署平台；Vercel 预览地址不得成为对外正式入口。
+- 新版 Next.js 必须成为仓库根项目，使现有 EdgeOne 根目录 Git 自动部署在 `main` 更新后直接构建新版；不得长期依赖一个容易被遗忘的 `mobile-web/` 子目录配置。
 - 旧 Docusaurus revision 必须保留可部署，并形成可执行的入口回滚路径。
 
 ## E2：EdgeOne 上完整保留学生端能力
