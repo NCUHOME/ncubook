@@ -1,0 +1,40 @@
+import Link from "next/link";
+import type { RichText as RichTextValue, RichTextColor } from "@/lib/content/published-schema";
+
+type RichTextProps = {
+  value: RichTextValue;
+  resolvePageRoute: (pageId: string) => string;
+  defaultTone?: "ink" | "muted";
+};
+
+const colorClass: Record<RichTextColor, string> = {
+  default: "text-ink",
+  gray: "text-muted",
+  red: "text-danger",
+  orange: "text-warning",
+  yellow: "text-warning",
+  green: "text-ink",
+  blue: "text-info",
+  purple: "text-ink",
+  pink: "text-ink",
+};
+
+export function RichText({ value, resolvePageRoute, defaultTone = "ink" }: RichTextProps) {
+  return value.map((item, index) => {
+    const classes = [
+      item.annotations.color === undefined || item.annotations.color === "default"
+        ? defaultTone === "muted" ? "text-muted" : "text-ink"
+        : colorClass[item.annotations.color],
+      item.annotations.bold ? "font-bold" : "",
+      item.annotations.italic ? "italic" : "",
+      item.annotations.underline ? "underline underline-offset-4" : "",
+      item.annotations.strikethrough ? "line-through" : "",
+      item.annotations.code ? "font-mono" : "",
+    ].filter(Boolean).join(" ");
+    const content = <span className={classes}>{item.plainText}</span>;
+
+    if (item.pageId) return <Link className="focus-ring underline underline-offset-4" href={resolvePageRoute(item.pageId)} key={index}>{content}</Link>;
+    if (item.href) return <a className="focus-ring underline underline-offset-4" href={item.href} key={index}>{content}</a>;
+    return <span key={index}>{content}</span>;
+  });
+}

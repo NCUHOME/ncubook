@@ -1,0 +1,77 @@
+{
+  "name": "ncubook",
+  "version": "1.0",
+  "private": true,
+  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef",
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "notion:plan": "node scripts/notion-content-sync.mjs plan",
+    "notion:check": "node scripts/notion-content-sync.mjs check",
+    "notion:import:dry": "node scripts/notion-content-sync.mjs import:dry",
+    "notion:import": "node scripts/notion-content-sync.mjs import",
+    "notion:export:dry": "node scripts/notion-content-sync.mjs export:dry",
+    "notion:export": "node scripts/notion-content-sync.mjs export",
+    "test:ai-assistant-meta": "node scripts/test-ai-assistant-meta.mjs",
+    "test:notion-sync": "node scripts/test-notion-content-sync.mjs",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.8.1",
+    "@docusaurus/faster": "^3.8.1",
+    "@docusaurus/plugin-ideal-image": "^3.8.1",
+    "@docusaurus/plugin-pwa": "^3.8.1",
+    "@docusaurus/preset-classic": "^3.8.1",
+    "@docusaurus/theme-mermaid": "^3.8.1",
+    "@easyops-cn/docusaurus-search-local": "^0.52.1",
+    "@mdx-js/react": "^3.1.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.553.0",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@docusaurus/eslint-plugin": "^3.8.1",
+    "@docusaurus/module-type-aliases": "^3.8.1",
+    "@docusaurus/plugin-rsdoctor": "^3.8.1",
+    "@docusaurus/tsconfig": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
+    "typescript": "~5.8.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "core-js",
+      "core-js-pure",
+      "fsevents",
+      "sharp"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

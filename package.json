@@ -1,69 +1,43 @@
 {
-  "name": "ncubook",
-  "version": "1.0",
+  "name": "cijian-mobile-web",
+  "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef",
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
-    "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
-    "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --grep-invert @visual",
+    "test:visual": "playwright test --grep @visual",
+    "publish:notion": "node scripts/publish-notion.ts",
+    "eval:answers": "node scripts/run-answer-evals.ts",
+    "smoke:edgeone": "node scripts/smoke-deepseek.ts",
+    "migration:inventory": "node scripts/migration/inventory.ts",
+    "migration:compare": "node scripts/migration/compare-publication.ts",
+    "migration:audit": "node scripts/migration/check-links-assets.ts"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.8.1",
-    "@docusaurus/faster": "^3.8.1",
-    "@docusaurus/plugin-ideal-image": "^3.8.1",
-    "@docusaurus/plugin-pwa": "^3.8.1",
-    "@docusaurus/preset-classic": "^3.8.1",
-    "@docusaurus/theme-mermaid": "^3.8.1",
-    "@easyops-cn/docusaurus-search-local": "^0.52.1",
-    "@mdx-js/react": "^3.1.0",
-    "clsx": "^2.1.1",
+    "@radix-ui/react-dialog": "^1.1.19",
+    "@supabase/supabase-js": "^2.49.0",
     "lucide-react": "^0.553.0",
-    "prism-react-renderer": "^2.4.1",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-markdown": "^10.1.0",
-    "rehype-katex": "^7.0.1",
-    "remark-gfm": "^4.0.1",
-    "remark-math": "^6.0.0"
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@docusaurus/eslint-plugin": "^3.8.1",
-    "@docusaurus/module-type-aliases": "^3.8.1",
-    "@docusaurus/plugin-rsdoctor": "^3.8.1",
-    "@docusaurus/tsconfig": "^3.8.1",
-    "@docusaurus/types": "^3.8.1",
-    "typescript": "~5.8.3"
-  },
-  "browserslist": {
-    "production": [
-      ">0.5%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 3 chrome version",
-      "last 3 firefox version",
-      "last 5 safari version"
-    ]
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "core-js",
-      "core-js-pure",
-      "fsevents",
-      "sharp"
-    ]
-  },
-  "engines": {
-    "node": ">=18.0"
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "jsdom": "^29.1.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   }
 }

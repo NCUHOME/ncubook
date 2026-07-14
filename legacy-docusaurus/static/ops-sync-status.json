@@ -1,0 +1,58 @@
+{
+  "updatedAt": "2026-04-24T08:05:04.446Z",
+  "source": "lark-cli user sync",
+  "totals": {
+    "pendingBeforeSync": 0,
+    "syncedAfterRun": 3,
+    "failed": 0,
+    "created": 0,
+    "updated": 3
+  },
+  "feedback": {
+    "totalEligible": 3,
+    "created": 0,
+    "updated": 3
+  },
+  "knowledgeGaps": {
+    "totalEligible": 0,
+    "created": 0,
+    "updated": 0
+  },
+  "recentPendingBeforeSync": [],
+  "recentSynced": [
+    {
+      "syncKey": "feedback:fdc45dbc-6c7d-4219-b990-5040bd30bc09",
+      "entityType": "feedback",
+      "itemId": "fdc45dbc-6c7d-4219-b990-5040bd30bc09",
+      "title": "/docs/academics",
+      "pagePath": "/docs/academics",
+      "sourceLabel": "文档页面",
+      "statusLabel": "已同步更新",
+      "occurredAt": "2026-04-23T10:05:10.644287+00:00",
+      "recordId": "recvhGZVXVW1vX"
+    },
+    {
+      "syncKey": "feedback:8cc1e6b4-9514-4403-8cdc-d74cddfd3689",
+      "entityType": "feedback",
+      "itemId": "8cc1e6b4-9514-4403-8cdc-d74cddfd3689",
+      "title": "食堂哪家好吃？",
+      "pagePath": "/docs/onboarding",
+      "sourceLabel": "Agent 回答",
+      "statusLabel": "已同步更新",
+      "occurredAt": "2026-04-23T09:19:17.975235+00:00",
+      "recordId": "recvhGZVom6zWW"
+    },
+    {
+      "syncKey": "feedback:cfe81b38-f21d-44b2-b9f5-ea0f273a1164",
+      "entityType": "feedback",
+      "itemId": "cfe81b38-f21d-44b2-b9f5-ea0f273a1164",
+      "title": "/docs/contributors/contributing",
+      "pagePath": "/docs/contributors/contributing",
+      "sourceLabel": "文档页面",
+      "statusLabel": "已同步更新",
+      "occurredAt": "2026-04-23T09:18:44.18509+00:00",
+      "recordId": "recvhGZV4vUSeY"
+    }
+  ],
+  "recentFailed": []
+}

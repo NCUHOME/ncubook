@@ -6,7 +6,17 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "ingest": "tsx scripts/ingest.ts"
+        "ingest": "tsx scripts/ingest.ts",
+        "eval": "tsx scripts/run-eval.ts",
+        "test:health": "tsx scripts/test-health.ts",
+        "test:eval-analysis": "tsx scripts/test-eval-analysis.ts",
+        "eval:candidates": "tsx scripts/export-eval-candidates.ts",
+        "test:chat-model-config": "tsx scripts/test-chat-model-config.ts",
+        "test:eval-candidates": "tsx scripts/test-eval-candidates.ts",
+        "test:source-filter": "tsx scripts/test-official-source-filter.ts",
+        "check:admin": "tsx scripts/run-admin-demo.ts --check",
+        "demo:admin": "tsx scripts/run-admin-demo.ts",
+        "sync:feishu": "tsx scripts/sync-feedback-to-feishu.ts"
     },
     "dependencies": {
         "@ai-sdk/google": "^3.0.43",

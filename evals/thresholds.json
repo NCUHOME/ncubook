@@ -1,0 +1,7 @@
+{
+  "citationValidity": 1,
+  "abstentionAccuracy": 1,
+  "unsupportedSensitiveClaims": 0,
+  "forbiddenHallucinations": 0,
+  "p95LatencyMs": 5000
+}

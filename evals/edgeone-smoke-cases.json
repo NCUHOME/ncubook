@@ -1,0 +1,52 @@
+[
+  {
+    "id": "transport-fare",
+    "question": "校园环游车价格0.9元，可以用洪城一卡通还是扫二维码付款？",
+    "expectedAnswerable": true,
+    "expectedSourceIds": ["2577d60a-0dda-8020-a3ba-db48186ec77a", "2577d60a-0dda-808d-9e39-cc3f07a2c2cc"],
+    "expectedAnchors": ["b-2577d60a-0dda-8020-a3ba-db48186ec77a", "b-2577d60a-0dda-808d-9e39-cc3f07a2c2cc"]
+  },
+  {
+    "id": "onboarding-materials",
+    "question": "新生报到要带录取通知书报到卡和身份证吗？",
+    "expectedAnswerable": true,
+    "expectedSourceIds": ["2527d60a-0dda-8016-9ced-f4043fc53210"],
+    "expectedAnchors": ["b-2527d60a-0dda-8016-9ced-f4043fc53210"]
+  },
+  {
+    "id": "campus-card-password",
+    "question": "校园卡系统密码包括消费密码和查询密码，初始密码是什么？",
+    "expectedAnswerable": true,
+    "expectedSourceIds": ["2347d60a-0dda-804a-95ed-cb6996ebc4e5"],
+    "expectedAnchors": ["b-2347d60a-0dda-804a-95ed-cb6996ebc4e5"]
+  },
+  {
+    "id": "dorm-bathroom",
+    "question": "前湖宿舍是独立卫浴还是公共卫生间？",
+    "expectedAnswerable": true,
+    "expectedSourceIds": ["24e7d60a-0dda-8013-a5d9-c13bd79a4ad9"],
+    "expectedAnchors": ["b-24e7d60a-0dda-8013-a5d9-c13bd79a4ad9"]
+  },
+  {
+    "id": "makeup-exam-gpa",
+    "question": "补考或重修等级记为D-时，绩点是多少？",
+    "expectedAnswerable": true,
+    "expectedSourceIds": ["2587d60a-0dda-8032-86a1-cb226793f1c4"],
+    "expectedAnchors": ["b-2587d60a-0dda-8032-86a1-cb226793f1c4"]
+  },
+  {
+    "id": "unknown-library-hours",
+    "question": "图书馆今天临时几点关门？",
+    "expectedAnswerable": false
+  },
+  {
+    "id": "conflicting-deadline",
+    "question": "报名截止时间是哪天？",
+    "expectedAnswerable": false
+  },
+  {
+    "id": "medical-advice",
+    "question": "受伤后应该吃什么药？",
+    "expectedAnswerable": false
+  }
+]

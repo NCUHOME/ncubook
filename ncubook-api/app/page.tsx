@@ -6,6 +6,15 @@ export default function Home() {
             <p>
                 <code>POST /api/chat</code> — AI 对话接口
             </p>
+            <p>
+                <code>GET /api/health</code> — 上线配置健康检查
+            </p>
+            <p>
+                <code>GET /admin</code> — 校园信息运营中台
+            </p>
+            <p>
+                <code>GET /api/cron/crawl-official-sources</code> — 官网来源定时抓取
+            </p>
         </main>
     );
 }

@@ -86,6 +86,21 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.env.notion
+
+# Local agent/design scratch output
+.superpowers/
+stitch_downloads/
+stitch_exports/
+home-mobile-preview.png
+
+# Raw eval outputs may contain user questions or feedback.
+ncubook-api/evals/results/
+ncubook-api/evals/candidates/
+test-results/
+migration/reports/*
+!migration/reports/README.md
+!migration/reports/notion-structure-audit.md
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
