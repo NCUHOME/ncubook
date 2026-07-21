@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { revalidateTag } from "next/cache";
 import { buildSearchIndex } from "@/lib/publishing/build-search-index";
 import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/mirror-assets";
 import { createNotionClient, type NotionBlockNode, type NotionObject } from "@/lib/publishing/notion-client";
@@ -129,6 +130,10 @@ export async function runNotionPublicationCommand(command: PublicationCommand): 
       return requiredString(latest.last_edited_time, `Notion page ${sourcePageId} last edited time`);
     },
   });
+
+  if (!command.dryRun) {
+    revalidateTag("published-content-pointer");
+  }
 
   return {
     ok: true,

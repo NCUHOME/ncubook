@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { publishedFixture } from "@/lib/content/published-fixtures";
 import { createPublishedRepository, type PublishedRepository } from "@/lib/content/published-repository";
@@ -10,7 +11,7 @@ type LoadPublishedRepositoryOptions = {
   loadPublishedFixture?: () => Promise<PublishedFixture | null>;
 };
 
-export async function loadPublishedRepository(
+export const loadPublishedRepository = cache(async function loadPublishedRepository(
   options: LoadPublishedRepositoryOptions = {},
 ): Promise<PublishedRepository> {
   const environment = options.environment ?? process.env.PUBLISHED_CONTENT_ENV ?? process.env.VERCEL_ENV ?? "development";
@@ -30,20 +31,28 @@ export async function loadPublishedRepository(
   }
 
   return createPublishedRepository(publishedFixture);
-}
+});
+
+
+const readPublishedContentPointer = unstable_cache(
+  async (): Promise<string | null> => {
+    const client = getSupabaseAdmin();
+    if (!client) return null;
+
+    const pointerResult = await client
+      .from("published_content_pointer")
+      .select("content_version")
+      .eq("singleton", true)
+      .maybeSingle();
+    if (pointerResult.error) throw new Error(`Unable to read published content pointer: ${pointerResult.error.message}`);
+    return optionalString(asRecord(pointerResult.data).content_version) ?? null;
+  },
+  ["published-content-pointer"],
+  { revalidate: false, tags: ["published-content-pointer"] },
+);
 
 async function loadCurrentPublishedFixture(): Promise<PublishedFixture | null> {
-  const client = getSupabaseAdmin();
-  if (!client) return null;
-
-  const pointerResult = await client
-    .from("published_content_pointer")
-    .select("content_version")
-    .eq("singleton", true)
-    .maybeSingle();
-  if (pointerResult.error) throw new Error(`Unable to read published content pointer: ${pointerResult.error.message}`);
-  const pointer = asRecord(pointerResult.data);
-  const contentVersion = optionalString(pointer.content_version);
+  const contentVersion = await readPublishedContentPointer();
   if (!contentVersion) return null;
 
   return unstable_cache(
