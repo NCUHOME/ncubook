@@ -11,3 +11,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   if (!section) notFound();
   return <DocumentPageView view={view} section={section} tree={repository.getSectionTree(section.slug)} getAsset={repository.getAsset} resolvePageRoute={repository.resolvePageRoute} />;
 }
+
+export async function generateStaticParams() {
+  const repository = await loadPublishedRepository();
+  const routes = repository.getPageRoutes();
+  return Object.values(routes)
+    .filter((route) => route.startsWith("/docs/"))
+    .map((route) => ({ slug: route.replace("/docs/", "") }));
+}

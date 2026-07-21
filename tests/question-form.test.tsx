@@ -14,7 +14,7 @@ describe("shared ask entry", () => {
     await user.type(screen.getByLabelText("问题"), "环游车怎么付费？");
     await user.click(screen.getByRole("button", { name: "提交问题" }));
 
-    expect(screen.getByRole("dialog", { name: "询问此间" })).toBeVisible();
+    expect(await screen.findByRole("dialog", { name: "询问此间" })).toBeVisible();
     expect(screen.getByText("环游车怎么付费？")).toBeVisible();
     expect(screen.queryByRole("link", { name: /搜索/ })).not.toBeInTheDocument();
   });
@@ -25,7 +25,7 @@ describe("shared ask entry", () => {
 
     await user.click(screen.getByRole("button", { name: "询问当前文档" }));
 
-    expect(screen.getByText("基于当前文档与所在段落")).toBeVisible();
+    expect(await screen.findByText("基于当前文档与所在段落")).toBeVisible();
     expect(screen.queryByText(/page-campus-shuttle|b-fare/)).not.toBeInTheDocument();
   });
 });

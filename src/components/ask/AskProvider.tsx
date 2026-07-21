@@ -1,9 +1,11 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { validateAnswerSession, type AnswerSession } from "@/lib/answers/session";
 import { resolvePageRoute as resolveFixturePageRoute } from "@/lib/content/published-repository";
-import { AskSheet } from "@/src/components/ask/AskSheet";
+
+const AskSheet = dynamic(() => import("@/src/components/ask/AskSheet").then((mod) => mod.AskSheet), { ssr: false });
 
 export type PageContext = { pageId: string; anchor?: string };
 export type AskInput = { question?: string; pageContext?: PageContext };
@@ -30,6 +32,7 @@ async function requestAnswerFromApi(input: { question: string; pageContext?: Pag
 
 export function AskProvider({ children, requestAnswer = requestAnswerFromApi, resolvePageRoute = resolveFixturePageRoute }: { children: ReactNode; requestAnswer?: AnswerRequest; resolvePageRoute?: (pageId: string) => string }) {
   const [open, setOpen] = useState(false);
+  const [sheetMounted, setSheetMounted] = useState(false);
   const [question, setQuestion] = useState("");
   const [pageContext, setPageContext] = useState<PageContext | undefined>();
   const [draft, setDraft] = useState("");
@@ -37,12 +40,17 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
   const [session, setSession] = useState<AnswerSession | null>(null);
   const [error, setError] = useState("");
 
+  const openSheet = useCallback(() => {
+    setSheetMounted(true);
+    setOpen(true);
+  }, []);
+
   const submit = useCallback(async (input: { question: string; pageContext?: PageContext }) => {
     const value = input.question.trim();
     if (!value) return;
     setQuestion(value);
     setPageContext(input.pageContext);
-    setOpen(true);
+    openSheet();
     setStatus("loading");
     setSession(null);
     setError("");
@@ -54,7 +62,7 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
       setError(requestError instanceof Error ? requestError.message : "回答暂时无法获取");
       setStatus("error");
     }
-  }, [requestAnswer]);
+  }, [requestAnswer, openSheet]);
 
   useEffect(() => {
     function restoreState(state: unknown) {
@@ -70,7 +78,7 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
         setDraft(saved.draft);
         setSession(restored);
         setStatus("ready");
-        setOpen(true);
+        openSheet();
         window.setTimeout(() => window.scrollTo({ top: saved.scrollY }), 0);
       } catch {
         sessionStorage.removeItem(`answer-session:${answerSession}`);
@@ -92,7 +100,7 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
       window.removeEventListener("popstate", restore);
       window.removeEventListener("pageshow", restoreCurrentEntry);
     };
-  }, []);
+  }, [openSheet]);
 
   const persistSession = useCallback(() => {
     if (!session) return;
@@ -105,7 +113,7 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
     setDraft,
     openAsk(input) {
       setPageContext(input.pageContext);
-      setOpen(true);
+      openSheet();
       const nextQuestion = input.question?.trim() ?? "";
       setQuestion(nextQuestion);
       setSession(null);
@@ -113,25 +121,27 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
       setError("");
       if (nextQuestion) void submit({ question: nextQuestion, pageContext: input.pageContext });
     },
-  }), [draft, submit]);
+  }), [draft, submit, openSheet]);
 
   return (
     <AskContext.Provider value={value}>
       {children}
-      <AskSheet
-        open={open}
-        onOpenChange={setOpen}
-        question={question}
-        pageContext={pageContext}
-        draft={draft}
-        onDraftChange={setDraft}
-        onSubmit={(nextQuestion) => submit({ question: nextQuestion, pageContext })}
-        status={status}
-        session={session}
-        error={error}
-        onCitationNavigate={persistSession}
-        resolvePageRoute={resolvePageRoute}
-      />
+      {sheetMounted ? (
+        <AskSheet
+          open={open}
+          onOpenChange={setOpen}
+          question={question}
+          pageContext={pageContext}
+          draft={draft}
+          onDraftChange={setDraft}
+          onSubmit={(nextQuestion) => submit({ question: nextQuestion, pageContext })}
+          status={status}
+          session={session}
+          error={error}
+          onCitationNavigate={persistSession}
+          resolvePageRoute={resolvePageRoute}
+        />
+      ) : null}
     </AskContext.Provider>
   );
 }
