@@ -27,7 +27,7 @@ EdgeOne 使用仓库根目录、npm lockfile、`npm run build` 和 Next.js prese
 
 生产问答固定使用 `AI_CHAT_MODEL=deepseek-v4-flash`，不配置 embedding model，显式关闭 thinking，并通过词法召回、grounding 与 citation 校验后才展示答案。EdgeOne 不配置 Notion 或发布管理凭据，远程发布路由保持 fail closed。
 
-完整环境矩阵、发布验证和回滚步骤见 [`docs/operations/mobile-web-cutover.md`](docs/operations/mobile-web-cutover.md)。
+完整环境矩阵、发布验证和回滚步骤见 [`docs/operations/生产部署与应急回滚手册.md`](docs/operations/生产部署与应急回滚手册.md)。
 
 ## 架构与历史版本说明
 

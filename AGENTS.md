@@ -6,19 +6,17 @@
 
 开始工作前必须阅读与任务相关的文件：
 
-1. `docs/product/vision.md`
-2. `docs/product/information-architecture.md`
-3. `docs/product/content-publishing.md`（内容同步或文档渲染任务）
-4. `docs/design/design.md`、`docs/design/iconography.md`、`docs/design/component-contracts.md`（任何 UI 任务）
-5. 当前任务对应的 `docs/specs/<feature>/requirements.md`、`design.md`、`tasks.md` 和 `acceptance.md`
+1. `docs/product/产品愿景与AI策略规范.md`
+2. `docs/product/内容发布与数据契约.md`（内容同步或文档渲染任务）
+3. `docs/design/设计系统与组件契约.md`、`docs/design/tokens.json`（任何 UI 任务）
+4. `docs/operations/生产部署与应急回滚手册.md`（运维部署或切线任务）
 
 ## 强制工作流
 
-- 没有经确认的 `requirements.md`、`design.md`、`tasks.md` 以及 `approval.md` 中的人类批准记录，不得开始实现功能。
-- 先实现一个最小任务，再运行其验证；不得顺手重构不在任务范围内的文件。
+- 任何功能开发前需先确认规划，先实现最小任务再运行验证；不得顺手重构不在任务范围内的文件。
 - 修改产品 UI 前，先提供目标手机尺寸下的可审阅样张；视觉基线只能由人批准，不能由 agent 自行更新。
 - 每项完成的任务必须说明：关联的需求编号、改动范围、运行过的验证和未覆盖的风险。
-- 不得新增依赖、修改数据模型、改变内容发布协议或替换图标库，除非当前规格明确批准。
+- 不得新增依赖、修改数据模型、改变内容发布协议或替换图标库，除非明确批准。
 
 ## 不可违反的产品边界
 
@@ -33,8 +31,8 @@
 
 - TypeScript 保持严格类型；不以 `any`、禁用检查或静默错误处理绕过问题。
 - 所有用户可见样式必须使用 `docs/design/tokens.json` 对应的设计令牌；禁止新增页面私有的随意色值、字号、间距、圆角和阴影。
-- 所有图标必须来自 Lucide 且遵循 `docs/design/iconography.md`。
-- 对抽屉、弹层、菜单和焦点管理，复用 `docs/design/component-contracts.md` 列出的已批准 primitives；触控目标默认不小于 44px。
+- 所有图标必须来自 Lucide 且遵循 `docs/design/设计系统与组件契约.md` 中的图标表。
+- 对抽屉、弹层、菜单和焦点管理，复用 `docs/design/设计系统与组件契约.md` 列出的组件契约 primitives；触控目标默认不小于 44px。
 - 功能变更须通过类型检查、相关单测、构建和对应的视觉/交互检查后，才能宣称完成。
 
 ## 不做什么
