@@ -19,7 +19,6 @@ npm run dev
 npm run typecheck
 npm test
 npm run build
-npm run test:e2e
 ```
 
 ## EdgeOne 运行时
@@ -30,6 +29,7 @@ EdgeOne 使用仓库根目录、npm lockfile、`npm run build` 和 Next.js prese
 
 完整环境矩阵、发布验证和回滚步骤见 [`docs/operations/mobile-web-cutover.md`](docs/operations/mobile-web-cutover.md)。
 
-## 旧站回滚
+## 架构与历史版本说明
 
-旧 Docusaurus 源码归档在 `legacy-docusaurus/`，切换前生产 revision 为 `b0e4de1d4a6aaa8979777b4ded21e5d45d4c4088`。最可靠的恢复方式是从该 revision 使用 `pnpm build` 重建 `build/`；归档目录仅用于审阅和迁移对照。
+网站现已全量重构为 Next.js 15 纯静态（SSG + ISR）极速架构。旧版 Docusaurus 历史代码已清理，如需调阅或回滚至重构前版本，请参考 Git 提交历史 `b0e4de1d4a6aaa8979777b4ded21e5d45d4c4088`。
+

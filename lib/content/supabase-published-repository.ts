@@ -33,7 +33,6 @@ export const loadPublishedRepository = cache(async function loadPublishedReposit
   return createPublishedRepository(publishedFixture);
 });
 
-
 const readPublishedContentPointer = unstable_cache(
   async (): Promise<string | null> => {
     const client = getSupabaseAdmin();

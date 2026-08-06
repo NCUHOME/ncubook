@@ -21,11 +21,11 @@ EdgeOne 不配置 `NOTION_TOKEN`、`NOTION_ROOT_PAGE_ID`、`PUBLICATION_ADMIN_TO
 ## Staging 演练
 
 1. 记录实现 revision、Docusaurus revision、执行人和开始时间。
-2. 运行 `npm run migration:inventory`，确认 37 页、7 个顶层板块；再运行带 `--verify-remote` 的远端核对。
+2. 运行 `npm run migration:compare` 与远端发布核对，确认 37 页与 7 个顶层板块结构完好。
 3. `npm run publish:notion -- --dry-run --all`；所有未知 block、资源失败和内部链接失败必须归零。
 4. 发布 staging，记录 `contentVersion`、checksum、页数、资源数、搜索条目数和 Notion edited watermark。
 5. 退出 Notion 登录，验证首页、板块、长文、关键词搜索、图片/附件和 citation 锚点仍可访问。
-6. 运行单测、类型检查、构建、15 条 E2E、3 组视觉基线、迁移 parity、链接/资源审计；AI 启用时再运行评测。
+6. 运行类型检查（`npm run typecheck`）、全量单测（`npm test`）、生产构建（`npm run build`）、迁移 parity 和链接/资源审计；AI 启用时再运行评测。
 7. 将 staging alias 指向根 Next.js 构建，观察 30 分钟；随后切回 Docusaurus并记录恢复时间。回滚不得修改内容表。
 8. 再次前进到根 Next.js 构建，复验同一内容版本。两次方向切换都成功后才可申请生产批准。
 

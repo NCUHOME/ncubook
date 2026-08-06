@@ -46,7 +46,7 @@
 
 ## 根 Next.js 学生端规则
 
-- 仓库根目录是唯一学生端 Next.js 产品前端；`legacy-docusaurus/` 只用于回滚和迁移对照。
+- 仓库根目录是唯一学生端 Next.js 生产应用（采用纯静态 SSG 编译与 ISR 增量刷新架构）；旧版废弃代码与 E2E 浏览器测试已彻底清理。
 - 先按 360、390、430px 宽度设计与验证，再考虑平板和桌面。
 - 页面只能由 `src/components` 中已批准的基础组件、领域组件和富内容渲染组件组成；需要新组件时，先更新 `docs/design/component-contracts.md`。
 - `app/globals.css` 只定义设计令牌、重置和全局排版，页面不得在其中加入一次性布局补丁。
