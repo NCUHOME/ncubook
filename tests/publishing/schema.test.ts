@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const migrationPath = resolve(process.cwd(), "supabase/published-content.sql");
+const migrationPath = resolve(process.cwd(), "supabase/schema.sql");
 
 describe("versioned published content schema", () => {
   it("defines the immutable publication tables and a singleton current pointer", () => {
