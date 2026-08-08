@@ -48,7 +48,6 @@ playwright-report/
 blob-report/
 
 # --- 操作系统与 IDE ---
-# macOS & Windows 系统残留
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -67,8 +66,3 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 .history/
 .idea/
-
-# AI Agent 与设计临时文件
-.superpowers/
-stitch_downloads/
-stitch_exports/
