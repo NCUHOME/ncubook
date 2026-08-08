@@ -9,11 +9,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "publish:notion": "node scripts/publish-notion.ts",
-    "eval:answers": "node scripts/run-answer-evals.ts",
-    "smoke:edgeone": "node scripts/smoke-deepseek.ts",
-    "migration:compare": "node scripts/migration/compare-publication.ts",
-    "migration:audit": "node scripts/migration/check-links-assets.ts"
+    "publish": "node scripts/publish.ts",
+    "eval": "node scripts/test.ts",
+    "smoke": "node scripts/smoke.ts",
+    "compare": "node scripts/compare.ts",
+    "check": "node scripts/check.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.19",

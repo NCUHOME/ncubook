@@ -1,8 +1,12 @@
+// 生产环境边缘节点冒烟测试脚本 (scripts/smoke.ts)
+// 用法: node scripts/smoke.ts (测试边缘节点网络连通性与 API 稳定性)
+
 import { readFile } from "node:fs/promises";
 import { createClient } from "@supabase/supabase-js";
 import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "../lib/ai/smoke-report.ts";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "../lib/ai/retrieve.ts";
 
+// 初始化 Supabase 服务端 Client 与检索 Repository
 const endpoint = environment("EDGEONE_SMOKE_ENDPOINT");
 const supabase = createClient(environment("SUPABASE_URL"), environment("SUPABASE_SERVICE_ROLE_KEY"), {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -11,11 +15,13 @@ const repository = createSupabaseRetrievalRepository(supabase);
 const activeContentVersion = await repository.getCurrentVersion();
 if (!activeContentVersion) fail("No active content version");
 
-const cases = parseCases(JSON.parse(await readFile(new URL("../evals/edgeone-smoke-cases.json", import.meta.url), "utf8")));
+// 读取并校验冒烟用例集
+const cases = parseCases(JSON.parse(await readFile(new URL("../evals/smoke.json", import.meta.url), "utf8")));
 const answerable = cases.filter((item) => item.expectedAnswerable);
 const unanswerable = cases.filter((item) => !item.expectedAnswerable);
 if (answerable.length !== 5 || unanswerable.length < 3) fail("Smoke corpus must contain five answerable and at least three unanswerable cases");
 
+// 采样检索候选段落
 const retrievalSamples: SmokeRetrievalSample[] = [];
 for (const evaluationCase of answerable) {
   const sources = await retrieveGroundingSources({ question: evaluationCase.question, repository, maxCandidates: 8 });
@@ -26,6 +32,7 @@ for (const evaluationCase of answerable) {
   });
 }
 
+// 并发采样回答并测试热加载/热缓存状态
 await requestAnswer(endpoint, answerable[0]);
 const answers: SmokeAnswerSample[] = [];
 for (let index = 0; index < 20; index += 1) {
@@ -33,6 +40,7 @@ for (let index = 0; index < 20; index += 1) {
 }
 for (const evaluationCase of unanswerable) answers.push(await requestAnswer(endpoint, evaluationCase));
 
+// 测试冷启动节点 (若提供地址)
 const coldStartEndpoints = (process.env.EDGEONE_COLD_START_ENDPOINTS ?? "")
   .split(",")
   .map((value) => value.trim())
@@ -43,6 +51,7 @@ for (let index = 0; index < coldStartEndpoints.length; index += 1) {
   coldStarts.push({ endpointIndex: index + 1, status: sample.status, latencyMs: sample.latencyMs, confidence: sample.confidence });
 }
 
+// 评估冒烟报告并比对阀值
 const report = evaluateSmokeReport(cases, retrievalSamples, answers, activeContentVersion);
 const evidence = answers.map((sample) => ({
   caseId: sample.caseId,
@@ -64,6 +73,7 @@ if (report.answerableRecallAt8 < 0.8
   fail("EdgeOne DeepSeek smoke thresholds failed");
 }
 
+// 向 HTTP 端点发送单次提问请求并测量耗时
 async function requestAnswer(url: string, evaluationCase: SmokeCase): Promise<SmokeAnswerSample> {
   const startedAt = performance.now();
   const response = await fetch(url, {
@@ -89,6 +99,7 @@ async function requestAnswer(url: string, evaluationCase: SmokeCase): Promise<Sm
   };
 }
 
+// 解析 JSON 冒烟用例
 function parseCases(value: unknown): SmokeCase[] {
   if (!Array.isArray(value)) fail("Smoke corpus must be an array");
   return value.map((item) => {
