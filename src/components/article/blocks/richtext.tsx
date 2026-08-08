@@ -1,5 +1,5 @@
 // 组件：Notion 富文本内联片段渲染器，将加粗、斜体、代码行与站内/站外链接映射为 HTML 行内元素
-import type { RichText as RichTextValue } from "@/lib/content/published-schema";
+import type { RichText as RichTextValue } from "@/lib/content/schema";
 
 export function RichText({ value, resolvePageRoute }: { value: RichTextValue; resolvePageRoute: (pageId: string) => string }) {
   return (

@@ -1,7 +1,7 @@
 // 单测：测试归因判定算法 (groundAnswer)，验证根据上下文文档块对 AI 观点进行严格事实匹配与角标索引绑定
 import { describe, expect, it, vi } from "vitest";
 import type { AnswerModel, ModelAnswer } from "@/lib/ai/provider";
-import { groundAnswer } from "@/lib/ai/ground-answer";
+import { groundAnswer } from "@/lib/ai/ground";
 import type { RetrievalSource } from "@/lib/ai/retrieve";
 
 const source = (overrides: Partial<RetrievalSource> = {}): RetrievalSource => ({

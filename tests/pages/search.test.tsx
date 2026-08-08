@@ -2,9 +2,9 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { searchIndexFixture } from "@/lib/content/published-fixtures";
-import { resolvePageRoute } from "@/lib/content/published-repository";
-import { searchEntries } from "@/lib/search/search-blocks";
+import { searchIndexFixture } from "@/lib/content/fixtures";
+import { resolvePageRoute } from "@/lib/content/repo";
+import { searchEntries } from "@/lib/content/search";
 import { SearchPageView } from "@/src/views/search";
 
 describe("keyword search page", () => {

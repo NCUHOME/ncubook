@@ -1,4 +1,5 @@
-import type { Block, Page, PublishedFixture, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
+// 核心业务领域：全站单元测试与 SSG 静态预渲染使用的标准校园知识库 Mock Fixtures 节点集合
+import type { Block, Page, PublishedFixture, RichText, SearchIndexEntry } from "@/lib/content/schema";
 
 const contentVersion = "content-2026-07";
 const publishedAt = "2026-07-13T10:00:00.000Z";

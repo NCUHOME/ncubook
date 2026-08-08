@@ -1,9 +1,10 @@
-import { groundAnswer } from "@/lib/ai/ground-answer";
+// AI 问答引擎：生产环境问答服务工厂，整合 Supabase 向量检索、大模型 Provider 与可溯源 Grounding 算法
+import { groundAnswer } from "@/lib/ai/ground";
 import { createOpenAICompatibleProvider } from "@/lib/ai/provider";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
-import type { AnswerService } from "@/lib/ai/answer-route";
-import { getSupabaseAdmin } from "@/lib/db/supabase";
-import { assertServerOnly } from "@/lib/server-only";
+import type { AnswerService } from "@/lib/ai/route";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
+import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("Production answer service");
 

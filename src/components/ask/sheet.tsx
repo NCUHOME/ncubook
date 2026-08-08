@@ -3,7 +3,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUp, X } from "lucide-react";
-import type { AnswerSession } from "@/lib/answers/session";
+import type { AnswerSession } from "@/lib/ai/session";
 import type { AskStatus, PageContext } from "@/src/context/ask";
 
 type AskSheetProps = {

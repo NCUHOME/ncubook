@@ -1,3 +1,4 @@
+// 内容场景领域：校园高频生活场景分类定义 (学籍、一卡通、网络、报修、食堂、常用电话) 及 Lucide 图标绑定表
 import { IdCard, LucideIcon, Phone, Router, Utensils, Wrench } from "lucide-react";
 
 export type Topic = {

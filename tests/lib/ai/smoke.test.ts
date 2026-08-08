@@ -1,6 +1,6 @@
 // 单测：测试 AI 模块冒烟诊断工具，校验大模型 Provider API 连通性测试与性能耗时报告生成
 import { describe, expect, it } from "vitest";
-import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "@/lib/ai/smoke-report";
+import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "@/lib/ai/smoke";
 
 const cases: SmokeCase[] = [
   { id: "answerable", question: "已知问题", expectedAnswerable: true, expectedSourceIds: ["source-a"], expectedAnchors: ["b-a"] },

@@ -1,15 +1,16 @@
 // 单测：测试发布版本控制状态机 (version)，验证版本号生成、校验和哈希比对以及当前活动版本指针切换
 import { describe, expect, it, vi } from "vitest";
-import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
+import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/schema";
 import {
   PointerConflictError,
   publishVersion,
   rollbackPublishedVersion,
   type PagePublication,
+  type PublicationCommit,
   type PublicationFailure,
   type PublicationStore,
-} from "@/lib/publishing/publish-version";
-import { AssetMirrorError } from "@/lib/publishing/mirror-assets";
+} from "@/lib/publishing/version";
+import { AssetMirrorError } from "@/lib/publishing/assets";
 
 function text(value: string): RichText {
   return [{ plainText: value, annotations: {} }];

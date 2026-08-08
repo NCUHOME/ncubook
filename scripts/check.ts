@@ -2,8 +2,8 @@
 // 用法: node scripts/check.ts --fixture <fixture.json>
 
 import { readFile } from "node:fs/promises";
-import type { PublishedFixture } from "../lib/content/published-schema.ts";
-import { auditPublishedFixture } from "../lib/migration/check-links-assets.ts";
+import type { PublishedFixture } from "@/lib/content/schema";
+import { auditPublishedFixture } from "@/scripts/check-links";
 
 export {};
 
@@ -12,7 +12,7 @@ const fixturePath = argument("--fixture");
 const fixture = JSON.parse(await readFile(fixturePath, "utf8")) as PublishedFixture;
 
 // 发起 HEAD 请求并发审计外部链接与静态资源可用性
-const result = await auditPublishedFixture(fixture, async (url) => {
+const result = await auditPublishedFixture(fixture, async (url: string) => {
   const response = await fetch(url, { method: "HEAD", redirect: "follow" });
   return { ok: response.ok, status: response.status };
 });

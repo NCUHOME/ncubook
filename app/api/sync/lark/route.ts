@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { filterPublishedCards } from "@/lib/content/lark-mapper";
 import { upsertInformationCards } from "@/lib/content/upsert-cards";
-import { getSupabaseAdmin } from "@/lib/db/supabase";
-import { fetchLarkInformationCards } from "@/lib/lark/client";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
+import { fetchLarkInformationCards } from "@/lib/integrations/lark";
 
 export async function POST(req: NextRequest) {
   const expectedSecret = process.env.CRON_SECRET;

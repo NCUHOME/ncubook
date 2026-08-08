@@ -1,7 +1,7 @@
 // 单测：测试 AI 问答评测指标算法，校验检索召回率、事实正确性评分与段落锚点归因精度的计算准确性
 import { describe, expect, it } from "vitest";
-import { createAnswerFixture } from "@/lib/answers/session";
-import { evaluateAnswerSessions, type EvaluationCase } from "@/lib/ai/evaluate";
+import { createAnswerFixture } from "@/lib/ai/session";
+import { evaluateAnswerSessions, type EvaluationCase } from "@/lib/ai/eval";
 
 describe("grounded answer evaluation gate", () => {
   it("requires valid citations and complete abstention on unanswerable sensitive cases", () => {

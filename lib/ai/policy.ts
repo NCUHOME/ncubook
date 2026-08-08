@@ -1,3 +1,4 @@
+// AI 问答引擎：问答安全策略与防幻觉审核规则（针对敏感词、招生/安全事故类问题强制校验事实依据）
 import type { ModelClaim } from "@/lib/ai/provider";
 import type { RetrievalSource } from "@/lib/ai/retrieve";
 

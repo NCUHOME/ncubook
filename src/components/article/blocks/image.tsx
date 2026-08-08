@@ -1,5 +1,5 @@
 // 组件：图片与图注组件，使用 loading="lazy" 延迟加载图片，并渲染图注 (caption) 富文本
-import type { Asset, Block } from "@/lib/content/published-schema";
+import type { Asset, Block } from "@/lib/content/schema";
 import { RichText } from "@/src/components/article/blocks/richtext";
 
 export function ImageBlock({ block, asset, resolvePageRoute }: { block: Extract<Block, { type: "image" }>; asset: Asset | null; resolvePageRoute: (pageId: string) => string }) {

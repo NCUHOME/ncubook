@@ -1,5 +1,6 @@
-import type { Block, RichText, RichTextColor } from "@/lib/content/published-schema";
-import type { NotionBlockNode } from "@/lib/publishing/notion-client";
+// Notion 发布引擎：Notion 原始 API Block 节点向全站标准富文本 Block 树及稳定锚点 (b-<id>) 的规范化转换器
+import type { Block, RichText, RichTextColor } from "@/lib/content/schema";
+import type { NotionBlockNode } from "@/lib/publishing/client";
 
 const richTextColors = new Set<RichTextColor>(["default", "gray", "red", "orange", "yellow", "green", "blue", "purple", "pink"]);
 

@@ -1,4 +1,4 @@
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
+import { loadPublishedRepository } from "@/lib/content/supabase";
 import { HomePageView } from "@/src/views/home";
 
 export default async function HomePage() {

@@ -1,14 +1,15 @@
+// Notion 发布引擎：Notion 节点筛选、完整发布与版本回滚指令的主调度管线 (Pipeline)
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidateTag } from "next/cache";
-import { buildSearchIndex } from "@/lib/publishing/build-search-index";
-import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/mirror-assets";
-import { createNotionClient, type NotionBlockNode, type NotionObject } from "@/lib/publishing/notion-client";
-import { normalizeNotionBlocks } from "@/lib/publishing/normalize-blocks";
-import { normalizeNotionPage } from "@/lib/publishing/normalize-page";
-import { publishVersion, rollbackPublishedVersion, type PublicationStore } from "@/lib/publishing/publish-version";
-import type { PublicationCommand } from "@/lib/publishing/publish-route";
-import { createSupabasePublicationStore } from "@/lib/publishing/supabase-publication-store";
-import { getSupabaseAdmin } from "@/lib/db/supabase";
+import { buildSearchIndex } from "@/lib/publishing/index";
+import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/assets";
+import { createNotionClient, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
+import { normalizeNotionBlocks } from "@/lib/publishing/blocks";
+import { normalizeNotionPage } from "@/lib/publishing/page";
+import { publishVersion, rollbackPublishedVersion, type PublicationStore } from "@/lib/publishing/version";
+import type { PublicationCommand } from "@/lib/publishing/route";
+import { createSupabasePublicationStore } from "@/lib/publishing/store";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 export type SelectedNotionPage = { node: NotionBlockNode; parentPageId: string | null };
 

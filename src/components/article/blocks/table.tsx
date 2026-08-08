@@ -1,6 +1,6 @@
 // 组件：Notion 数据表格渲染器，支持表头行 (<th>)、表格行锚点 (anchorFromSourceId) 与单元格内联富文本
-import { anchorFromSourceId } from "@/lib/content/published-repository";
-import type { Block } from "@/lib/content/published-schema";
+import { anchorFromSourceId } from "@/lib/content/repo";
+import type { Block } from "@/lib/content/schema";
 import { RichText } from "@/src/components/article/blocks/richtext";
 
 export function TableBlock({ block, resolvePageRoute }: { block: Extract<Block, { type: "table" }>; resolvePageRoute: (pageId: string) => string }) {

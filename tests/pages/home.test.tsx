@@ -2,7 +2,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { getPublishedSections } from "@/lib/content/published-repository";
+import { getPublishedSections } from "@/lib/content/repo";
 import { AskProvider } from "@/src/context/ask";
 import { HomePageView } from "@/src/views/home";
 

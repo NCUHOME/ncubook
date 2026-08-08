@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
+import { loadPublishedRepository } from "@/lib/content/supabase";
 import { SectionPageView } from "@/src/views/section";
 
 export default async function SectionPage({ params }: { params: Promise<{ slug: string }> }) {

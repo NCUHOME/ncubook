@@ -1,5 +1,5 @@
-import { createAskHandler, createMinuteRateLimiter, type AnswerMode, type AnswerService } from "@/lib/ai/answer-route";
-import { createProductionAnswerService } from "@/lib/ai/answer-service";
+import { createAskHandler, createMinuteRateLimiter, type AnswerMode, type AnswerService } from "@/lib/ai/route";
+import { createProductionAnswerService } from "@/lib/ai/service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

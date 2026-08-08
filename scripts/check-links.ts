@@ -1,4 +1,5 @@
-import type { Block, PublishedFixture } from "@/lib/content/published-schema";
+// 运维与巡检脚本：校验发布数据集中的页面跳转死链与媒体资源可达性
+import type { Block, PublishedFixture } from "@/lib/content/schema";
 
 type AuditIssue = { code: "temporary-notion-url" | "unreachable-asset" | "missing-page-target" | "missing-asset-record"; detail: string };
 

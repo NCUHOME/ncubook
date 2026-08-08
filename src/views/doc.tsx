@@ -1,6 +1,6 @@
 // 视图：移动端优先的校园知识文档阅读页，包含面包屑导航、带更新时间的文章标题、ArticleRenderer 块树与右下角上下文捕获 AI 提问按钮
-import type { Asset, Page } from "@/lib/content/published-schema";
-import type { DocumentView, PageTreeNode } from "@/lib/content/published-repository";
+import type { Asset, Page } from "@/lib/content/schema";
+import type { DocumentView, PageTreeNode } from "@/lib/content/repo";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 import { DocumentAskEntry } from "@/src/components/ask/entry";
 import { AppHeader } from "@/src/components/nav/header";

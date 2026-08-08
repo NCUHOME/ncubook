@@ -1,7 +1,7 @@
 // 单测：测试 /api/ask 路由 Handler 的请求体校验、页面上下文解析、速率限制 (Rate Limit) 与错误响应格式
 import { describe, expect, it, vi } from "vitest";
-import { ACTIVE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/answers/session";
-import { createAskHandler, type AnswerService } from "@/lib/ai/answer-route";
+import { ACTIVE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
+import { createAskHandler, type AnswerService } from "@/lib/ai/route";
 import { ProviderError } from "@/lib/ai/provider";
 
 function request(body: unknown, ip = "192.0.2.10") {

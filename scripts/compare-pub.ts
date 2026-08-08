@@ -1,4 +1,5 @@
-import type { Block } from "@/lib/content/published-schema";
+// 运维与比对工具：在线版本与规范源版本 Diff 校验器，比对 Block 顺序、丢失文本与 DOM 结构变动
+import type { Block } from "@/lib/content/schema";
 
 type PageSnapshot = { pageId: string; blocks: Block[]; assetIds: string[] };
 type ParityIssue = { code: "lost-text" | "heading-or-order-changed" | "structure-changed" | "missing-anchor" | "missing-asset"; detail: string };

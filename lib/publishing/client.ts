@@ -1,3 +1,8 @@
+// Notion 发布引擎：Notion 官方 REST API SDK 客户端（包含 assertServerOnly 服务端隔离，防护 NOTION_TOKEN；支持 429 Retry-After、游标分页与深度递归 Block 树拉取）
+import { assertServerOnly } from "@/lib/integrations/server";
+
+assertServerOnly("Notion Client");
+
 const NOTION_API_BASE = "https://api.notion.com/v1";
 const NOTION_API_VERSION = "2022-06-28";
 

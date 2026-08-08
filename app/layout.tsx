@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/app/providers";
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
+import { loadPublishedRepository } from "@/lib/content/supabase";
 
 export const metadata: Metadata = {
   title: "此间",

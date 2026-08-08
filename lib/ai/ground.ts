@@ -1,9 +1,10 @@
+// AI 问答引擎：基于检索到的知识库 Block 结果对大模型回答观点进行严格事实匹配与角标归因绑定
 import type { AnswerModel } from "@/lib/ai/provider";
 import { buildAnswerPrompt } from "@/lib/ai/prompt";
 import { applyGroundingPolicy } from "@/lib/ai/policy";
 import type { RetrievalSource } from "@/lib/ai/retrieve";
-import { validateAnswerSession, type AnswerClaim, type AnswerSession, type Citation } from "@/lib/answers/session";
-import { assertServerOnly } from "@/lib/server-only";
+import { validateAnswerSession, type AnswerClaim, type AnswerSession, type Citation } from "@/lib/ai/session";
+import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("Grounded answers");
 

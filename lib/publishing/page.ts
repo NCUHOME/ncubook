@@ -1,4 +1,5 @@
-import type { Page } from "@/lib/content/published-schema";
+// Notion 发布引擎：单篇 Notion 页面对象规范化解析、标题清洗、合法 Slug 与风险等级元数据转换器
+import type { Page } from "@/lib/content/schema";
 
 type NormalizePageOptions = {
   contentVersion: string;

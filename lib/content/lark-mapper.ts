@@ -1,3 +1,4 @@
+// 内容集成：飞书多维表格 (Bitable) 记录向站内 InformationCard 交互卡片格式的映射与状态校验器
 import {
   InformationCard,
   isReviewStatus,

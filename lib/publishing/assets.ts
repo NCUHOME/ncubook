@@ -1,6 +1,7 @@
+// Notion 发布引擎：静态媒体资源镜像拉取、SHA256 哈希去重校验与云存储路径规整
 import { createHash } from "node:crypto";
-import type { Asset } from "@/lib/content/published-schema";
-import type { NotionBlockNode } from "@/lib/publishing/notion-client";
+import type { Asset } from "@/lib/content/schema";
+import type { NotionBlockNode } from "@/lib/publishing/client";
 
 const DEFAULT_MAX_BYTES = 50 * 1024 * 1024;
 

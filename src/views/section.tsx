@@ -1,8 +1,8 @@
 // 视图：校园内容板块导引页，展示板块描述、自由排版介绍段落与所属子页面列表导向
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import type { Page } from "@/lib/content/published-schema";
-import { getAsset, resolvePageRoute, type DocumentView, type PageTreeNode } from "@/lib/content/published-repository";
+import type { Page } from "@/lib/content/schema";
+import { getAsset, resolvePageRoute, type DocumentView, type PageTreeNode } from "@/lib/content/repo";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 import { AppHeader } from "@/src/components/nav/header";
 

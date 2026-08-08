@@ -1,3 +1,4 @@
+// 内容同步工具：多维表格卡片批量 Upsert 写入 Supabase 数据库表之适配器
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { InformationCard } from "@/lib/content/schema";
 

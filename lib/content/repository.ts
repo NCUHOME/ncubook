@@ -1,6 +1,7 @@
+// 内容访问：交互卡片 (InformationCard) 数据仓储访问层，支持 Supabase 数据表查询与离线 Mock 数据回退
 import { sampleCards } from "@/lib/content/sample-cards";
 import type { InformationCard } from "@/lib/content/schema";
-import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/db/supabase";
+import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
 
 type CardRow = {
   slug: string;
@@ -75,6 +76,6 @@ export async function getRecentCards(limit = 4) {
 export async function getCardsByTags(tags: string[]) {
   const cards = await getPublishedCards();
   return cards.filter((card) =>
-    card.tags.some((tag) => tags.includes(tag)) || tags.includes(card.category),
+    card.tags.some((tag: string) => tags.includes(tag)) || tags.includes(card.category),
   );
 }

@@ -1,5 +1,5 @@
-import { createPublishNotionHandler } from "@/lib/publishing/publish-route";
-import { runNotionPublicationCommand } from "@/lib/publishing/notion-publication";
+import { createPublishNotionHandler } from "@/lib/publishing/route";
+import { runNotionPublicationCommand } from "@/lib/publishing/pipeline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

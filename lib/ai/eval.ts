@@ -1,4 +1,5 @@
-import type { AnswerSession } from "@/lib/answers/session";
+// AI 问答引擎：问答召回率、弃权准确度、事实归因精度与防幻觉评测指标计算工具
+import type { AnswerSession } from "@/lib/ai/session";
 
 export type EvaluationCase = {
   id: string;

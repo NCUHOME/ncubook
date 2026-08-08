@@ -2,8 +2,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { Block } from "@/lib/content/published-schema";
-import { getAsset, getDocumentView, resolvePageRoute } from "@/lib/content/published-repository";
+import type { Block } from "@/lib/content/schema";
+import { getAsset, getDocumentView, resolvePageRoute } from "@/lib/content/repo";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 
 describe("article renderer", () => {

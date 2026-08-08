@@ -1,5 +1,5 @@
 // 视图：关键词全文搜索结果页，渲染搜索专属 AppHeader 顶栏与交互式搜索体验容器 SearchExperience
-import type { SearchResult } from "@/lib/search/search-blocks";
+import type { SearchResult } from "@/lib/content/search";
 import { AppHeader } from "@/src/components/nav/header";
 import { SearchExperience } from "@/src/components/search/box";
 

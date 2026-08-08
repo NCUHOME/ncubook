@@ -1,4 +1,5 @@
-import { assertServerOnly } from "@/lib/server-only";
+// AI 问答引擎：大模型 Provider 适配器（支持 OpenAI / Gemini API 协议契约、Embedding 向量化与 Mock Provider 降级）
+import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("AI provider");
 

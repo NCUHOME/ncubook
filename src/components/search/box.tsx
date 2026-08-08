@@ -3,7 +3,7 @@
 
 import { Search, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
-import type { SearchResult } from "@/lib/search/search-blocks";
+import type { SearchResult } from "@/lib/content/search";
 import { SearchResultItem } from "@/src/components/search/item";
 
 type SearchResponse = { query?: string; results?: SearchResult[] };

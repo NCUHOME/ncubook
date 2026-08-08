@@ -1,5 +1,6 @@
-import { publishedFixture } from "@/lib/content/published-fixtures";
-import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/published-schema";
+// 核心业务领域：知识库 Repository 数据查询访问层，管理文档视图、板块树导航与 Asset 映射
+import { publishedFixture } from "@/lib/content/fixtures";
+import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/schema";
 
 export type PageTreeNode = {
   id: string;

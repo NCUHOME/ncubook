@@ -1,7 +1,7 @@
 // 组件：站内关联页面导航卡片，展示文档图标、关联标题与右侧跳转箭头
 import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
-import type { Block } from "@/lib/content/published-schema";
+import type { Block } from "@/lib/content/schema";
 import { RichText } from "@/src/components/article/blocks/richtext";
 
 export function PageLinkBlock({ block, href, resolvePageRoute }: { block: Extract<Block, { type: "page-link" }>; href: string; resolvePageRoute: (pageId: string) => string }) {

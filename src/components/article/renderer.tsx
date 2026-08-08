@@ -1,5 +1,5 @@
 // 组件：文章富文本块树主渲染器，根据 Block 节点类型 (paragraph, heading, quote, table 等) 递归分派至底层 blocks/ 组件
-import type { Asset, Block } from "@/lib/content/published-schema";
+import type { Asset, Block } from "@/lib/content/schema";
 import { CalloutBlock } from "@/src/components/article/blocks/callout";
 import { ColumnsBlock } from "@/src/components/article/blocks/columns";
 import { DividerBlock } from "@/src/components/article/blocks/divider";

@@ -2,8 +2,8 @@
 // 用法: node scripts/compare.ts --source <snapshot.json> --target <snapshot.json>
 
 import { readFile } from "node:fs/promises";
-import type { Block } from "../lib/content/published-schema.ts";
-import { comparePagePublication } from "../lib/migration/compare-publication.ts";
+import type { Block } from "@/lib/content/schema";
+import { comparePagePublication } from "@/scripts/compare-pub";
 
 export {};
 

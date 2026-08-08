@@ -1,6 +1,6 @@
 // 组件：外部嵌入内容渲染器，针对白名单域名 (如地图) 渲染 iframe 容器，其他域名回退为标准外链
 import { ExternalLink } from "lucide-react";
-import type { Block } from "@/lib/content/published-schema";
+import type { Block } from "@/lib/content/schema";
 
 const allowedHosts = new Set(["school-map.ncuos.com"]);
 

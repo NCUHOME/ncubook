@@ -1,5 +1,6 @@
+// Notion 发布引擎：内容版本控制状态机 (pending/published/failed)、页面校验和 (checksum) 匹配与指针切换
 import { createHash } from "node:crypto";
-import type { Asset, Block, Page, SearchIndexEntry } from "@/lib/content/published-schema";
+import type { Asset, Block, Page, SearchIndexEntry } from "@/lib/content/schema";
 
 export type PagePublication = {
   page: Page;

@@ -1,9 +1,9 @@
 // 集成测试：校验真实知识库文档索引检索与 AI 问答可溯源证据链 (Citation Grounding) 的全流程匹配准确性
 import { describe, expect, it } from "vitest";
 import type { AnswerModel } from "@/lib/ai/provider";
-import { groundAnswer } from "@/lib/ai/ground-answer";
+import { groundAnswer } from "@/lib/ai/ground";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
-import { getSupabaseAdmin } from "@/lib/db/supabase";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 const expectedVersion = process.env.EXPECTED_CONTENT_VERSION;
 const liveTest = expectedVersion ? it : it.skip;

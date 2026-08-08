@@ -1,7 +1,8 @@
+// AI 问答引擎：/api/ask 路由 Handler 工厂，处理请求体参数解析、IP 速率限制 (Rate Limit) 与 HTTP 状态码响应
 import { createHash, randomUUID } from "node:crypto";
-import { ACTIVE_CONTENT_VERSION, createAnswerFixture, validateAnswerSession, type AnswerSession } from "@/lib/answers/session";
+import { ACTIVE_CONTENT_VERSION, createAnswerFixture, validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
 import { ProviderError } from "@/lib/ai/provider";
-import { assertServerOnly } from "@/lib/server-only";
+import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("AI answer route");
 

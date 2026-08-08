@@ -1,7 +1,7 @@
 // 单测：测试 Notion 原始富文本 Block 树向发布 Schema 的转化，验证 stable anchor (b-xxx) 与复杂嵌套节点映射
 import { describe, expect, it, vi } from "vitest";
-import { normalizeNotionBlocks, UnsupportedNotionBlockError } from "@/lib/publishing/normalize-blocks";
-import type { NotionBlockNode, NotionObject } from "@/lib/publishing/notion-client";
+import { normalizeNotionBlocks, UnsupportedNotionBlockError } from "@/lib/publishing/blocks";
+import type { NotionBlockNode, NotionObject } from "@/lib/publishing/client";
 
 function node(value: NotionObject, children: NotionBlockNode[] = []): NotionBlockNode {
   return { ...value, children };

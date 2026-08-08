@@ -1,7 +1,7 @@
 // 单测：测试 Notion 数据库完整发布流程，校验页面属性提取、属性缺失校验与自动剔除未发布草稿
 import { describe, expect, it } from "vitest";
-import type { NotionBlockNode } from "@/lib/publishing/notion-client";
-import { selectNotionPageNodes, stableSlugForNotionPage } from "@/lib/publishing/notion-publication";
+import type { NotionBlockNode } from "@/lib/publishing/client";
+import { selectNotionPageNodes, stableSlugForNotionPage } from "@/lib/publishing/pipeline";
 
 const pageNode = (id: string, title: string, children: NotionBlockNode[] = []): NotionBlockNode => ({
   id, type: "child_page", child_page: { title }, has_children: true, children,

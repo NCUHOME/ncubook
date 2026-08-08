@@ -3,7 +3,7 @@ import React from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ACTIVE_CONTENT_VERSION, type AnswerSession } from "@/lib/answers/session";
+import { ACTIVE_CONTENT_VERSION, type AnswerSession } from "@/lib/ai/session";
 import { AskProvider, type AnswerRequest } from "@/src/context/ask";
 import { FloatingAskButton } from "@/src/components/ask/button";
 import { QuestionForm } from "@/src/components/ask/form";

@@ -1,7 +1,7 @@
 // 单测：测试 Notion 资源文件镜像拉取算法，校验二进制文件 SHA256 哈希计算、存储路径规整与媒体类型探测
 import { describe, expect, it, vi } from "vitest";
-import { mirrorNotionAssets, AssetMirrorError, type AssetStorage } from "@/lib/publishing/mirror-assets";
-import type { NotionBlockNode, NotionObject } from "@/lib/publishing/notion-client";
+import { mirrorNotionAssets, AssetMirrorError, type AssetStorage } from "@/lib/publishing/assets";
+import type { NotionBlockNode, NotionObject } from "@/lib/publishing/client";
 
 function node(value: NotionObject): NotionBlockNode {
   return { ...value, children: [] };

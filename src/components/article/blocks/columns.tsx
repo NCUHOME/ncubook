@@ -1,5 +1,5 @@
 // 组件：多栏响应式布局容器，以网格系统 (grid-cols-1 sm:grid-cols-2) 并排递归渲染各列子 Block
-import type { Asset, Block } from "@/lib/content/published-schema";
+import type { Asset, Block } from "@/lib/content/schema";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 
 export function ColumnsBlock({ block, getAsset, resolvePageRoute }: { block: Extract<Block, { type: "columns" }>; getAsset: (assetId: string) => Asset | null; resolvePageRoute: (pageId: string) => string }) {

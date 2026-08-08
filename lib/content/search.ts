@@ -1,4 +1,5 @@
-import type { SearchIndexEntry } from "@/lib/content/published-schema";
+// 核心业务领域：文章 Block 粒度关键词全文检索与结果锚点生成引擎
+import type { SearchIndexEntry } from "@/lib/content/schema";
 
 export type SearchResult = {
   pageTitle: string;

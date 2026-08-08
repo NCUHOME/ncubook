@@ -3,8 +3,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { validateAnswerSession, type AnswerSession } from "@/lib/answers/session";
-import { resolvePageRoute as resolveFixturePageRoute } from "@/lib/content/published-repository";
+import { validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
+import { resolvePageRoute as resolveFixturePageRoute } from "@/lib/content/repo";
 
 const AskSheet = dynamic(() => import("@/src/components/ask/sheet").then((mod) => mod.AskSheet), { ssr: false });
 

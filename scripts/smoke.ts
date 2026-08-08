@@ -3,8 +3,8 @@
 
 import { readFile } from "node:fs/promises";
 import { createClient } from "@supabase/supabase-js";
-import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "../lib/ai/smoke-report.ts";
-import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "../lib/ai/retrieve.ts";
+import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "@/lib/ai/smoke";
+import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
 
 // 初始化 Supabase 服务端 Client 与检索 Repository
 const endpoint = environment("EDGEONE_SMOKE_ENDPOINT");

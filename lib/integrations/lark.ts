@@ -1,5 +1,9 @@
+// 第三方集成：飞书 (Lark) API 客户端（强制 assertServerOnly 服务端隔离，防护 LARK_APP_SECRET）
 import { mapLarkRecordToCard, type LarkRecord } from "@/lib/content/lark-mapper";
 import type { InformationCard } from "@/lib/content/schema";
+import { assertServerOnly } from "@/lib/integrations/server";
+
+assertServerOnly("Lark Client");
 
 type LarkTokenResponse = {
   code: number;

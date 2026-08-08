@@ -1,9 +1,10 @@
+// 核心业务领域：Supabase 线上数据库版本化文档、Block 树与全站检索索引加载引擎
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { publishedFixture } from "@/lib/content/published-fixtures";
-import { createPublishedRepository, type PublishedRepository } from "@/lib/content/published-repository";
-import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/published-schema";
-import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/db/supabase";
+import { publishedFixture } from "@/lib/content/fixtures";
+import { createPublishedRepository, type PublishedRepository } from "@/lib/content/repo";
+import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/schema";
+import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
 
 type LoadPublishedRepositoryOptions = {
   environment?: string;

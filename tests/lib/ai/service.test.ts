@@ -13,14 +13,14 @@ vi.mock("@/lib/ai/provider", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/ai/provider")>(),
   createOpenAICompatibleProvider: mocks.createProvider,
 }));
-vi.mock("@/lib/db/supabase", () => ({ getSupabaseAdmin: mocks.getSupabaseAdmin }));
+vi.mock("@/lib/integrations/supabase", () => ({ getSupabaseAdmin: mocks.getSupabaseAdmin }));
 vi.mock("@/lib/ai/retrieve", () => ({
   createSupabaseRetrievalRepository: mocks.createRepository,
   retrieveGroundingSources: mocks.retrieve,
 }));
-vi.mock("@/lib/ai/ground-answer", () => ({ groundAnswer: mocks.ground }));
+vi.mock("@/lib/ai/ground", () => ({ groundAnswer: mocks.ground }));
 
-import { createProductionAnswerService } from "@/lib/ai/answer-service";
+import { createProductionAnswerService } from "@/lib/ai/service";
 
 const originalEnvironment = { ...process.env };
 

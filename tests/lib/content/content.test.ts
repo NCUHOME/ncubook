@@ -6,7 +6,7 @@ import {
   getDocumentView,
   getSectionTree,
   resolvePageRoute,
-} from "@/lib/content/published-repository";
+} from "@/lib/content/repo";
 
 describe("published document fixture", () => {
   it("keeps stable block anchors and a two-level section tree", () => {

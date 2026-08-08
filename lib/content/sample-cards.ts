@@ -1,3 +1,4 @@
+// 内容静态基准：高频校园生活交互卡片离线样例数据集（用于无数据库连通时的 Mock 展示与单测）
 import type { InformationCard } from "@/lib/content/schema";
 
 export const sampleCards: InformationCard[] = [

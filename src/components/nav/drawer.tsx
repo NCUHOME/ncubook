@@ -4,7 +4,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowLeft, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
-import type { PageTreeNode } from "@/lib/content/published-repository";
+import type { PageTreeNode } from "@/lib/content/repo";
 
 type PageTreeDrawerProps = {
   sectionTitle: string;

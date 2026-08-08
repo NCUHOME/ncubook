@@ -1,6 +1,6 @@
 // 单测：测试单篇 Notion 页面规范化解析器，验证标题清洗、合法 Slug 生成与风险等级元数据标准化
 import { describe, expect, it } from "vitest";
-import { normalizeNotionPage } from "@/lib/publishing/normalize-page";
+import { normalizeNotionPage } from "@/lib/publishing/page";
 
 describe("Notion page normalization", () => {
   it("uses the Notion page tree as stable published identity and hierarchy", () => {

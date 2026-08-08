@@ -1,3 +1,4 @@
+// 核心业务领域：AI 问答 Session 数据契约、反序列化校验、防篡改机制与测试 Fixtures
 export const ACTIVE_CONTENT_VERSION = "content-2026-07";
 
 export type Citation = {

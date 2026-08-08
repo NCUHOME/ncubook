@@ -1,7 +1,7 @@
 // 单测：测试发布版本增量比对算法 (compare)，验证对新增/修改/删除页面与 Block 节点的精确 Diff 分析
 import { describe, expect, it } from "vitest";
-import type { Block, RichText } from "@/lib/content/published-schema";
-import { comparePagePublication } from "@/lib/migration/compare-publication";
+import type { Block, RichText } from "@/lib/content/schema";
+import { comparePagePublication } from "@/scripts/compare-pub";
 
 const text = (plainText: string): RichText => [{ plainText, annotations: {} }];
 const sourceBlocks: Block[] = [

@@ -1,3 +1,4 @@
+// AI 问答引擎：冒烟诊断报告评估与 API 响应延迟、召回率 P95 统计工具
 export type SmokeCase = {
   id: string;
   question: string;

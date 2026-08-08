@@ -10,7 +10,7 @@ import {
   getSectionTree,
   getSectionView,
   resolvePageRoute,
-} from "@/lib/content/published-repository";
+} from "@/lib/content/repo";
 import { DocumentPageView } from "@/src/views/doc";
 import { SectionPageView } from "@/src/views/section";
 import { AskProvider } from "@/src/context/ask";

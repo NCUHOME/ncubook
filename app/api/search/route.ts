@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadPublishedRepository } from "@/lib/content/supabase-published-repository";
-import { searchEntries } from "@/lib/search/search-blocks";
+import { loadPublishedRepository } from "@/lib/content/supabase";
+import { searchEntries } from "@/lib/content/search";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";

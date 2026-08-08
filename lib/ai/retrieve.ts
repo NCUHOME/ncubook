@@ -1,6 +1,7 @@
+// AI 问答引擎：知识库 Block 混合检索算法（支持三元组模糊匹配、向量 Embedding 相似度与页面上下文 Boosting）
 import type { EmbeddingModel } from "@/lib/ai/provider";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { assertServerOnly } from "../server-only.ts";
+import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("AI retrieval");
 

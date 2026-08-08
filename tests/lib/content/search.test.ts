@@ -2,9 +2,9 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 import { GET } from "@/app/api/search/route";
-import { searchIndexFixture } from "@/lib/content/published-fixtures";
-import { resolvePageRoute } from "@/lib/content/published-repository";
-import { searchEntries } from "@/lib/search/search-blocks";
+import { searchIndexFixture } from "@/lib/content/fixtures";
+import { resolvePageRoute } from "@/lib/content/repo";
+import { searchEntries } from "@/lib/content/search";
 
 describe("keyword search API boundary & block search", () => {
   it("returns only query and original block results from search API", async () => {

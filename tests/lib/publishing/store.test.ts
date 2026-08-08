@@ -1,8 +1,8 @@
 // 单测：测试 Supabase 数据库发布事务写入一致性，验证主版本记录与关联 Page/Block/Asset 的原子提交
 import { describe, expect, it } from "vitest";
-import type { RichText } from "@/lib/content/published-schema";
-import type { PublicationCommit } from "@/lib/publishing/publish-version";
-import { serializePublicationCommit } from "@/lib/publishing/supabase-publication-store";
+import type { RichText } from "@/lib/content/schema";
+import type { PublicationCommit } from "@/lib/publishing/version";
+import { serializePublicationCommit } from "@/lib/publishing/store";
 
 const text = (plainText: string): RichText => [{ plainText, annotations: {} }];
 

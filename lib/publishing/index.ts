@@ -1,4 +1,5 @@
-import type { Block, Page, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
+// Notion 发布引擎：从 Block 富文本树抽取纯文本摘要与生成全站 SearchIndexEntry 检索索引项
+import type { Block, Page, RichText, SearchIndexEntry } from "@/lib/content/schema";
 
 type SearchableBlockType = SearchIndexEntry["blockType"];
 

@@ -1,4 +1,4 @@
-import type { Asset, Block, RichText } from "@/lib/content/published-schema";
+import type { Asset, Block, RichText } from "@/lib/content/schema";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 
 const attachments = [

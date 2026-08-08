@@ -1,3 +1,4 @@
+// AI 问答引擎：System & User Prompt 系统提示词模版构造函数
 import type { RetrievalSource } from "@/lib/ai/retrieve";
 
 export function buildAnswerPrompt(question: string, sources: RetrievalSource[]): { system: string; user: string } {

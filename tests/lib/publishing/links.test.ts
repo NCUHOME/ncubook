@@ -1,7 +1,7 @@
 // 单测：测试发布过程中的死链校验与外链转换引擎，验证站内互联 Slug 转换与缺失页面死链检测
 import { describe, expect, it, vi } from "vitest";
-import { auditPublishedFixture } from "@/lib/migration/check-links-assets";
-import { publishedFixture } from "@/lib/content/published-fixtures";
+import { auditPublishedFixture } from "@/scripts/check-links";
+import { publishedFixture } from "@/lib/content/fixtures";
 
 describe("logged-out links and assets audit", () => {
   it("accepts controlled reachable assets and valid internal page links", async () => {

@@ -1,6 +1,6 @@
 // 单测：测试 Notion 发布 API 路由 Handler (/api/admin/publish-notion)，校验秘钥鉴权、发布流程触发与错误状态码返回
 import { describe, expect, it, vi } from "vitest";
-import { createPublishNotionHandler, type PublicationCommandRunner } from "@/lib/publishing/publish-route";
+import { createPublishNotionHandler, type PublicationCommandRunner } from "@/lib/publishing/route";
 
 function request(body: unknown, token?: string) {
   return new Request("http://localhost/api/admin/publish-notion", {

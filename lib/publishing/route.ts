@@ -1,3 +1,4 @@
+// Notion 发布引擎：/api/admin/publish-notion Webhook API 路由 Handler 工厂（验证 Bearer 秘钥与指令分发）
 import { timingSafeEqual } from "node:crypto";
 
 export type PublicationCommand =
