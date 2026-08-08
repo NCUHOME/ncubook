@@ -1,8 +1,9 @@
+// 视图：移动端优先的校园知识文档阅读页，包含面包屑导航、带更新时间的文章标题、ArticleRenderer 块树与右下角上下文捕获 AI 提问按钮
 import type { Asset, Page } from "@/lib/content/published-schema";
 import type { DocumentView, PageTreeNode } from "@/lib/content/published-repository";
-import { ArticleRenderer } from "@/src/components/article/ArticleRenderer";
-import { DocumentAskEntry } from "@/src/components/ask/DocumentAskEntry";
-import { AppHeader } from "@/src/components/navigation/AppHeader";
+import { ArticleRenderer } from "@/src/components/article/renderer";
+import { DocumentAskEntry } from "@/src/components/ask/entry";
+import { AppHeader } from "@/src/components/nav/header";
 
 type DocumentPageViewProps = {
   view: DocumentView;
@@ -30,6 +31,8 @@ export function DocumentPageView({ view, section, tree, getAsset, resolvePageRou
     </>
   );
 }
+
+export const DocView = DocumentPageView;
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Shanghai" }).format(new Date(value));

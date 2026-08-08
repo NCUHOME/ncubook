@@ -1,4 +1,4 @@
-// 单测：Supabase 仓库发布数据接口实现测试
+// 单测：测试 Supabase 数据发布仓库 (repo) 访问层，校验按版本查询页面树、获取文档视图与 Asset 资源的 SQL 映射
 import { describe, expect, it } from "vitest";
 import { publishedFixture } from "@/lib/content/published-fixtures";
 import { createPublishedRepository } from "@/lib/content/published-repository";

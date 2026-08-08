@@ -1,9 +1,10 @@
+// 组件：AI 可溯源问答底部弹层，渲染问题、加载/错误状态、观点与出处角标链接 (［出处：...］) 以及追问表单
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUp, X } from "lucide-react";
 import type { AnswerSession } from "@/lib/answers/session";
-import type { AskStatus, PageContext } from "@/src/components/ask/AskProvider";
+import type { AskStatus, PageContext } from "@/src/context/ask";
 
 type AskSheetProps = {
   open: boolean;
@@ -20,7 +21,20 @@ type AskSheetProps = {
   resolvePageRoute: (pageId: string) => string;
 };
 
-export function AskSheet({ open, onOpenChange, question, pageContext, draft, onDraftChange, onSubmit, status, session, error, onCitationNavigate, resolvePageRoute }: AskSheetProps) {
+export function AskSheet({
+  open,
+  onOpenChange,
+  question,
+  pageContext,
+  draft,
+  onDraftChange,
+  onSubmit,
+  status,
+  session,
+  error,
+  onCitationNavigate,
+  resolvePageRoute,
+}: AskSheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -35,7 +49,7 @@ export function AskSheet({ open, onOpenChange, question, pageContext, draft, onD
             <p className="text-caption text-muted">你的问题</p>
             <p className="mt-s2 font-display text-heading leading-heading font-semibold">{question || "输入你想了解的问题"}</p>
             {status === "loading" ? <p className="mt-s5 font-body text-label leading-body text-muted" role="status">正在核对已发布资料…</p> : null}
-            {status === "error" ? <p className="mt-s5 font-body text-label leading-body text-danger" role="alert">{error}</p> : null}
+            {status === "error" ? <p className="mt-s5 font-body text-label leading-body text-alert" role="alert">{error}</p> : null}
             {status === "idle" ? <p className="mt-s5 font-body text-label leading-body text-muted">输入问题后，将依据已发布文档作答。</p> : null}
             {session?.confidence === "insufficient" ? <p className="mt-s5 font-body text-body leading-body">现有资料不足，暂时无法给出有依据的事实性回答。你可以改用关键词搜索相关文档。</p> : null}
             {session && session.claims.length > 0 ? (

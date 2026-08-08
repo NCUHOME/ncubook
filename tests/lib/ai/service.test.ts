@@ -1,4 +1,4 @@
-// 单测：AI 问答服务全流程组合逻辑测试
+// 单测：测试 AI 问答服务组合逻辑 (generateGroundedAnswer)，贯穿上下文检索、模型生成与出处契约绑定的完整流程
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({

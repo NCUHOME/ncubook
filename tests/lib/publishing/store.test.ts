@@ -1,4 +1,4 @@
-// 单测：Supabase 发布存储事务一致性测试
+// 单测：测试 Supabase 数据库发布事务写入一致性，验证主版本记录与关联 Page/Block/Asset 的原子提交
 import { describe, expect, it } from "vitest";
 import type { RichText } from "@/lib/content/published-schema";
 import type { PublicationCommit } from "@/lib/publishing/publish-version";

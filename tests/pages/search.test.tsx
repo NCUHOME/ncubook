@@ -1,11 +1,11 @@
-// 单测：关键词全文搜索结果页渲染测试
+// 单测：测试搜索结果页 (SearchPageView) 关键词匹配段落列表、高亮摘要、来源路径与无 AI 生成回答的独立检索特性
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { searchIndexFixture } from "@/lib/content/published-fixtures";
 import { resolvePageRoute } from "@/lib/content/published-repository";
 import { searchEntries } from "@/lib/search/search-blocks";
-import { SearchPageView } from "@/src/components/pages/SearchPageView";
+import { SearchPageView } from "@/src/views/search";
 
 describe("keyword search page", () => {
   it("shows source paths, original excerpts and exact anchor links without an AI answer", () => {

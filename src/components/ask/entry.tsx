@@ -1,7 +1,8 @@
+// 组件：基于 IntersectionObserver 监听文档滚动视口中首个可见标题，自动为 FloatingAskButton 捕获最精准的段落锚点
 "use client";
 
 import { useEffect, useState } from "react";
-import { FloatingAskButton } from "@/src/components/ask/FloatingAskButton";
+import { FloatingAskButton } from "@/src/components/ask/button";
 
 export function DocumentAskEntry({ pageId, initialAnchor }: { pageId: string; initialAnchor?: string }) {
   const [anchor, setAnchor] = useState(initialAnchor);

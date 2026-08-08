@@ -1,4 +1,4 @@
-// 单测：Notion 富文本块节点树结构规格化转换测试
+// 单测：测试 Notion 原始富文本 Block 树向发布 Schema 的转化，验证 stable anchor (b-xxx) 与复杂嵌套节点映射
 import { describe, expect, it, vi } from "vitest";
 import { normalizeNotionBlocks, UnsupportedNotionBlockError } from "@/lib/publishing/normalize-blocks";
 import type { NotionBlockNode, NotionObject } from "@/lib/publishing/notion-client";

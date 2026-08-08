@@ -1,5 +1,5 @@
 import type { Asset, Block, RichText } from "@/lib/content/published-schema";
-import { ArticleRenderer } from "@/src/components/article/ArticleRenderer";
+import { ArticleRenderer } from "@/src/components/article/renderer";
 
 const attachments = [
   "金榜题名之后 _ 大学生出路分化之谜 -- 郑雅君, author -- 复旦教育研究曦光丛书, 2023.pdf",

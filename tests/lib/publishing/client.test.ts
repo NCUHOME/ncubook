@@ -1,4 +1,4 @@
-// 单测：Notion API SDK 客户端封装测试
+// 单测：测试 Notion API 官方 SDK 客户端封装，验证分页拉取 (cursor)、429 速率限制重试与错误捕获包装
 import { describe, expect, it, vi } from "vitest";
 import { createNotionClient } from "@/lib/publishing/notion-client";
 

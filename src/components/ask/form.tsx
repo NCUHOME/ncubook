@@ -1,8 +1,9 @@
+// 组件：首页共享提问输入表单，拦截默认提交事件，调用 useAsk().openAsk() 调起问答
 "use client";
 
 import { FormEvent, useState } from "react";
 import { ArrowUp } from "lucide-react";
-import { useAsk } from "@/src/components/ask/AskProvider";
+import { useAsk } from "@/src/hooks/use-ask";
 
 export function QuestionForm() {
   const [question, setQuestion] = useState("");

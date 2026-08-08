@@ -1,4 +1,4 @@
-// 单测：全文搜索分词索引构建测试
+// 单测：测试搜索引擎发布索引构建器，验证从文章富文本 Block 提取纯文本摘要与生成 SearchIndexEntry
 import { describe, expect, it } from "vitest";
 import type { Block, Page, RichText } from "@/lib/content/published-schema";
 import { buildSearchIndex } from "@/lib/publishing/build-search-index";

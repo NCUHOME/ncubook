@@ -1,3 +1,4 @@
+// 上下文：管理全站 AI 问答会话、弹层显示状态、会话历史恢复 (sessionStorage) 与 API 交互的 Context 提供者
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -5,20 +6,20 @@ import dynamic from "next/dynamic";
 import { validateAnswerSession, type AnswerSession } from "@/lib/answers/session";
 import { resolvePageRoute as resolveFixturePageRoute } from "@/lib/content/published-repository";
 
-const AskSheet = dynamic(() => import("@/src/components/ask/AskSheet").then((mod) => mod.AskSheet), { ssr: false });
+const AskSheet = dynamic(() => import("@/src/components/ask/sheet").then((mod) => mod.AskSheet), { ssr: false });
 
 export type PageContext = { pageId: string; anchor?: string };
 export type AskInput = { question?: string; pageContext?: PageContext };
 export type AnswerRequest = (input: { question: string; pageContext?: PageContext }) => Promise<AnswerSession>;
 export type AskStatus = "idle" | "loading" | "ready" | "error";
 
-type AskContextValue = {
+export type AskContextValue = {
   openAsk: (input: AskInput) => void;
   draft: string;
   setDraft: (value: string) => void;
 };
 
-const AskContext = createContext<AskContextValue | null>(null);
+export const AskContext = createContext<AskContextValue | null>(null);
 
 async function requestAnswerFromApi(input: { question: string; pageContext?: PageContext }): Promise<AnswerSession> {
   const response = await fetch("/api/ask", {
@@ -144,10 +145,4 @@ export function AskProvider({ children, requestAnswer = requestAnswerFromApi, re
       ) : null}
     </AskContext.Provider>
   );
-}
-
-export function useAsk() {
-  const context = useContext(AskContext);
-  if (!context) throw new Error("useAsk must be used inside AskProvider");
-  return context;
 }

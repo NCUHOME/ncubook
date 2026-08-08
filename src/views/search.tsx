@@ -1,6 +1,7 @@
+// 视图：关键词全文搜索结果页，渲染搜索专属 AppHeader 顶栏与交互式搜索体验容器 SearchExperience
 import type { SearchResult } from "@/lib/search/search-blocks";
-import { AppHeader } from "@/src/components/navigation/AppHeader";
-import { SearchExperience } from "@/src/components/search/SearchExperience";
+import { AppHeader } from "@/src/components/nav/header";
+import { SearchExperience } from "@/src/components/search/box";
 
 export function SearchPageView({ query, results }: { query: string; results: SearchResult[] }) {
   return (
@@ -12,3 +13,5 @@ export function SearchPageView({ query, results }: { query: string; results: Sea
     </>
   );
 }
+
+export const SearchView = SearchPageView;

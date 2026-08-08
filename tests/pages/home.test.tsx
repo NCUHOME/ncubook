@@ -1,10 +1,10 @@
-// 单测：提问优先首页与场景入口测试
+// 单测：测试提问优先首页 (HomePageView) 标语首屏、主提问框入口与顶层校园板块卡片列表的渲染
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { getPublishedSections } from "@/lib/content/published-repository";
-import { AskProvider } from "@/src/components/ask/AskProvider";
-import { HomePageView } from "@/src/components/pages/HomePageView";
+import { AskProvider } from "@/src/context/ask";
+import { HomePageView } from "@/src/views/home";
 
 describe("question-first homepage", () => {
   it("keeps the question entry primary and limits exploration to section links", () => {

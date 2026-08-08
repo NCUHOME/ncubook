@@ -1,4 +1,4 @@
-// 单测：问答 API 校验 Handler 与限流测试
+// 单测：测试 /api/ask 路由 Handler 的请求体校验、页面上下文解析、速率限制 (Rate Limit) 与错误响应格式
 import { describe, expect, it, vi } from "vitest";
 import { ACTIVE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/answers/session";
 import { createAskHandler, type AnswerService } from "@/lib/ai/answer-route";

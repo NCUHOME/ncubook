@@ -1,7 +1,9 @@
+// 组件：移动端右下角 AI 问答浮动按钮 (FAB)，点击调起当前页面上下文的 AskSheet 弹层
 "use client";
 
 import { MessageCircleQuestion } from "lucide-react";
-import { type PageContext, useAsk } from "@/src/components/ask/AskProvider";
+import type { PageContext } from "@/src/context/ask";
+import { useAsk } from "@/src/hooks/use-ask";
 
 export function FloatingAskButton({ pageContext }: { pageContext: PageContext }) {
   const { openAsk } = useAsk();

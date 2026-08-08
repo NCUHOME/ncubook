@@ -1,4 +1,4 @@
-// 单测：大模型 Provider 适配器与超时刻重试机制测试
+// 单测：测试大模型 Provider 适配器，验证对 OpenAI / Gemini 格式解析、超时重试与 Mock Provider 降级切换
 import { describe, expect, it, vi } from "vitest";
 import { createOpenAICompatibleProvider, ProviderError } from "@/lib/ai/provider";
 

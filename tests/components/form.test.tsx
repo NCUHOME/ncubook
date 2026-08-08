@@ -1,11 +1,11 @@
-// 单测：共享提问输入框与浮动入口测试
+// 单测：测试 QuestionForm 提问输入表单的提交拦截、去除空格校验以及与全站 AskProvider 的联动开弹层交互
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { AskProvider } from "@/src/components/ask/AskProvider";
-import { FloatingAskButton } from "@/src/components/ask/FloatingAskButton";
-import { QuestionForm } from "@/src/components/ask/QuestionForm";
+import { AskProvider } from "@/src/context/ask";
+import { FloatingAskButton } from "@/src/components/ask/button";
+import { QuestionForm } from "@/src/components/ask/form";
 
 describe("shared ask entry", () => {
   it("opens the ask sheet from the homepage without navigating to search", async () => {

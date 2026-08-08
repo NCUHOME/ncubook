@@ -1,4 +1,4 @@
-// 单测：冒烟测试报告与节点连通性校验测试
+// 单测：测试 AI 模块冒烟诊断工具，校验大模型 Provider API 连通性测试与性能耗时报告生成
 import { describe, expect, it } from "vitest";
 import { evaluateSmokeReport, type SmokeAnswerSample, type SmokeCase, type SmokeRetrievalSample } from "@/lib/ai/smoke-report";
 

@@ -1,9 +1,9 @@
-// 单测：当前板块页面树抽屉组件交互测试
+// 单测：测试 PageTreeDrawer 抽屉组件的打开/关闭状态、板块树节点交互以及关闭后焦点复位可访问性
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { PageTreeDrawer } from "@/src/components/navigation/PageTreeDrawer";
+import { PageTreeDrawer } from "@/src/components/nav/drawer";
 
 describe("page tree drawer", () => {
   it("opens the current section tree and restores trigger focus", async () => {

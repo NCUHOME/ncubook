@@ -1,3 +1,4 @@
+// 组件：板块目录抽屉 (Drawer)，基于 Radix Dialog 渲染左侧滑出的响应式文档树 (TreeNode) 导航
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";

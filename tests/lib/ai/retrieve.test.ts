@@ -1,4 +1,4 @@
-// 单测：混合检索算法与最相关片段召回测试
+// 单测：测试混合检索算法 (retrieve)，验证页面上下文权重提升、三元组与向量相似度混合排序及 Top-K 结果过滤
 import { describe, expect, it, vi } from "vitest";
 import { retrieveGroundingSources, type RetrievalRepository, type RetrievalSource } from "@/lib/ai/retrieve";
 

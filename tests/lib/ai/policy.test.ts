@@ -1,4 +1,4 @@
-// 单测：敏感问题防幻觉策略与服务端安全边界测试
+// 单测：测试 AI 提问安全策略 (policy) 与服务端隔离边界，验证未提供知识库上下文或敏感问题时的拒绝回答机制
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";

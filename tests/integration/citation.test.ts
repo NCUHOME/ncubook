@@ -1,4 +1,4 @@
-// 集成测试：基于在线与真实检索粒度的答案证据链归因测试
+// 集成测试：校验真实知识库文档索引检索与 AI 问答可溯源证据链 (Citation Grounding) 的全流程匹配准确性
 import { describe, expect, it } from "vitest";
 import type { AnswerModel } from "@/lib/ai/provider";
 import { groundAnswer } from "@/lib/ai/ground-answer";

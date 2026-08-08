@@ -1,4 +1,4 @@
-// 单测：Supabase 在线发布版本数据比对测试
+// 单测：测试发布版本增量比对算法 (compare)，验证对新增/修改/删除页面与 Block 节点的精确 Diff 分析
 import { describe, expect, it } from "vitest";
 import type { Block, RichText } from "@/lib/content/published-schema";
 import { comparePagePublication } from "@/lib/migration/compare-publication";

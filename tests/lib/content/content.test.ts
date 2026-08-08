@@ -1,4 +1,4 @@
-// 单测：发布文章与板块节点层级结构解析测试
+// 单测：测试内容仓库 (published-repository) 树结构构造、板块层级关系解析、页面 Slug 路径映射与元数据提取
 import { describe, expect, it } from "vitest";
 import {
   anchorFromSourceId,

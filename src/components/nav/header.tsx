@@ -1,7 +1,8 @@
+// 组件：全站吸顶 Header 导航栏，包含返回按钮、PageTreeDrawer 板块抽屉触发按钮、标题与搜索页入口
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 import type { PageTreeNode } from "@/lib/content/published-repository";
-import { PageTreeDrawer } from "@/src/components/navigation/PageTreeDrawer";
+import { PageTreeDrawer } from "@/src/components/nav/drawer";
 
 type AppHeaderProps = {
   title?: string;

@@ -1,10 +1,10 @@
-// 单测：文章富文本块树与稳定锚点渲染测试
+// 单测：测试 ArticleRenderer 对各类 Notion 块节点（列表、高亮块、表格锚点、懒加载图片、双栏及引用包含附件）的精确 HTML 结构渲染
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Block } from "@/lib/content/published-schema";
 import { getAsset, getDocumentView, resolvePageRoute } from "@/lib/content/published-repository";
-import { ArticleRenderer } from "@/src/components/article/ArticleRenderer";
+import { ArticleRenderer } from "@/src/components/article/renderer";
 
 describe("article renderer", () => {
   it("preserves rich blocks, assets and stable anchors", () => {

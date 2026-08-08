@@ -1,4 +1,4 @@
-// 单测：全文与 Block 粒度检索与稳定锚点解析测试
+// 单测：测试块级全文检索算法 (searchEntries)，校验关键词分词匹配、摘要片段高亮切割与 b-<blockId> 锚点计算
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 import { GET } from "@/app/api/search/route";

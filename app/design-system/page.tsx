@@ -1,4 +1,4 @@
-import { ReviewSamples } from "@/src/components/design-system/ReviewSamples";
+import { ReviewSamples } from "@/src/views/tokens";
 
 export default function DesignSystemPage() {
   return <ReviewSamples />;

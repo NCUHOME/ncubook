@@ -1,4 +1,4 @@
-// 单测：内容发布版本控制状态流转测试
+// 单测：测试发布版本控制状态机 (version)，验证版本号生成、校验和哈希比对以及当前活动版本指针切换
 import { describe, expect, it, vi } from "vitest";
 import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/published-schema";
 import {

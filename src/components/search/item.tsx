@@ -1,3 +1,4 @@
+// 组件：搜索结果条目卡片，渲染文档路径面包屑、页面标题、匹配段落摘要的高亮文本 (<mark>) 与精确锚点跳转链接
 import Link from "next/link";
 import type { SearchResult } from "@/lib/search/search-blocks";
 

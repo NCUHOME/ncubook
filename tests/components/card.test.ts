@@ -1,4 +1,4 @@
-// 单测：内容卡片解包与视图展示测试
+// 单测：测试飞书多维表格 (Lark) 原始记录向全站卡片视图 (Card) 的转换逻辑与未发布过滤规则
 import { describe, expect, it } from "vitest";
 import {
   filterPublishedCards,

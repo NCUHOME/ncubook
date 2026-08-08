@@ -1,3 +1,4 @@
+// 视图：设计系统审阅调试页，在 360px、390px 与 430px 三种目标手机屏幕宽度下并发渲染黑白排版与语义令牌样张
 import { ArrowUp, Search } from "lucide-react";
 
 const widths = [360, 390, 430] as const;
@@ -47,3 +48,5 @@ export function ReviewSamples() {
     </main>
   );
 }
+
+export const TokensView = ReviewSamples;

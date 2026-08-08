@@ -1,4 +1,4 @@
-// 单测：问答准确率与评分函数算法测试
+// 单测：测试 AI 问答评测指标算法，校验检索召回率、事实正确性评分与段落锚点归因精度的计算准确性
 import { describe, expect, it } from "vitest";
 import { createAnswerFixture } from "@/lib/answers/session";
 import { evaluateAnswerSessions, type EvaluationCase } from "@/lib/ai/evaluate";

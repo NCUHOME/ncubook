@@ -1,4 +1,4 @@
-// 单测：设计系统令牌 (tokens.json) 规则契约测试
+// 单测：测试设计系统令牌契约 (tokens.json & globals.css)，校验纯白 Canvas、单色 Action、三屏审阅框与禁止原生硬编码样式规则
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -31,7 +31,7 @@ describe("editorial monochrome token contract", () => {
 
   it("provides isolated review frames at all approved mobile widths", () => {
     const reviewPage = resolve(process.cwd(), "app/design-system/page.tsx");
-    const reviewSamples = resolve(process.cwd(), "src/components/design-system/ReviewSamples.tsx");
+    const reviewSamples = resolve(process.cwd(), "src/views/tokens.tsx");
     expect(existsSync(reviewPage)).toBe(true);
     expect(existsSync(reviewSamples)).toBe(true);
     expect(readFileSync(reviewPage, "utf8")).toContain("<ReviewSamples");
@@ -41,7 +41,7 @@ describe("editorial monochrome token contract", () => {
   });
 
   it("prevents application components from bypassing semantic tokens", () => {
-    const roots = [resolve(process.cwd(), "app"), resolve(process.cwd(), "src/components")];
+    const roots = [resolve(process.cwd(), "app"), resolve(process.cwd(), "src")];
     const files = roots.flatMap((root) => collectTsx(root));
     const forbidden = [
       /#[0-9a-f]{3,8}/i,

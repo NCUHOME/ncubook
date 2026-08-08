@@ -1,12 +1,12 @@
-// 单测：带引用证明链的 AI 问答弹层测试
+// 单测：测试 AskSheet 问答弹层在不同阶段 (loading/error/ready) 的渲染、事实观点出处角标跳转与追问提交流程
 import React from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ACTIVE_CONTENT_VERSION, type AnswerSession } from "@/lib/answers/session";
-import { AskProvider, type AnswerRequest } from "@/src/components/ask/AskProvider";
-import { FloatingAskButton } from "@/src/components/ask/FloatingAskButton";
-import { QuestionForm } from "@/src/components/ask/QuestionForm";
+import { AskProvider, type AnswerRequest } from "@/src/context/ask";
+import { FloatingAskButton } from "@/src/components/ask/button";
+import { QuestionForm } from "@/src/components/ask/form";
 
 const answer: AnswerSession = {
   id: "answer-shuttle-fare",

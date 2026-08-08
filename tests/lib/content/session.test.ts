@@ -1,4 +1,4 @@
-// 单测：问答 Session 事实引用与可信度状态机测试
+// 单测：测试问答会话 (AnswerSession) 数据结构校验、防篡改反序列化与历史记录本地存储 (sessionStorage) 格式化
 import { describe, expect, it } from "vitest";
 import { sampleCards } from "@/lib/content/sample-cards";
 import { composeSearchAnswer, requiresOfficialVerification } from "@/lib/search/answer";

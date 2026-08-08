@@ -1,4 +1,4 @@
-// 单测：Notion 单页面元数据与 slug 规整测试
+// 单测：测试单篇 Notion 页面规范化解析器，验证标题清洗、合法 Slug 生成与风险等级元数据标准化
 import { describe, expect, it } from "vitest";
 import { normalizeNotionPage } from "@/lib/publishing/normalize-page";
 

@@ -1,9 +1,10 @@
+// 组件：交互式关键词搜索容器，管理搜索输入框、URL searchParams 防抖同步 (/search?q=...)、并发请求防抖与检索结果列表
 "use client";
 
 import { Search, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import type { SearchResult } from "@/lib/search/search-blocks";
-import { SearchResultItem } from "@/src/components/search/SearchResultItem";
+import { SearchResultItem } from "@/src/components/search/item";
 
 type SearchResponse = { query?: string; results?: SearchResult[] };
 

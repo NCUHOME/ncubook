@@ -1,9 +1,10 @@
+// 视图：提问优先架构下的学生端首页，集成 AppHeader、核心提问表单 (QuestionForm) 与顶层校园板块双列卡片列表
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { Page } from "@/lib/content/published-schema";
 import { resolvePageRoute } from "@/lib/content/published-repository";
-import { QuestionForm } from "@/src/components/ask/QuestionForm";
-import { AppHeader } from "@/src/components/navigation/AppHeader";
+import { QuestionForm } from "@/src/components/ask/form";
+import { AppHeader } from "@/src/components/nav/header";
 
 export function HomePageView({ sections, resolveRoute = resolvePageRoute }: { sections: Page[]; resolveRoute?: (pageId: string) => string }) {
   return (
@@ -33,3 +34,5 @@ export function HomePageView({ sections, resolveRoute = resolvePageRoute }: { se
     </>
   );
 }
+
+export const HomeView = HomePageView;

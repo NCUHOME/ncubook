@@ -1,4 +1,4 @@
-// 单测：移动端优先文档页与板块导引渲染测试
+// 单测：测试文档阅读页 (DocumentPageView) 与板块导引页 (SectionPageView) 的面包屑、格式化更新时间、文章块树与自适应导航
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
@@ -11,9 +11,9 @@ import {
   getSectionView,
   resolvePageRoute,
 } from "@/lib/content/published-repository";
-import { DocumentPageView } from "@/src/components/pages/DocumentPageView";
-import { SectionPageView } from "@/src/components/pages/SectionPageView";
-import { AskProvider } from "@/src/components/ask/AskProvider";
+import { DocumentPageView } from "@/src/views/doc";
+import { SectionPageView } from "@/src/views/section";
+import { AskProvider } from "@/src/context/ask";
 
 describe("published page views", () => {
   it("renders a free-form section introduction followed by child documents", () => {

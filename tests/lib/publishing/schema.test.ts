@@ -1,4 +1,4 @@
-// 单测：Supabase 数据库 Schema 与表字段断言测试
+// 单测：测试 Supabase SQL Schema 契约，验证 content_versions, published_pages 等 7 张核心表结构、索引与约束
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";

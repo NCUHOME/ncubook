@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AskProvider } from "@/src/components/ask/AskProvider";
+import { AskProvider } from "@/src/context/ask";
 
 export function Providers({ children, pageRoutes }: { children: ReactNode; pageRoutes: Record<string, string> }) {
   return <AskProvider resolvePageRoute={(pageId) => {
