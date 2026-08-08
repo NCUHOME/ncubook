@@ -13,10 +13,10 @@ describe("article renderer", () => {
     expect(screen.getByRole("heading", { name: "富内容示例" })).toHaveAttribute("id", "b-rich-heading");
     expect(document.getElementById("b-table-row-fare")).toBeInstanceOf(HTMLTableRowElement);
     expect(screen.getByRole("table")).toBeVisible();
-    expect(screen.getByRole("img", { name: "校园交通路线示意图" })).toHaveAttribute("src", "/fixtures/campus-map.svg");
+    expect(screen.getByRole("img", { name: "校园交通路线示意图" })).toHaveAttribute("src", "/images/campus-map.svg");
     expect(screen.getByRole("img", { name: "校园交通路线示意图" })).toHaveAttribute("loading", "lazy");
     expect(screen.getByRole("img", { name: "校园交通路线示意图" })).toHaveAttribute("decoding", "async");
-    expect(screen.getByRole("link", { name: /校园生活指南/ })).toHaveAttribute("href", "/fixtures/campus-life-guide.pdf");
+    expect(screen.getByRole("link", { name: /校园生活指南/ })).toHaveAttribute("href", "/files/campus-life-guide.pdf");
     expect(screen.getByRole("link", { name: "查看校园环游车乘坐指南" })).toHaveAttribute("href", "/docs/campus-shuttle");
 
     const left = screen.getByText("左列内容");

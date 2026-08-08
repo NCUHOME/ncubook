@@ -40,7 +40,7 @@ describe("published document fixture", () => {
   });
 
   it("resolves assets, page routes and row anchors without extending the publication schema", () => {
-    expect(getAsset("asset-campus-map")?.publicUrl).toBe("/fixtures/campus-map.svg");
+    expect(getAsset("asset-campus-map")?.publicUrl).toBe("/images/campus-map.svg");
     expect(resolvePageRoute("page-campus-shuttle")).toBe("/docs/campus-shuttle");
     expect(anchorFromSourceId("table-row-fare")).toBe("b-table-row-fare");
   });

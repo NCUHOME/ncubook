@@ -145,8 +145,8 @@ export const publishedFixture: PublishedFixture = {
     "page-rich-content": richBlocks,
   },
   assets: [
-    { id: "asset-campus-map", sourceBlockId: "rich-image", contentVersion, kind: "image", publicUrl: "/fixtures/campus-map.svg", checksum: "fixture-map", alt: "校园交通路线示意图" },
-    { id: "asset-guide-pdf", sourceBlockId: "rich-file", contentVersion, kind: "file", publicUrl: "/fixtures/campus-life-guide.pdf", checksum: "fixture-guide" },
+    { id: "asset-campus-map", sourceBlockId: "rich-image", contentVersion, kind: "image", publicUrl: "/images/campus-map.svg", checksum: "fixture-map", alt: "校园交通路线示意图" },
+    { id: "asset-guide-pdf", sourceBlockId: "rich-file", contentVersion, kind: "file", publicUrl: "/files/campus-life-guide.pdf", checksum: "fixture-guide" },
   ],
   searchIndex: searchIndexFixture,
 };
