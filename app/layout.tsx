@@ -2,7 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/app/providers";
-import { loadPublishedRepository } from "@/lib/content/supabase";
 
 export const metadata: Metadata = {
   title: "此间",
@@ -17,12 +16,13 @@ export const viewport: Viewport = {
   themeColor: "white",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const repository = await loadPublishedRepository();
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN">
       <body>
-        <Providers pageRoutes={repository.getPageRoutes()}><div className="mobile-shell">{children}</div></Providers>
+        <Providers>
+          <div className="mobile-shell">{children}</div>
+        </Providers>
       </body>
     </html>
   );

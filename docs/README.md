@@ -23,4 +23,4 @@
 ## 🛠️ 工程测试与评测划分
 
 - **确定性代码单元测试 (`tests/`)**：运行 `npm test`，基于 Vitest 进行 UI 组件渲染、描述规范及逻辑 Schema 的毫秒级确定性断言。
-- **AI 质量与冒烟评测 (`cases/` & `scripts/`)**：运行 `npm run eval` 或 `npm run smoke`，针对真实模型准确率、防幻觉、拒答率与边缘节点连通性进行评测。
+- **AI 质量与冒烟评测 (`evals/` & `scripts/`)**：运行 `npm run eval` 或 `npm run smoke`，针对真实模型准确率、防幻觉、拒答率与边缘节点连通性进行评测。

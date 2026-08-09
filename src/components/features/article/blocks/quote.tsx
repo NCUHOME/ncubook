@@ -1,7 +1,7 @@
 // 组件：块级引用 (<blockquote>) 渲染器，带有左侧黑白边框与斜体排版，支持嵌套子块
 import type { ReactNode } from "react";
 import type { Block } from "@/lib/content/schema";
-import { RichText } from "@/src/components/article/blocks/richtext";
+import { RichText } from "@/src/components/features/article/blocks/richtext";
 
 export function QuoteBlock({ block, resolvePageRoute, children }: { block: Extract<Block, { type: "quote" }>; resolvePageRoute: (pageId: string) => string; children?: ReactNode }) {
   return (

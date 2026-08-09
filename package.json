@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "publish": "node scripts/publish.ts",
     "eval": "node scripts/test.ts",
+    "eval:rag": "node scripts/test.ts",
     "smoke": "node scripts/smoke.ts",
+    "eval:smoke": "node scripts/smoke.ts",
     "compare": "node scripts/compare.ts",
     "check": "node scripts/check.ts"
   },

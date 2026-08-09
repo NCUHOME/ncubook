@@ -4,8 +4,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { AskProvider } from "@/src/context/ask";
-import { FloatingAskButton } from "@/src/components/ask/button";
-import { QuestionForm } from "@/src/components/ask/form";
+import { FloatingAskButton } from "@/src/components/features/ask/button";
+import { QuestionForm } from "@/src/components/features/ask/form";
 
 describe("shared ask entry", () => {
   it("opens the ask sheet from the homepage without navigating to search", async () => {

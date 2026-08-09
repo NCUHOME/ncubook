@@ -1,6 +1,6 @@
 // 组件：列表块渲染器，支持无序列表 (<ul>) 与有序列表 (<ol>) 及其内部 RichText 节点的映射
 import type { Asset, Block } from "@/lib/content/schema";
-import { RichText } from "@/src/components/article/blocks/richtext";
+import { RichText } from "@/src/components/features/article/blocks/richtext";
 
 export function ListBlock({ block, resolvePageRoute }: { block: Extract<Block, { type: "bulleted-list" | "numbered-list" }>; getAsset: (assetId: string) => Asset | null; resolvePageRoute: (pageId: string) => string }) {
   const Component = block.type === "bulleted-list" ? "ul" : "ol";

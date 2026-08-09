@@ -1,8 +1,9 @@
-// 关键词搜索页面路由：服务端获取 url ?q= 查询参数，动态生成 Metadata，并渲染 SearchPageView
+// 关键词搜索页面路由：服务端获取 url ?q= 查询参数，动态生成 Metadata，并直接渲染 SearchExperience
 import type { Metadata } from "next";
 import { loadPublishedRepository } from "@/lib/content/supabase";
 import { searchEntries } from "@/lib/content/search";
-import { SearchPageView } from "@/src/views/search";
+import { SearchExperience } from "@/src/components/features/search/box";
+import { AppHeader } from "@/src/components/primitives/header";
 
 export async function generateMetadata({
   searchParams,
@@ -27,10 +28,14 @@ export default async function SearchPage({
   const { q = "" } = await searchParams;
   const query = q.trim();
   const repository = await loadPublishedRepository();
+  const results = searchEntries(query, repository.getSearchIndex(), repository.resolvePageRoute);
+
   return (
-    <SearchPageView
-      query={query}
-      results={searchEntries(query, repository.getSearchIndex(), repository.resolvePageRoute)}
-    />
+    <>
+      <AppHeader title="搜索文档" backHref="/" />
+      <main className="px-s5 pb-s7 pt-s5">
+        <SearchExperience initialQuery={query} initialResults={results} />
+      </main>
+    </>
   );
 }

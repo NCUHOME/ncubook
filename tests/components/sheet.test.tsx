@@ -5,8 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ACTIVE_CONTENT_VERSION, type AnswerSession } from "@/lib/ai/session";
 import { AskProvider, type AnswerRequest } from "@/src/context/ask";
-import { FloatingAskButton } from "@/src/components/ask/button";
-import { QuestionForm } from "@/src/components/ask/form";
+import { FloatingAskButton } from "@/src/components/features/ask/button";
+import { QuestionForm } from "@/src/components/features/ask/form";
 
 const answer: AnswerSession = {
   id: "answer-shuttle-fare",

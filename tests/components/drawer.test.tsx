@@ -3,7 +3,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { PageTreeDrawer } from "@/src/components/nav/drawer";
+import { PageTreeDrawer } from "@/src/components/primitives/drawer";
 
 describe("page tree drawer", () => {
   it("opens the current section tree and restores trigger focus", async () => {

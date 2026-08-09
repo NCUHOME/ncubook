@@ -15,7 +15,7 @@ const endpoint = process.env.ANSWER_EVAL_ENDPOINT;
 if (!endpoint) fail("ANSWER_EVAL_ENDPOINT is required");
 
 // 读取用例题库与合格线配置
-const testConfig = JSON.parse(await readFile(new URL("../cases/test.json", import.meta.url), "utf8")) as TestConfig;
+const testConfig = JSON.parse(await readFile(new URL("../evals/test.json", import.meta.url), "utf8")) as TestConfig;
 const cases = testConfig.cases;
 const thresholds = testConfig.thresholds;
 

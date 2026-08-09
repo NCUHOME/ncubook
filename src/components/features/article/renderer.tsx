@@ -1,16 +1,16 @@
 // 组件：文章富文本块树主渲染器，根据 Block 节点类型 (paragraph, heading, quote, table 等) 递归分派至底层 blocks/ 组件
 import type { Asset, Block } from "@/lib/content/schema";
-import { CalloutBlock } from "@/src/components/article/blocks/callout";
-import { ColumnsBlock } from "@/src/components/article/blocks/columns";
-import { DividerBlock } from "@/src/components/article/blocks/divider";
-import { EmbedBlock } from "@/src/components/article/blocks/embed";
-import { FileBlock } from "@/src/components/article/blocks/file";
-import { ImageBlock } from "@/src/components/article/blocks/image";
-import { ListBlock } from "@/src/components/article/blocks/list";
-import { PageLinkBlock } from "@/src/components/article/blocks/link";
-import { QuoteBlock } from "@/src/components/article/blocks/quote";
-import { RichText } from "@/src/components/article/blocks/richtext";
-import { TableBlock } from "@/src/components/article/blocks/table";
+import { CalloutBlock } from "@/src/components/features/article/blocks/callout";
+import { ColumnsBlock } from "@/src/components/features/article/blocks/columns";
+import { DividerBlock } from "@/src/components/features/article/blocks/divider";
+import { EmbedBlock } from "@/src/components/features/article/blocks/embed";
+import { FileBlock } from "@/src/components/features/article/blocks/file";
+import { ImageBlock } from "@/src/components/features/article/blocks/image";
+import { ListBlock } from "@/src/components/features/article/blocks/list";
+import { PageLinkBlock } from "@/src/components/features/article/blocks/link";
+import { QuoteBlock } from "@/src/components/features/article/blocks/quote";
+import { RichText } from "@/src/components/features/article/blocks/richtext";
+import { TableBlock } from "@/src/components/features/article/blocks/table";
 
 export type ArticleRendererProps = {
   blocks: Block[];

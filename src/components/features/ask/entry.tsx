@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FloatingAskButton } from "@/src/components/ask/button";
+import { FloatingAskButton } from "@/src/components/features/ask/button";
 
 export function DocumentAskEntry({ pageId, initialAnchor }: { pageId: string; initialAnchor?: string }) {
   const [anchor, setAnchor] = useState(initialAnchor);

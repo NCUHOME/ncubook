@@ -4,7 +4,7 @@
 import { Search, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import type { SearchResult } from "@/lib/content/search";
-import { SearchResultItem } from "@/src/components/search/item";
+import { SearchResultItem } from "@/src/components/features/search/item";
 
 type SearchResponse = { query?: string; results?: SearchResult[] };
 

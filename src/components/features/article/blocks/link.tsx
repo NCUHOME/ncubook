@@ -2,7 +2,7 @@
 import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import type { Block } from "@/lib/content/schema";
-import { RichText } from "@/src/components/article/blocks/richtext";
+import { RichText } from "@/src/components/features/article/blocks/richtext";
 
 export function PageLinkBlock({ block, href, resolvePageRoute }: { block: Extract<Block, { type: "page-link" }>; href: string; resolvePageRoute: (pageId: string) => string }) {
   return (

@@ -16,7 +16,7 @@ const activeContentVersion = await repository.getCurrentVersion();
 if (!activeContentVersion) fail("No active content version");
 
 // 读取并校验冒烟用例集
-const cases = parseCases(JSON.parse(await readFile(new URL("../cases/smoke.json", import.meta.url), "utf8")));
+const cases = parseCases(JSON.parse(await readFile(new URL("../evals/smoke.json", import.meta.url), "utf8")));
 const answerable = cases.filter((item) => item.expectedAnswerable);
 const unanswerable = cases.filter((item) => !item.expectedAnswerable);
 if (answerable.length !== 5 || unanswerable.length < 3) fail("Smoke corpus must contain five answerable and at least three unanswerable cases");

@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Block } from "@/lib/content/schema";
 import { getAsset, getDocumentView, resolvePageRoute } from "@/lib/content/repo";
-import { ArticleRenderer } from "@/src/components/article/renderer";
+import { ArticleRenderer } from "@/src/components/features/article/renderer";
 
 describe("article renderer", () => {
   it("preserves rich blocks, assets and stable anchors", () => {
