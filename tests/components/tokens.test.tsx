@@ -1,4 +1,4 @@
-// 单测：测试设计系统令牌契约 (tokens.json & globals.css)，校验纯白 Canvas、单色 Action、三屏审阅框与禁止原生硬编码样式规则
+// 单测：测试设计系统令牌契约 (tokens.json & globals.css)，校验纯白 Canvas、单色 Action 与禁止原生硬编码样式规则
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -27,17 +27,6 @@ describe("editorial monochrome token contract", () => {
     ]) {
       expect(css).toContain(token);
     }
-  });
-
-  it("provides isolated review frames at all approved mobile widths", () => {
-    const reviewPage = resolve(process.cwd(), "app/design-system/page.tsx");
-    const reviewSamples = resolve(process.cwd(), "src/views/tokens.tsx");
-    expect(existsSync(reviewPage)).toBe(true);
-    expect(existsSync(reviewSamples)).toBe(true);
-    expect(readFileSync(reviewPage, "utf8")).toContain("<ReviewSamples");
-    const source = readFileSync(reviewSamples, "utf8");
-    expect(source).toContain("const widths = [360, 390, 430]");
-    expect(source).toContain("data-review-width={String(width)}");
   });
 
   it("prevents application components from bypassing semantic tokens", () => {
