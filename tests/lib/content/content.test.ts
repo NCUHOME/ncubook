@@ -4,7 +4,9 @@ import {
   anchorFromSourceId,
   getAsset,
   getDocumentView,
+  getSectionChildren,
   getSectionTree,
+  getSectionView,
   resolvePageRoute,
 } from "@/lib/content/repo";
 
@@ -15,6 +17,16 @@ describe("published document fixture", () => {
     expect(shuttle?.blocks.every((block) => block.anchor.startsWith("b-"))).toBe(true);
     expect(shuttle?.page.parentId).toBeTruthy();
     expect(getSectionTree("campus-life").some((node) => node.children.length > 0)).toBe(true);
+  });
+
+  it("filters out child page-link blocks in getSectionView to prevent duplicate rendering", () => {
+    const sectionView = getSectionView("campus-life");
+    expect(sectionView).not.toBeNull();
+    const childIds = new Set(getSectionChildren("campus-life").map((child) => child.id));
+    const hasChildPageLink = sectionView?.blocks.some(
+      (block) => block.type === "page-link" && childIds.has(block.pageId),
+    );
+    expect(hasChildPageLink).toBe(false);
   });
 
   it("covers every approved rich-content block type", () => {

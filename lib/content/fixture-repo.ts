@@ -35,7 +35,13 @@ export class FixtureContentRepository implements ContentRepository {
 
   getSectionView = (slug: string): DocumentView | null => {
     const view = this.getDocumentView(slug);
-    return view?.page.parentId === null ? view : null;
+    if (!view || view.page.parentId !== null) return null;
+    const childrenIds = new Set(this.getSectionChildren(slug).map((child) => child.id));
+    const cleanBlocks = view.blocks.filter((block) => {
+      if (block.type === "page-link" && childrenIds.has(block.pageId)) return false;
+      return true;
+    });
+    return { ...view, blocks: cleanBlocks };
   };
 
   getPublishedSections = (): Page[] => {
