@@ -1,3 +1,4 @@
+// 校园内容板块导引页路由：静态 SSG 生成 (/sections/[slug])，渲染包含介绍段落与子文档卡片树的 SectionPageView
 import { notFound } from "next/navigation";
 import { loadPublishedRepository } from "@/lib/content/supabase";
 import { SectionPageView } from "@/src/views/section";

@@ -1,3 +1,4 @@
+// API 路由：学生反馈与勘误收集接口 (提交问题、页面路径与意见并写入 student_feedback 数据表)
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 

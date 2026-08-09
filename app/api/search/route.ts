@@ -1,3 +1,4 @@
+// API 路由：关键词搜索 API 接口 (处理 GET/POST 请求，进行轻量级 Block 匹配与 JSON 结果返回)
 import { NextRequest, NextResponse } from "next/server";
 import { loadPublishedRepository } from "@/lib/content/supabase";
 import { searchEntries } from "@/lib/content/search";

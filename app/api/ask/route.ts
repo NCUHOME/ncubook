@@ -1,3 +1,4 @@
+// API 路由：AI 知识库问答主入口 (含 IP 分钟级 Rate Limit 限流防护与影子/生产模式分发)
 import { createAskHandler, createMinuteRateLimiter, type AnswerMode, type AnswerService } from "@/lib/ai/route";
 import { createProductionAnswerService } from "@/lib/ai/service";
 

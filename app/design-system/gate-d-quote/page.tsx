@@ -1,3 +1,4 @@
+// 开发者视图：Gate D 390px 布局与嵌入附件富文本渲染样式审阅页
 import type { Asset, Block, RichText } from "@/lib/content/schema";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 

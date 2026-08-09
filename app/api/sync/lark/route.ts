@@ -1,3 +1,4 @@
+// API 路由：飞书多维表格 (Bitable) 卡片定时同步 Webhook (校验 x-cron-secret 秘钥并执行 Supabase 批量 Upsert)
 import { NextRequest, NextResponse } from "next/server";
 import { filterPublishedCards } from "@/lib/content/lark-mapper";
 import { upsertInformationCards } from "@/lib/content/upsert-cards";

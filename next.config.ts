@@ -1,3 +1,4 @@
+// 框架配置：Next.js 应用构建、安全 Header 与全局 HTTP 301 静态重定向 (Redirects) 机制
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -5,6 +6,25 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: process.cwd(),
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  async redirects() {
+    return [
+      {
+        source: "/cards/campus-transport",
+        destination: "/docs/campus-shuttle",
+        permanent: true,
+      },
+      {
+        source: "/cards/:slug*",
+        destination: "/sections/campus-life",
+        permanent: true,
+      },
+      {
+        source: "/topics/:slug*",
+        destination: "/sections/campus-life",
+        permanent: true,
+      },
+    ];
   },
 };
 

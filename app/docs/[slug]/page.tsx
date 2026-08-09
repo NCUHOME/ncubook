@@ -1,3 +1,4 @@
+// 校园知识文档阅读页路由：静态 SSG/ISR 生成 (/docs/[slug])，校验 slug 合法性并渲染移动端优先的 DocumentPageView
 import { notFound } from "next/navigation";
 import { loadPublishedRepository } from "@/lib/content/supabase";
 import { DocumentPageView } from "@/src/views/doc";

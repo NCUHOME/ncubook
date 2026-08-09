@@ -1,3 +1,4 @@
+/* 全局样式表：统一定义 tokens.json 对应的 CSS 原生变量、Tailwind v4 主题映射与全局排版重置 */
 @import "tailwindcss";
 
 :root {

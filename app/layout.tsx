@@ -1,3 +1,4 @@
+// 根 Layout：全站 App HTML 壳骨架、Viewport 视角配置、Globals 样式导入与 Providers 全局 Context 挂载
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/app/providers";
