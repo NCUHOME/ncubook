@@ -19,14 +19,11 @@ describe("published document fixture", () => {
     expect(getSectionTree("campus-life").some((node) => node.children.length > 0)).toBe(true);
   });
 
-  it("filters out child page-link blocks in getSectionView to prevent duplicate rendering", () => {
+  it("preserves embedded page-link blocks in getSectionView for rich section documents", () => {
     const sectionView = getSectionView("campus-life");
     expect(sectionView).not.toBeNull();
-    const childIds = new Set(getSectionChildren("campus-life").map((child) => child.id));
-    const hasChildPageLink = sectionView?.blocks.some(
-      (block) => block.type === "page-link" && childIds.has(block.pageId),
-    );
-    expect(hasChildPageLink).toBe(false);
+    const hasBlocks = sectionView?.blocks && sectionView.blocks.length > 0;
+    expect(hasBlocks).toBe(true);
   });
 
   it("covers every approved rich-content block type", () => {

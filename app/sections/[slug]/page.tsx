@@ -42,6 +42,24 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
   const getAsset = repository.getAsset;
   const resolveRoute = repository.resolvePageRoute;
   const contentBlocks = view.blocks[0]?.type === "paragraph" ? view.blocks.slice(1) : view.blocks;
+  const hasRichContent = contentBlocks.some((block) => {
+    if (
+      block.type === "heading" ||
+      block.type === "callout" ||
+      block.type === "quote" ||
+      block.type === "image" ||
+      block.type === "table" ||
+      block.type === "bulleted-list" ||
+      block.type === "numbered-list" ||
+      block.type === "columns"
+    ) {
+      return true;
+    }
+    if (block.type === "paragraph") {
+      return block.richText.some((t) => t.plainText.trim().length > 0);
+    }
+    return false;
+  });
 
   return (
     <>
@@ -52,7 +70,7 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
           <h1 className="mt-s3 font-display text-display leading-heading font-semibold">{view.page.title}</h1>
           <p className="mt-s4 max-w-prose font-body text-body leading-body text-muted">{view.description}</p>
         </section>
-        {contentBlocks.length > 0 ? (
+        {hasRichContent ? (
           <section className="px-s5 py-s6">
             <ArticleRenderer blocks={contentBlocks} getAsset={getAsset} resolvePageRoute={resolveRoute} />
           </section>
