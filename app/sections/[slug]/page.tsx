@@ -1,6 +1,5 @@
-// 校园内容板块导引页路由：静态 SSG/ISR 生成 (/sections/[slug])，配置 1小时增量刷新，直连领域渲染组件
 import type { Metadata } from "next";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FolderTree } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadPublishedRepository } from "@/lib/content/supabase";
@@ -42,24 +41,6 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
   const getAsset = repository.getAsset;
   const resolveRoute = repository.resolvePageRoute;
   const contentBlocks = view.blocks[0]?.type === "paragraph" ? view.blocks.slice(1) : view.blocks;
-  const hasRichContent = contentBlocks.some((block) => {
-    if (
-      block.type === "heading" ||
-      block.type === "callout" ||
-      block.type === "quote" ||
-      block.type === "image" ||
-      block.type === "table" ||
-      block.type === "bulleted-list" ||
-      block.type === "numbered-list" ||
-      block.type === "columns"
-    ) {
-      return true;
-    }
-    if (block.type === "paragraph") {
-      return block.richText.some((t) => t.plainText.trim().length > 0);
-    }
-    return false;
-  });
 
   return (
     <>
@@ -70,23 +51,40 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
           <h1 className="mt-s3 font-display text-display leading-heading font-semibold">{view.page.title}</h1>
           <p className="mt-s4 max-w-prose font-body text-body leading-body text-muted">{view.description}</p>
         </section>
-        {hasRichContent ? (
+        {contentBlocks.length > 0 ? (
           <section className="px-s5 py-s6">
             <ArticleRenderer blocks={contentBlocks} getAsset={getAsset} resolvePageRoute={resolveRoute} />
           </section>
         ) : null}
-        <section className="px-s5" aria-labelledby="section-pages-title">
-          <div className="flex items-center justify-between border-b border-line pb-s3">
-            <h2 id="section-pages-title" className="text-title leading-heading font-semibold">板块页面</h2>
-            <span className="text-caption text-muted">{children.length} 篇</span>
-          </div>
-          {children.map((page) => (
-            <Link key={page.id} href={resolveRoute(page.id)} className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-body">
-              <span>{page.title}</span>
-              <ChevronRight className="size-icon-small text-muted" strokeWidth={1.9} />
-            </Link>
-          ))}
-        </section>
+        {children.length > 0 ? (
+          <section className="px-s5 pt-s2" aria-labelledby="section-pages-title">
+            <div className="rounded-medium border border-line bg-surface-subtle/50 p-s5 shadow-subtle">
+              <div className="flex items-center justify-between border-b border-line pb-s3">
+                <div className="flex items-center gap-s2">
+                  <FolderTree className="size-icon text-muted" strokeWidth={1.9} />
+                  <h2 id="section-pages-title" className="text-title leading-heading font-semibold text-ink">
+                    本板块全部页面
+                  </h2>
+                </div>
+                <span className="text-caption font-medium text-muted bg-surface px-s3 py-s1 rounded-pill border border-line">
+                  {children.length} 篇全览
+                </span>
+              </div>
+              <div className="divide-y divide-line pt-s1">
+                {children.map((page) => (
+                  <Link
+                    key={page.id}
+                    href={resolveRoute(page.id)}
+                    className="focus-ring flex min-h-tap items-center justify-between py-s3 text-body hover:text-accent transition-colors"
+                  >
+                    <span className="font-medium">{page.title}</span>
+                    <ChevronRight className="size-icon-small text-muted flex-shrink-0" strokeWidth={1.9} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
       </main>
     </>
   );
