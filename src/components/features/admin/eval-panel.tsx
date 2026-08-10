@@ -45,7 +45,7 @@ export function EvalPanel({ aiConnected = false }: EvalPanelProps) {
         <div>
           <div className="flex items-center gap-s2">
             <Sparkles className="size-icon" />
-            <h2 className="font-display text-title font-semibold">RAG AI 质量基准在线评估</h2>
+            <h2 className="font-display text-title font-semibold">AI 问答服务质量检测</h2>
             {aiConnected ? (
               <span className="flex items-center gap-s1 rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption font-mono text-ink font-medium">
                 <CheckCircle2 className="size-icon-small text-ink" /> AI 引擎已就绪
@@ -57,7 +57,7 @@ export function EvalPanel({ aiConnected = false }: EvalPanelProps) {
             )}
           </div>
           <p className="mt-s1 text-caption leading-ui text-muted">
-            在线断言 RAG 引用准确率、防幻觉拒答能力与 P95 响应延迟
+            检测 AI 问答出处引用准确率、防幻觉回答能力与响应延迟
           </p>
         </div>
 
@@ -68,7 +68,7 @@ export function EvalPanel({ aiConnected = false }: EvalPanelProps) {
           className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
         >
           <Play className="size-icon-small" />
-          {running ? "正在运行断言..." : aiConnected ? "运行 RAG 质量评估" : "请先配置 AI 秘钥"}
+          {running ? "正在检测中..." : aiConnected ? "运行 AI 问答检测" : "请先配置 AI 秘钥"}
         </button>
       </div>
 
@@ -76,26 +76,26 @@ export function EvalPanel({ aiConnected = false }: EvalPanelProps) {
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-caption text-muted">
           <AlertCircle className="size-icon-small flex-shrink-0" />
           <span>
-            提示：当前环境变量未配置大模型 API Key (`AI_PROVIDER_API_KEY`)。填入 API Key 后即可在真实测试集上在线运行 RAG 召回与拒答断言。
+            提示：系统当前未配置 AI 秘钥。配置秘钥后即可在线测试 AI 问答的回答准确率与速度。
           </span>
         </div>
       )}
 
       <div className="mt-s4 grid grid-cols-3 gap-s4 text-center">
         <div className="rounded-small border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted font-medium">引用有效率 (Citation)</p>
+          <p className="text-caption text-muted font-medium">引用准确率</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {evaluated && aiConnected ? `${(metrics.citationValidity * 100).toFixed(0)}%` : "--"}
           </p>
         </div>
         <div className="rounded-small border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted font-medium">防幻觉拒答率 (Abstain)</p>
+          <p className="text-caption text-muted font-medium">防幻觉成功率</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {evaluated && aiConnected ? `${(metrics.abstentionAccuracy * 100).toFixed(0)}%` : "--"}
           </p>
         </div>
         <div className="rounded-small border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted font-medium">P95 响应延迟 (Latency)</p>
+          <p className="text-caption text-muted font-medium">平均响应延迟</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {evaluated && aiConnected ? `${metrics.p95LatencyMs} ms` : "--"}
           </p>

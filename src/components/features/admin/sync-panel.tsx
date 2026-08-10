@@ -2,6 +2,7 @@
 "use client";
 
 import { Play, RefreshCw, Terminal, CheckCircle2, AlertCircle, ShieldAlert, TestTube } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type SyncPanelProps = {
@@ -9,6 +10,7 @@ type SyncPanelProps = {
 };
 
 export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [dryRun, setDryRun] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
@@ -111,6 +113,11 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
             setStatus("success");
             setProgressPct(100);
             setStageText("已完成");
+            // 触发事件并刷新 Server Components
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new Event("content-published"));
+            }
+            router.refresh();
           } else if (pollData?.status === "error") {
             isDone = true;
             throw new Error(pollData.error ?? "后台同步发版失败");
@@ -197,17 +204,17 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
         <div className="flex items-center justify-between border-b border-line pb-s2 text-caption text-muted">
           <div className="flex items-center gap-s2 text-surface/80">
             <Terminal className="size-icon-small" />
-            <span>实时更新日志 (Live Execution Terminal)</span>
+            <span>实时更新日志</span>
           </div>
           <div className="flex items-center gap-s3">
             {status === "running" && (
               <button
                 type="button"
                 onClick={handleForceUnlock}
-                className="flex items-center gap-s1 rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption text-surface hover:opacity-80 transition-opacity"
+                className="flex items-center gap-s1 rounded-small border border-surface bg-surface px-s2 py-s1 text-caption font-semibold text-ink hover:bg-surface-subtle transition-colors shadow-subtle"
                 title="若长时间卡住可点击强行解锁"
               >
-                <ShieldAlert className="size-icon-small" /> 强制解锁挂起任务
+                <ShieldAlert className="size-icon-small text-ink" /> 强制解锁挂起任务
               </button>
             )}
             {status === "running" && (

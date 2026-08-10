@@ -1,8 +1,8 @@
-// 组件：版本控制与一键止血恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
+// 组件：版本控制与一键恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
 "use client";
 
 import { History, RotateCcw, AlertTriangle, CheckCircle2, Clock, Info } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { VersionRecord } from "@/lib/content/supabase-repo";
 
 type VersionTimelineProps = {
@@ -10,17 +10,39 @@ type VersionTimelineProps = {
   initialVersions?: VersionRecord[];
 };
 
-// 固定的兜底初次发版时间，绝不使用动态 new Date() 避免页面刷新时间变化
-const STABLE_INITIAL_TIME = "2026-08-10T12:00:00.000Z";
-
 export function VersionTimeline({ currentVersion = "未同步", initialVersions = [] }: VersionTimelineProps) {
   const [activeCurrent, setActiveCurrent] = useState<string>(currentVersion ?? "未同步");
+  const [versions, setVersions] = useState<VersionRecord[]>(initialVersions);
   const [loadingVersion, setLoadingVersion] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  // 严格仅保留真实版本记录，绝不加入任何虚拟假数据
-  const displayVersions: VersionRecord[] = initialVersions.length > 0
-    ? initialVersions.map((item) => ({
+  // 加载最新真实版本列表
+  const refreshVersions = async () => {
+    try {
+      const res = await fetch("/api/admin/publish-notion?action=versions");
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; versions?: VersionRecord[] } | null;
+      if (data?.ok && Array.isArray(data.versions)) {
+        setVersions(data.versions);
+        const currentItem = data.versions.find((v) => v.isCurrent);
+        if (currentItem) setActiveCurrent(currentItem.version);
+      }
+    } catch {
+      // 容错使用 initialVersions
+    }
+  };
+
+  // 监听发布完成事件，实时同步刷新版本历史列表
+  useEffect(() => {
+    const handlePublished = () => {
+      refreshVersions();
+    };
+    window.addEventListener("content-published", handlePublished);
+    return () => window.removeEventListener("content-published", handlePublished);
+  }, []);
+
+  // 严格仅保留真实版本记录，绝不加入任何假数据
+  const displayVersions: VersionRecord[] = versions.length > 0
+    ? versions.map((item) => ({
         ...item,
         isCurrent: item.version === activeCurrent,
       }))
@@ -28,7 +50,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         {
           version: activeCurrent ?? "未同步",
           status: "published",
-          createdAt: STABLE_INITIAL_TIME,
+          createdAt: "",
           isCurrent: true,
         },
       ];
@@ -53,6 +75,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
 
       setActiveCurrent(targetVersion);
       setMessage(`✅ 已成功将线上网站恢复至历史版本 ${targetVersion}！前端已同步更新。`);
+      refreshVersions();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "恢复失败";
       setMessage(`❌ 恢复异常: ${errorMsg}`);
@@ -66,10 +89,10 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       <div className="border-b border-line pb-s4">
         <div className="flex items-center gap-s2">
           <History className="size-icon" />
-          <h2 className="font-display text-title font-semibold">网站版本历史与一键止血恢复</h2>
+          <h2 className="font-display text-title font-semibold">网站版本历史与恢复</h2>
         </div>
         <p className="mt-s1 text-caption leading-ui text-muted">
-          记录每次同步发版的历史快照。若线上发生误删或格式排版错误，可在历史版本旁一键点击恢复
+          记录每次同步发版的历史快照。若线上发生误删或排版错误，可在历史版本旁一键恢复
         </p>
       </div>
 
@@ -80,12 +103,12 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         </div>
       )}
 
-      {/* 当系统目前只有 1 个版本记录时的友好提示 */}
+      {/* 当系统目前只有 1 个版本记录时的提示 */}
       {displayVersions.length === 1 && (
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-caption text-muted">
           <Info className="size-icon-small flex-shrink-0" />
           <span>
-            提示：当前数据库中已记录 1 次发版快照（即下方显示的当前线上在用版本）。在未来的日常更新中，每次点击「一键同步 Notion 文章」后，旧版本均会自动保留在此列表中，供您随时一键恢复。
+            提示：当前数据库中已记录 1 次发版快照。每次点击「一键同步 Notion 文章」发版完成后，旧版本会自动保留在此列表中，供您随时一键恢复。
           </span>
         </div>
       )}
@@ -148,6 +171,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
 }
 
 function formatDate(isoString: string): string {
+  if (!isoString) return "--";
   try {
     const d = new Date(isoString);
     if (Number.isNaN(d.getTime())) return isoString;

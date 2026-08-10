@@ -39,7 +39,7 @@ export default async function AdminDashboardPage() {
               开发者运维控制台
             </h1>
             <p className="mt-s2 text-caption leading-ui text-muted">
-              管理 Notion 内容图谱一键同步、线上版本号原子止血回滚与 RAG 质量在线断言
+              管理 Notion 文章一键更新、网站版本记录与 AI 问答服务状态
             </p>
           </div>
 

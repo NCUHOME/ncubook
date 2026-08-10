@@ -12,11 +12,19 @@ import {
 import { runNotionPublicationCommand } from "@/lib/publishing/pipeline";
 import { parseCommand } from "@/lib/publishing/route";
 
+import { fetchContentVersionsFromSupabase } from "@/lib/content/supabase-repo";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
+  const action = url.searchParams.get("action");
+  if (action === "versions") {
+    const versions = await fetchContentVersionsFromSupabase();
+    return Response.json({ ok: true, versions }, { status: 200 });
+  }
+
   const jobId = url.searchParams.get("jobId");
   if (!jobId) return Response.json({ ok: false, error: "missing_job_id" }, { status: 400 });
 
