@@ -1,4 +1,4 @@
-// 组件：Notion 内容一键同步控制台 (SyncPanel)，包含当前发版状态、一键全量/单页同步按钮与 Terminal 实时日志终端
+// 组件：Notion 内容一键同步控制台 (SyncPanel)，已结合 Cookie Session 免去手动输入 Token，支持一键同步与终端实时日志
 "use client";
 
 import { Play, RefreshCw, Terminal, CheckCircle2, AlertCircle } from "lucide-react";
@@ -6,14 +6,12 @@ import { useState } from "react";
 
 type SyncPanelProps = {
   currentVersion?: string | null;
-  adminToken?: string;
 };
 
-export function SyncPanel({ currentVersion = "v_current", adminToken = "" }: SyncPanelProps) {
+export function SyncPanel({ currentVersion = "v_current" }: SyncPanelProps) {
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const [tokenInput, setTokenInput] = useState(adminToken);
 
   const appendLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString("zh-CN");
@@ -22,31 +20,32 @@ export function SyncPanel({ currentVersion = "v_current", adminToken = "" }: Syn
 
   const handleSync = async () => {
     if (loading) return;
-    setLoading(true);
-    setStatus("idle");
     setLogs([]);
+    setStatus("idle");
+    setLoading(true);
     appendLog("准备开始 Notion 节点抓取与同步...");
 
     try {
-      appendLog("校验管理员权限令牌 (Bearer Authentication)...");
+      appendLog("校验 Session Cookie 鉴权身份...");
       const response = await fetch("/api/admin/publish-notion", {
         method: "POST",
-        headers: {
-          authorization: `Bearer ${tokenInput}`,
-          "content-type": "application/json",
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ operation: "publish", dryRun: false, all: true }),
       });
 
       const data = (await response.json().catch(() => null)) as {
         ok?: boolean;
         error?: string;
+        reason?: string;
         contentVersion?: string;
         pagesCount?: number;
       } | null;
 
       if (!response.ok || !data?.ok) {
-        throw new Error(data?.error ?? `HTTP ${response.status} 触发同步失败`);
+        if (data?.error === "unauthorized") {
+          throw new Error("登录会话已失效，请重新登录控制台。");
+        }
+        throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 触发同步失败`);
       }
 
       appendLog(`✅ Notion 文章同步成功！最新发版号: ${data.contentVersion ?? "已更新"}`);
@@ -63,12 +62,12 @@ export function SyncPanel({ currentVersion = "v_current", adminToken = "" }: Syn
   };
 
   return (
-    <section className="rounded-round border border-line bg-surface p-s5 shadow-subtle">
+    <section className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
       <div className="flex flex-col gap-s3 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-s4">
         <div>
           <div className="flex items-center gap-s2">
             <h2 className="font-display text-title font-semibold">Notion 文章同步控制台</h2>
-            <span className="rounded-round border border-line bg-surface-subtle px-s2 py-s1 text-caption text-muted">
+            <span className="rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption font-mono text-muted">
               指针: {currentVersion ?? "未配置"}
             </span>
           </div>
@@ -77,47 +76,31 @@ export function SyncPanel({ currentVersion = "v_current", adminToken = "" }: Syn
           </p>
         </div>
 
-        <div className="flex items-center gap-s3">
-          <button
-            type="button"
-            onClick={handleSync}
-            disabled={loading}
-            className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-round bg-ink px-s5 py-s2 text-label font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? <RefreshCw className="size-icon animate-spin" /> : <Play className="size-icon" />}
-            {loading ? "正在同步 Notion..." : "一键同步 Notion 文章"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSync}
+          disabled={loading}
+          className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small bg-ink px-s5 py-s2 text-label font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {loading ? <RefreshCw className="size-icon animate-spin" /> : <Play className="size-icon" />}
+          {loading ? "正在同步 Notion..." : "一键同步 Notion 文章"}
+        </button>
       </div>
 
-      <div className="mt-s4">
-        <label htmlFor="admin-token" className="block text-caption text-muted">
-          管理员 Bearer Token (PUBLICATION_ADMIN_TOKEN)
-        </label>
-        <input
-          id="admin-token"
-          type="password"
-          value={tokenInput}
-          onChange={(e) => setTokenInput(e.target.value)}
-          placeholder="请输入 PUBLICATION_ADMIN_TOKEN"
-          className="focus-ring mt-s2 w-full max-w-md rounded-round border border-line bg-surface px-s3 py-s2 text-label font-mono"
-        />
-      </div>
-
-      {/* 日志终端控制台 */}
-      <div className="mt-s5 overflow-hidden rounded-round border border-line bg-ink p-s4 text-surface">
-        <div className="flex items-center justify-between border-b border-white/15 pb-s2 text-caption text-surface/70">
-          <div className="flex items-center gap-s2">
+      {/* 规整的代码终端控制台 */}
+      <div className="mt-s5 overflow-hidden rounded-small border border-line bg-ink p-s4 text-surface">
+        <div className="flex items-center justify-between border-b border-line pb-s2 text-caption text-muted">
+          <div className="flex items-center gap-s2 text-surface/80">
             <Terminal className="size-icon-small" />
             <span>执行日志终端 (Sync Execution Logs)</span>
           </div>
           {status === "success" && (
-            <span className="flex items-center gap-s1 text-caption text-green-400">
+            <span className="flex items-center gap-s1 text-caption text-muted font-medium">
               <CheckCircle2 className="size-icon-small" /> 同步完成
             </span>
           )}
           {status === "error" && (
-            <span className="flex items-center gap-s1 text-caption text-red-400">
+            <span className="flex items-center gap-s1 text-caption text-muted font-medium">
               <AlertCircle className="size-icon-small" /> 同步异常
             </span>
           )}

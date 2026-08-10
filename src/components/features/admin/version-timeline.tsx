@@ -1,4 +1,4 @@
-// 组件：版本控制与一键止血回滚时间线 (VersionTimeline)，支持查看 Supabase 历史发版号与零代码一键回滚
+// 组件：版本控制与一键止血回滚时间线 (VersionTimeline)，基于 Cookie 鉴权支持零代码一键回滚
 "use client";
 
 import { History, RotateCcw, AlertTriangle } from "lucide-react";
@@ -12,14 +12,13 @@ type VersionItem = {
 
 type VersionTimelineProps = {
   currentVersion?: string | null;
-  adminToken?: string;
 };
 
-export function VersionTimeline({ currentVersion = "v_current", adminToken = "" }: VersionTimelineProps) {
+export function VersionTimeline({ currentVersion = "v_current" }: VersionTimelineProps) {
   const [loadingVersion, setLoadingVersion] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  // 模拟/历史版本列表
+  // 历史版本列表
   const versions: VersionItem[] = [
     { version: currentVersion ?? "v_current", status: "published", isCurrent: true },
     { version: "v_20260809_120000", status: "published", isCurrent: false },
@@ -34,10 +33,7 @@ export function VersionTimeline({ currentVersion = "v_current", adminToken = "" 
     try {
       const response = await fetch("/api/admin/publish-notion", {
         method: "POST",
-        headers: {
-          authorization: `Bearer ${adminToken}`,
-          "content-type": "application/json",
-        },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ operation: "rollback", version: targetVersion }),
       });
 
@@ -57,7 +53,7 @@ export function VersionTimeline({ currentVersion = "v_current", adminToken = "" 
   };
 
   return (
-    <section className="rounded-round border border-line bg-surface p-s5 shadow-subtle">
+    <section className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
       <div className="flex items-center justify-between border-b border-line pb-s4">
         <div>
           <div className="flex items-center gap-s2">
@@ -71,7 +67,7 @@ export function VersionTimeline({ currentVersion = "v_current", adminToken = "" 
       </div>
 
       {message && (
-        <div className="mt-s4 flex items-center gap-s2 rounded-round border border-line bg-surface-subtle p-s3 text-label">
+        <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-label">
           <AlertTriangle className="size-icon-small text-muted" />
           <span>{message}</span>
         </div>
@@ -81,12 +77,12 @@ export function VersionTimeline({ currentVersion = "v_current", adminToken = "" 
         {versions.map((item) => (
           <div
             key={item.version}
-            className="flex items-center justify-between rounded-round border border-line p-s3 text-label"
+            className="flex items-center justify-between rounded-small border border-line p-s3 text-label"
           >
             <div className="flex items-center gap-s3">
               <span className="font-mono text-body font-medium">{item.version}</span>
               {item.isCurrent && (
-                <span className="rounded-round border border-line bg-ink px-s2 py-s1 text-caption text-surface">
+                <span className="rounded-small border border-line bg-ink px-s2 py-s1 text-caption font-mono text-surface">
                   当前线上版本
                 </span>
               )}
@@ -97,7 +93,7 @@ export function VersionTimeline({ currentVersion = "v_current", adminToken = "" 
                 type="button"
                 onClick={() => handleRollback(item.version)}
                 disabled={loadingVersion === item.version}
-                className="focus-ring tap-target flex items-center gap-s1 rounded-round border border-line px-s3 py-s1 text-caption font-medium hover:bg-surface-subtle disabled:opacity-50"
+                className="focus-ring tap-target flex items-center gap-s1 rounded-small border border-line px-s3 py-s1 text-caption font-medium hover:bg-surface-subtle disabled:opacity-50"
               >
                 <RotateCcw className="size-icon-small" />
                 {loadingVersion === item.version ? "正在回滚..." : "一键回滚到此版本"}

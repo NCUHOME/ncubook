@@ -1,7 +1,7 @@
 // 组件：RAG AI 问答在线质量评估面板 (EvalPanel)，展示算法召回率、引用准确率、防幻觉率与 P95 延迟
 "use client";
 
-import { Activity, Play, Sparkles } from "lucide-react";
+import { Play, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 export function EvalPanel() {
@@ -34,7 +34,7 @@ export function EvalPanel() {
   };
 
   return (
-    <section className="rounded-round border border-line bg-surface p-s5 shadow-subtle">
+    <section className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
       <div className="flex flex-col gap-s3 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-s4">
         <div>
           <div className="flex items-center gap-s2">
@@ -50,7 +50,7 @@ export function EvalPanel() {
           type="button"
           onClick={handleRunEval}
           disabled={running}
-          className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-round border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
+          className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
         >
           <Play className="size-icon-small" />
           {running ? "正在运行评估..." : "运行 RAG 质量评估"}
@@ -58,20 +58,20 @@ export function EvalPanel() {
       </div>
 
       <div className="mt-s4 grid grid-cols-3 gap-s4 text-center">
-        <div className="rounded-round border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted">引用有效率 (Citation)</p>
+        <div className="rounded-small border border-line bg-surface-subtle p-s3">
+          <p className="text-caption text-muted font-medium">引用有效率 (Citation)</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {(metrics.citationValidity * 100).toFixed(0)}%
           </p>
         </div>
-        <div className="rounded-round border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted">防幻觉拒答率 (Abstain)</p>
+        <div className="rounded-small border border-line bg-surface-subtle p-s3">
+          <p className="text-caption text-muted font-medium">防幻觉拒答率 (Abstain)</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {(metrics.abstentionAccuracy * 100).toFixed(0)}%
           </p>
         </div>
-        <div className="rounded-round border border-line bg-surface-subtle p-s3">
-          <p className="text-caption text-muted">P95 响应延迟 (Latency)</p>
+        <div className="rounded-small border border-line bg-surface-subtle p-s3">
+          <p className="text-caption text-muted font-medium">P95 响应延迟 (Latency)</p>
           <p className="mt-s1 font-mono text-title font-bold text-ink">
             {metrics.p95LatencyMs} ms
           </p>

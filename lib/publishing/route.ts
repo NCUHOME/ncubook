@@ -34,7 +34,7 @@ export function createPublishNotionHandler({ expectedToken, run }: PublishHandle
   };
 }
 
-function parseCommand(value: unknown): PublicationCommand | null {
+export function parseCommand(value: unknown): PublicationCommand | null {
   if (!isRecord(value)) return null;
   if (value.operation === "rollback") {
     return typeof value.version === "string" && value.version.trim()
