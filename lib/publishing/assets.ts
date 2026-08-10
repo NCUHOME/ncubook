@@ -1,7 +1,7 @@
 // Notion 发布引擎：静态媒体资源镜像拉取、SHA256 哈希去重校验与云存储路径规整
 import { createHash } from "node:crypto";
 import type { Asset } from "@/lib/content/schema";
-import type { NotionBlockNode } from "@/lib/publishing/client";
+import { batchMap, type NotionBlockNode } from "@/lib/publishing/client";
 
 const DEFAULT_MAX_BYTES = 50 * 1024 * 1024;
 
@@ -61,8 +61,7 @@ export async function mirrorNotionAssets(
   const uploadPromisesByChecksum = new Map<string, Promise<string>>();
   const nodes = Array.from(flatten(tree)).filter((node) => node.type === "image" || node.type === "file");
 
-  const results = await Promise.all(
-    nodes.map(async (node) => {
+  const results = await batchMap(nodes, 3, async (node) => {
       const kind = node.type as "image" | "file";
       const value = asRecord(node[kind]);
       const sourceUrl = assetSourceUrl(value);
@@ -111,8 +110,7 @@ export async function mirrorNotionAssets(
       };
 
       return { asset, warning };
-    }),
-  );
+    });
 
   const assets = results.map((r) => r.asset);
   for (const r of results) {

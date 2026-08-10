@@ -1,4 +1,5 @@
 // Notion 发布引擎：内容版本控制状态机 (pending/published/failed)、页面校验和 (checksum) 匹配与指针切换
+import { batchMap } from "@/lib/publishing/client";
 import { createHash } from "node:crypto";
 import type { Asset, Block, Page, SearchIndexEntry } from "@/lib/content/schema";
 
@@ -80,23 +81,21 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
   let stage: PublicationFailure["stage"] = "build";
 
   try {
-    const pageResults = await Promise.all(
-      input.sourcePageIds.map(async (id) => {
-        try {
-          const result = await input.buildPage(id, input.contentVersion);
-          const latestEditedTime = await input.readLastEditedTime(id);
-          if (latestEditedTime !== result.page.lastEditedTime) {
-            throw new Error(`Notion page ${id} changed during publication`);
-          }
-          return result;
-        } catch (err) {
-          if (typeof err === "object" && err !== null && !("sourcePageId" in err)) {
-            Object.defineProperty(err, "sourcePageId", { value: id, enumerable: true });
-          }
-          throw err;
+    const pageResults = await batchMap(input.sourcePageIds, 3, async (id) => {
+      try {
+        const result = await input.buildPage(id, input.contentVersion);
+        const latestEditedTime = await input.readLastEditedTime(id);
+        if (latestEditedTime !== result.page.lastEditedTime) {
+          throw new Error(`Notion page ${id} changed during publication`);
         }
-      }),
-    );
+        return result;
+      } catch (err) {
+        if (typeof err === "object" && err !== null && !("sourcePageId" in err)) {
+          Object.defineProperty(err, "sourcePageId", { value: id, enumerable: true });
+        }
+        throw err;
+      }
+    });
     pages.push(...pageResults);
 
     stage = "validate";

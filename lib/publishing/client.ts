@@ -94,12 +94,10 @@ export function createNotionClient({
   async function expand(blockId: string, depth: number): Promise<NotionBlockNode[]> {
     if (depth > maxDepth) throw new Error(`Notion block tree exceeds maximum depth ${maxDepth}`);
     const blocks = await listBlockChildren(blockId);
-    return Promise.all(
-      blocks.map(async (block) => ({
-        ...block,
-        children: block.has_children === true ? await expand(block.id, depth + 1) : [],
-      })),
-    );
+    return batchMap(blocks, 3, async (block) => ({
+      ...block,
+      children: block.has_children === true ? await expand(block.id, depth + 1) : [],
+    }));
   }
 
   return {
@@ -130,4 +128,22 @@ function wait(milliseconds: number): Promise<void> {
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export async function batchMap<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let index = 0;
+  async function worker() {
+    while (index < items.length) {
+      const currentIndex = index++;
+      results[currentIndex] = await fn(items[currentIndex]);
+    }
+  }
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
 }

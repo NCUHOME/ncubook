@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidateTag } from "next/cache";
 import { buildSearchIndex } from "@/lib/publishing/index";
 import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/assets";
-import { createNotionClient, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
+import { createNotionClient, batchMap, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
 import { normalizeNotionBlocks } from "@/lib/publishing/blocks";
 import { normalizeNotionPage } from "@/lib/publishing/page";
 import { publishVersion, rollbackPublishedVersion, type PublicationStore } from "@/lib/publishing/version";
@@ -77,11 +77,9 @@ export async function runNotionPublicationCommand(command: PublicationCommand): 
   if (selected.length === 0) throw new Error("No publishable pages were found below the configured Notion root");
 
   const rawPages = new Map<string, NotionObject>();
-  await Promise.all(
-    selected.map(async (item) => {
-      rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
-    }),
-  );
+  await batchMap(selected, 3, async (item) => {
+    rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
+  });
 
   const contentVersion = createContentVersion();
   const publishedAt = new Date().toISOString();
