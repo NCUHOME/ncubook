@@ -94,14 +94,12 @@ export function createNotionClient({
   async function expand(blockId: string, depth: number): Promise<NotionBlockNode[]> {
     if (depth > maxDepth) throw new Error(`Notion block tree exceeds maximum depth ${maxDepth}`);
     const blocks = await listBlockChildren(blockId);
-    const expanded: NotionBlockNode[] = [];
-    for (const block of blocks) {
-      expanded.push({
+    return Promise.all(
+      blocks.map(async (block) => ({
         ...block,
         children: block.has_children === true ? await expand(block.id, depth + 1) : [],
-      });
-    }
-    return expanded;
+      })),
+    );
   }
 
   return {

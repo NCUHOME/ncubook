@@ -80,19 +80,25 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
   let stage: PublicationFailure["stage"] = "build";
 
   try {
-    for (sourcePageId of input.sourcePageIds) {
-      stage = "build";
-      const result = await input.buildPage(sourcePageId, input.contentVersion);
-      pages.push(result);
+    const pageResults = await Promise.all(
+      input.sourcePageIds.map(async (id) => {
+        try {
+          const result = await input.buildPage(id, input.contentVersion);
+          const latestEditedTime = await input.readLastEditedTime(id);
+          if (latestEditedTime !== result.page.lastEditedTime) {
+            throw new Error(`Notion page ${id} changed during publication`);
+          }
+          return result;
+        } catch (err) {
+          if (typeof err === "object" && err !== null && !("sourcePageId" in err)) {
+            Object.defineProperty(err, "sourcePageId", { value: id, enumerable: true });
+          }
+          throw err;
+        }
+      }),
+    );
+    pages.push(...pageResults);
 
-      stage = "stale-check";
-      const latestEditedTime = await input.readLastEditedTime(sourcePageId);
-      if (latestEditedTime !== result.page.lastEditedTime) {
-        throw new Error(`Notion page ${sourcePageId} changed during publication`);
-      }
-    }
-
-    sourcePageId = undefined;
     stage = "validate";
     validatePublication(input.contentVersion, input.sourceRootId, pages);
     const checksum = publicationChecksum(pages);
@@ -114,7 +120,7 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
   } catch (error) {
     const failure: PublicationFailure = {
       contentVersion: input.contentVersion,
-      ...(sourcePageId ? { sourcePageId } : {}),
+      ...sourcePageIdFromError(error),
       ...sourceBlockId(error),
       stage,
       reason: errorMessage(error),
@@ -216,6 +222,12 @@ function publicationChecksum(pages: PagePublication[]): string {
       searchEntries: [...bundle.searchEntries].sort((left, right) => left.id.localeCompare(right.id)),
     }));
   return createHash("sha256").update(JSON.stringify(stablePages)).digest("hex");
+}
+
+function sourcePageIdFromError(error: unknown): { sourcePageId?: string } {
+  if (typeof error !== "object" || error === null || !("sourcePageId" in error)) return {};
+  const sourcePageId = (error as { sourcePageId?: unknown }).sourcePageId;
+  return typeof sourcePageId === "string" ? { sourcePageId } : {};
 }
 
 function sourceBlockId(error: unknown): { sourceBlockId?: string } {

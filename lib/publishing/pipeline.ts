@@ -77,7 +77,11 @@ export async function runNotionPublicationCommand(command: PublicationCommand): 
   if (selected.length === 0) throw new Error("No publishable pages were found below the configured Notion root");
 
   const rawPages = new Map<string, NotionObject>();
-  for (const item of selected) rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
+  await Promise.all(
+    selected.map(async (item) => {
+      rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
+    }),
+  );
 
   const contentVersion = createContentVersion();
   const publishedAt = new Date().toISOString();

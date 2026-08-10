@@ -45,6 +45,11 @@ export function SyncPanel({ currentVersion = "v_current" }: SyncPanelProps) {
         if (data?.error === "unauthorized") {
           throw new Error("登录会话已失效，请重新登录控制台。");
         }
+        if (response.status === 433 || response.status === 504) {
+          throw new Error(
+            `触发边缘网关 30 秒超时拦截 (HTTP ${response.status})。全量抓取 30+ 篇文档与图片镜像下载耗时超出 EdgeOne 限制。建议使用命令行同步脚本：npx tsx scripts/publish.ts --all`,
+          );
+        }
         throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 触发同步失败`);
       }
 

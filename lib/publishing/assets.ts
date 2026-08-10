@@ -57,57 +57,66 @@ export async function mirrorNotionAssets(
   tree: NotionBlockNode[],
   options: MirrorOptions,
 ): Promise<{ assets: Asset[]; warnings: AssetWarning[] }> {
-  const assets: Asset[] = [];
   const warnings: AssetWarning[] = [];
-  const publicUrlsByChecksum = new Map<string, string>();
+  const uploadPromisesByChecksum = new Map<string, Promise<string>>();
+  const nodes = Array.from(flatten(tree)).filter((node) => node.type === "image" || node.type === "file");
 
-  for (const node of flatten(tree)) {
-    if (node.type !== "image" && node.type !== "file") continue;
+  const results = await Promise.all(
+    nodes.map(async (node) => {
+      const kind = node.type as "image" | "file";
+      const value = asRecord(node[kind]);
+      const sourceUrl = assetSourceUrl(value);
+      if (!sourceUrl) throw new AssetMirrorError(node.id, "missing-source-url");
 
-    const kind = node.type;
-    const value = asRecord(node[kind]);
-    const sourceUrl = assetSourceUrl(value);
-    if (!sourceUrl) throw new AssetMirrorError(node.id, "missing-source-url");
+      const downloaded = await options.download(sourceUrl);
+      const extension = allowedMediaTypes.get(normalizeMediaType(downloaded.mediaType));
+      if (!extension) throw new AssetMirrorError(node.id, "unsupported-media-type");
+      if (downloaded.bytes.byteLength > (options.maxBytes ?? DEFAULT_MAX_BYTES)) {
+        throw new AssetMirrorError(node.id, "file-too-large");
+      }
 
-    const downloaded = await options.download(sourceUrl);
-    const extension = allowedMediaTypes.get(normalizeMediaType(downloaded.mediaType));
-    if (!extension) throw new AssetMirrorError(node.id, "unsupported-media-type");
-    if (downloaded.bytes.byteLength > (options.maxBytes ?? DEFAULT_MAX_BYTES)) {
-      throw new AssetMirrorError(node.id, "file-too-large");
-    }
+      const checksum = createHash("sha256").update(downloaded.bytes).digest("hex");
+      let uploadPromise = uploadPromisesByChecksum.get(checksum);
+      if (!uploadPromise) {
+        const preferredName = typeof value.name === "string" ? value.name : `${kind}.${extension}`;
+        const path = [
+          safePathPart(options.contentVersion),
+          safePathPart(options.pageId),
+          checksum,
+          safeFileName(preferredName, extension),
+        ].join("/");
+        uploadPromise = options.storage.upload({
+          path,
+          bytes: downloaded.bytes,
+          mediaType: normalizeMediaType(downloaded.mediaType),
+        });
+        uploadPromisesByChecksum.set(checksum, uploadPromise);
+      }
 
-    const checksum = createHash("sha256").update(downloaded.bytes).digest("hex");
-    let publicUrl = publicUrlsByChecksum.get(checksum);
-    if (!publicUrl) {
-      const preferredName = typeof value.name === "string" ? value.name : `${kind}.${extension}`;
-      const path = [
-        safePathPart(options.contentVersion),
-        safePathPart(options.pageId),
+      const publicUrl = await uploadPromise;
+      const alt = kind === "image" ? captionText(value.caption) : undefined;
+      const warning =
+        kind === "image" && !alt
+          ? { blockId: node.id, code: "missing-alt" as const, message: "Image is missing alt text" }
+          : undefined;
+
+      const asset: Asset = {
+        id: `asset-${node.id}`,
+        sourceBlockId: node.id,
+        contentVersion: options.contentVersion,
+        kind,
+        publicUrl,
         checksum,
-        safeFileName(preferredName, extension),
-      ].join("/");
-      publicUrl = await options.storage.upload({
-        path,
-        bytes: downloaded.bytes,
-        mediaType: normalizeMediaType(downloaded.mediaType),
-      });
-      publicUrlsByChecksum.set(checksum, publicUrl);
-    }
+        ...(alt ? { alt } : {}),
+      };
 
-    const alt = kind === "image" ? captionText(value.caption) : undefined;
-    if (kind === "image" && !alt) {
-      warnings.push({ blockId: node.id, code: "missing-alt", message: "Image is missing alt text" });
-    }
+      return { asset, warning };
+    }),
+  );
 
-    assets.push({
-      id: `asset-${node.id}`,
-      sourceBlockId: node.id,
-      contentVersion: options.contentVersion,
-      kind,
-      publicUrl,
-      checksum,
-      ...(alt ? { alt } : {}),
-    });
+  const assets = results.map((r) => r.asset);
+  for (const r of results) {
+    if (r.warning) warnings.push(r.warning);
   }
 
   return { assets, warnings };
