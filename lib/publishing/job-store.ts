@@ -60,11 +60,16 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
   }
 }
 
+function formatLog(msg: string): string {
+  const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  return `[${time}] ${msg}`;
+}
+
 export async function createPersistentJob(contentVersion: string): Promise<PersistentSyncJob> {
   const jobId = contentVersion;
   const initialLogs = [
-    "🚀 任务已成功派发，正通过 Supabase 持久化存储库与并发互斥锁建立多实例安全通道...",
-    "正在建立与 Notion REST API 及 Supabase 云数据库的直连通道...",
+    formatLog("🚀 同步任务已成功发起，正在安全准备向后台派发处理..."),
+    formatLog("正在建立与 Notion 校园知识库及云数据库的高速通道..."),
   ];
 
   const job: PersistentSyncJob = {

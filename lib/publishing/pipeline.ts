@@ -60,6 +60,11 @@ export function stableSlugForNotionPage(page: NotionObject): string {
   return `page-${compactId.slice(0, 16) || "unknown"}`;
 }
 
+function formatLog(msg: string): string {
+  const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  return `[${time}] ${msg}`;
+}
+
 export async function runNotionPublicationCommand(
   command: PublicationCommand,
   onProgress?: (message: string) => void,
@@ -67,27 +72,27 @@ export async function runNotionPublicationCommand(
   const supabase = getSupabaseAdmin();
   if (command.operation === "rollback") {
     if (!supabase) throw new Error("Supabase publication storage is not configured");
-    onProgress?.(`↺ 正在回滚线上版本指针至 targetVersion: ${command.version}...`);
+    onProgress?.(formatLog(`↺ 正在将线上网站切线恢复至历史版本: ${command.version}...`));
     const store = createSupabasePublicationStore(supabase);
     await rollbackPublishedVersion(store, command.version);
-    onProgress?.(`✅ 版本回滚成功！当前线上生效指针已切换至: ${command.version}`);
+    onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
     return { ok: true, operation: "rollback", contentVersion: command.version };
   }
 
-  onProgress?.("🔍 [阶段 1/5] 正在检索 Notion 根节点元数据与 Block 结构树...");
+  onProgress?.(formatLog("🔍 [阶段 1/5] 正在连接 Notion 知识库，读取文章列表与目录..."));
   const token = requiredEnvironment("NOTION_TOKEN");
   const rootPageId = requiredEnvironment("NOTION_ROOT_PAGE_ID");
   const notion = createNotionClient({ token });
   const rootTree = await notion.readBlockTree(rootPageId);
   const selected = selectNotionPageNodes(rootTree, command.all, command.pageIds);
   if (selected.length === 0) throw new Error("No publishable pages were found below the configured Notion root");
-  onProgress?.(`🌳 [阶段 2/5] 节点检索完成，已选择 ${selected.length} 篇校园文档待发布`);
+  onProgress?.(formatLog(`🌳 [阶段 2/5] 成功找到 ${selected.length} 篇待更新的校园指南文章`));
 
   const rawPages = new Map<string, NotionObject>();
   await batchMap(selected, 3, async (item) => {
     rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
   });
-  onProgress?.(`📄 [阶段 3/5] 已成功获取并验证 ${selected.length} 篇文档的属性与最后修改时间`);
+  onProgress?.(formatLog(`📄 [阶段 3/5] 已完成 ${selected.length} 篇文章的修改时间与基础格式校验`));
 
   const contentVersion = createContentVersion();
   const publishedAt = new Date().toISOString();
@@ -111,7 +116,7 @@ export async function runNotionPublicationCommand(
   let warningCount = 0;
   let builtPageCount = 0;
 
-  onProgress?.("🖼️ [阶段 4/5] 正在并发解析富文本 Block、构建全文检索索引并镜像上传图片至 Supabase Storage...");
+  onProgress?.(formatLog("🖼️ [阶段 4/5] 正在同步文章图片、优化排版样式并建立全文搜索..."));
   const result = await publishVersion({
     contentVersion,
     sourceRootId: rootPageId,
@@ -133,7 +138,7 @@ export async function runNotionPublicationCommand(
       warningCount += mirrored.warnings.length;
       builtPageCount += 1;
       if (builtPageCount % 5 === 0 || builtPageCount === selected.length) {
-        onProgress?.(`⏳ 已完成 ${builtPageCount}/${selected.length} 篇文档的富文本构建与媒体镜像处理...`);
+        onProgress?.(formatLog(`⏳ 已完成 ${builtPageCount}/${selected.length} 篇文章的格式转换与图片下载...`));
       }
       return {
         page,
@@ -148,7 +153,7 @@ export async function runNotionPublicationCommand(
     },
   });
 
-  onProgress?.("💾 [阶段 5/5] 正在执行 Supabase 数据库 RPC 原子事务提交与版本指针切换...");
+  onProgress?.(formatLog("💾 [阶段 5/5] 正在发布至线上网站并刷新前台页面..."));
   if (!command.dryRun) {
     try {
       revalidateTag("published-content-pointer");
@@ -157,7 +162,7 @@ export async function runNotionPublicationCommand(
     }
   }
 
-  onProgress?.(`🎉 发发版全量完成！新版本号: ${contentVersion} (总计 ${result.pageCount ?? selected.length} 篇文档，${warningCount} 个提示告警)`);
+  onProgress?.(formatLog(`🎉 同步发版全量完成！共成功发布 ${result.pageCount ?? selected.length} 篇校园指南文章。`));
 
   return {
     ok: true,
