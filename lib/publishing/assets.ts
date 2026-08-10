@@ -67,7 +67,29 @@ export async function mirrorNotionAssets(
       const sourceUrl = assetSourceUrl(value);
       if (!sourceUrl) throw new AssetMirrorError(node.id, "missing-source-url");
 
-      const downloaded = await options.download(sourceUrl);
+      let downloaded: { bytes: Uint8Array; mediaType: string };
+      try {
+        downloaded = await options.download(sourceUrl);
+      } catch (downloadError) {
+        const alt = kind === "image" ? captionText(value.caption) : undefined;
+        const checksum = createHash("sha256").update(sourceUrl).digest("hex");
+        const asset: Asset = {
+          id: `asset-${node.id}`,
+          sourceBlockId: node.id,
+          contentVersion: options.contentVersion,
+          kind,
+          publicUrl: sourceUrl,
+          checksum,
+          ...(alt ? { alt } : {}),
+        };
+        const warning = {
+          blockId: node.id,
+          code: "missing-alt" as const,
+          message: `Asset mirror warning: ${downloadError instanceof Error ? downloadError.message : String(downloadError)}`,
+        };
+        return { asset, warning };
+      }
+
       const extension = allowedMediaTypes.get(normalizeMediaType(downloaded.mediaType));
       if (!extension) throw new AssetMirrorError(node.id, "unsupported-media-type");
       if (downloaded.bytes.byteLength > (options.maxBytes ?? DEFAULT_MAX_BYTES)) {

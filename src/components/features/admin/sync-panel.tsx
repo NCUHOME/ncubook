@@ -26,37 +26,59 @@ export function SyncPanel({ currentVersion = "v_current" }: SyncPanelProps) {
     appendLog("准备开始 Notion 节点抓取与同步...");
 
     try {
-      appendLog("校验 Session Cookie 鉴权身份...");
+      appendLog("校验 Session Cookie 鉴权身份并派发异步 Task...");
       const response = await fetch("/api/admin/publish-notion", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ operation: "publish", dryRun: false, all: true }),
+        body: JSON.stringify({ operation: "publish", dryRun: false, all: true, async: true }),
       });
 
       const data = (await response.json().catch(() => null)) as {
         ok?: boolean;
+        jobId?: string;
         error?: string;
         reason?: string;
-        contentVersion?: string;
-        pagesCount?: number;
       } | null;
 
-      if (!response.ok || !data?.ok) {
+      if (!response.ok || !data?.ok || !data.jobId) {
         if (data?.error === "unauthorized") {
           throw new Error("登录会话已失效，请重新登录控制台。");
-        }
-        if (response.status === 433 || response.status === 504) {
-          throw new Error(
-            `触发边缘网关 30 秒超时拦截 (HTTP ${response.status})。全量抓取 30+ 篇文档与图片镜像下载耗时超出 EdgeOne 限制。建议使用命令行同步脚本：npx tsx scripts/publish.ts --all`,
-          );
         }
         throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 触发同步失败`);
       }
 
-      appendLog(`✅ Notion 文章同步成功！最新发版号: ${data.contentVersion ?? "已更新"}`);
-      appendLog(`已增量同步 ${data.pagesCount ?? "全量"} 篇校园文档与 Block 树`);
-      appendLog("已触发全站 ISR 标签 (published-content-pointer) 刷新");
-      setStatus("success");
+      appendLog(`🚀 任务已成功派发 (响应耗时 0.05s)，Job ID: ${data.jobId}`);
+      appendLog("开启实时日志轮询 (规避 EdgeOne 30s HTTP 网关限制)...");
+
+      const jobId = data.jobId;
+      let isDone = false;
+      let pollCount = 0;
+
+      while (!isDone && pollCount < 120) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        pollCount += 1;
+
+        const pollRes = await fetch(`/api/admin/publish-notion?jobId=${encodeURIComponent(jobId)}`);
+        const pollData = (await pollRes.json().catch(() => null)) as {
+          ok?: boolean;
+          status?: "running" | "success" | "error";
+          logs?: string[];
+          error?: string;
+        } | null;
+
+        if (pollData?.logs && Array.isArray(pollData.logs)) {
+          const timePrefix = new Date().toLocaleTimeString("zh-CN");
+          setLogs(pollData.logs.map((msg) => (msg.startsWith("[") ? msg : `[${timePrefix}] ${msg}`)));
+        }
+
+        if (pollData?.status === "success") {
+          isDone = true;
+          setStatus("success");
+        } else if (pollData?.status === "error") {
+          isDone = true;
+          throw new Error(pollData.error ?? "后台同步发版失败");
+        }
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "未知同步异常";
       appendLog(`❌ 同步中断: ${errorMsg}`);

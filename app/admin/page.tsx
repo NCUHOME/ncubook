@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { loadPublishedRepository } from "@/lib/content/supabase";
+import { fetchContentVersionsFromSupabase } from "@/lib/content/supabase-repo";
+import { hasAiProviderConfig } from "@/lib/ai/service";
 import { EvalPanel } from "@/src/components/features/admin/eval-panel";
 import { SyncPanel } from "@/src/components/features/admin/sync-panel";
 import { VersionTimeline } from "@/src/components/features/admin/version-timeline";
@@ -23,6 +25,8 @@ export default async function AdminDashboardPage() {
 
   const repository = await loadPublishedRepository();
   const currentVersion = repository.getDocumentView("campus-shuttle")?.page.contentVersion ?? "v_current";
+  const initialVersions = await fetchContentVersionsFromSupabase();
+  const aiConnected = hasAiProviderConfig();
 
   return (
     <>
@@ -47,11 +51,11 @@ export default async function AdminDashboardPage() {
         {/* 1. Notion 一键同步控制台 (无需手动输入 Token) */}
         <SyncPanel currentVersion={currentVersion} />
 
-        {/* 2. 版本控制与一键止血回滚 */}
-        <VersionTimeline currentVersion={currentVersion} />
+        {/* 2. 真实版本控制与一键止血回滚 */}
+        <VersionTimeline currentVersion={currentVersion} initialVersions={initialVersions} />
 
         {/* 3. RAG AI 质量评估面板 */}
-        <EvalPanel />
+        <EvalPanel aiConnected={aiConnected} />
       </main>
     </>
   );

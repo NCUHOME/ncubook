@@ -209,4 +209,37 @@ function isSearchBlockType(value: string): value is SearchIndexEntry["blockType"
   return value === "paragraph" || value === "heading" || value === "quote" || value === "callout" || value === "table" || value === "page-link";
 }
 
+export type VersionRecord = {
+  version: string;
+  status: "published" | "pending" | "failed";
+  createdAt: string;
+  isCurrent: boolean;
+};
+
+export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[]> {
+  if (!hasSupabaseConfig()) return [];
+  const client = getSupabaseAdmin();
+  if (!client) return [];
+
+  try {
+    const currentPointer = await readPublishedContentPointer();
+    const { data, error } = await client
+      .from("content_versions")
+      .select("id, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error || !data || data.length === 0) return [];
+
+    return data.map((row) => ({
+      version: row.id,
+      status: row.status === "failed" ? "failed" : row.status === "pending" ? "pending" : "published",
+      createdAt: row.created_at,
+      isCurrent: row.id === currentPointer,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export class SupabaseContentRepository extends FixtureContentRepository {}

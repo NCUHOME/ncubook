@@ -35,33 +35,41 @@ export function createNotionClient({
   token,
   fetchImpl = fetch,
   sleep = wait,
-  maxRetries = 2,
+  maxRetries = 4,
   maxDepth = 32,
 }: CreateNotionClientOptions): NotionClient {
   if (!token.trim()) throw new Error("Notion token is required");
 
   async function request(path: string): Promise<JsonRecord> {
     for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
-      const response = await fetchImpl(`${NOTION_API_BASE}${path}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-          "notion-version": NOTION_API_VERSION,
-        },
-      });
+      try {
+        const response = await fetchImpl(`${NOTION_API_BASE}${path}`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+            "notion-version": NOTION_API_VERSION,
+          },
+        });
 
-      if (response.ok) {
-        const body: unknown = await response.json();
-        if (!isRecord(body)) throw new Error("Notion returned an invalid JSON object");
-        return body;
+        if (response.ok) {
+          const body: unknown = await response.json();
+          if (!isRecord(body)) throw new Error("Notion returned an invalid JSON object");
+          return body;
+        }
+
+        if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+          await sleep(retryDelay(response.headers.get("retry-after"), attempt));
+          continue;
+        }
+
+        const requestId = response.headers.get("x-request-id");
+        throw new Error(`Notion request failed with status ${response.status}${requestId ? ` (${requestId})` : ""}`);
+      } catch (err) {
+        if (attempt < maxRetries && err instanceof Error && (err.message.includes("fetch failed") || err.name === "TypeError")) {
+          await sleep(1000 * (attempt + 1));
+          continue;
+        }
+        throw err;
       }
-
-      if (response.status === 429 && attempt < maxRetries) {
-        await sleep(retryDelay(response.headers.get("retry-after"), attempt));
-        continue;
-      }
-
-      const requestId = response.headers.get("x-request-id");
-      throw new Error(`Notion request failed with status ${response.status}${requestId ? ` (${requestId})` : ""}`);
     }
 
     throw new Error("Notion request retry limit reached");

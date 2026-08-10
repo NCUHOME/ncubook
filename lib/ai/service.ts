@@ -29,6 +29,14 @@ export function createProductionAnswerService(): AnswerService {
   };
 }
 
+export function hasAiProviderConfig(): boolean {
+  return Boolean(
+    (process.env.AI_PROVIDER_API_KEY && process.env.AI_PROVIDER_API_KEY.trim()) ||
+    (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim()) ||
+    (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim())
+  );
+}
+
 function environment(name: string): string {
   const value = process.env[name];
   if (!value?.trim()) throw new Error(`${name} is required`);
