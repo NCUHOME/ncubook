@@ -34,11 +34,19 @@ export async function POST(request: Request): Promise<Response> {
     const result = await runNotionPublicationCommand(command);
     return Response.json(result, { status: 200 });
   } catch (error) {
+    let reason = "Unknown publication failure";
+    if (error instanceof Error) {
+      reason = error.message;
+      if (error.cause) {
+        const causeMsg = error.cause instanceof Error ? error.cause.message : String(error.cause);
+        reason += ` (${causeMsg})`;
+      }
+    }
     return Response.json(
       {
         ok: false,
         error: "publication_failed",
-        reason: error instanceof Error ? error.message : "Unknown publication failure",
+        reason,
       },
       { status: 422 },
     );
