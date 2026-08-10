@@ -61,7 +61,10 @@ export function stableSlugForNotionPage(page: NotionObject): string {
 }
 
 function formatLog(msg: string): string {
-  const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  const time = new Date().toLocaleTimeString("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    hour12: false,
+  });
   return `[${time}] ${msg}`;
 }
 
@@ -191,15 +194,18 @@ function ancestorTitles(pageId: string | null, pages: Map<string, ReturnType<typ
 }
 
 async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
-  for (let attempt = 0; attempt <= 3; attempt += 1) {
+  for (let attempt = 0; attempt <= 2; attempt += 1) {
     try {
-      const response = await fetch(url, { redirect: "follow" });
+      const response = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(5000),
+      });
       if (!response.ok) throw new Error(`Unable to download Notion asset (${response.status})`);
       const mediaType = response.headers.get("content-type") ?? "application/octet-stream";
       return { bytes: new Uint8Array(await response.arrayBuffer()), mediaType };
     } catch (err) {
-      if (attempt < 3) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
         continue;
       }
       throw err;

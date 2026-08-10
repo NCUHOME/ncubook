@@ -5,6 +5,7 @@ import {
   createPersistentJob,
   findActiveRunningJob,
   finishPersistentJob,
+  forceReleaseZombieJobs,
   getPersistentJob,
   updateJobLogs,
 } from "@/lib/publishing/job-store";
@@ -27,6 +28,8 @@ export async function GET(request: Request): Promise<Response> {
       ok: true,
       jobId: job.jobId,
       status: job.status,
+      progressPct: job.progressPct,
+      stage: job.stage,
       logs: job.logs,
       result: job.result,
       error: job.error,
@@ -53,6 +56,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const payload = await request.json().catch(() => null);
+
+  // 支持强行解开死锁挂起任务
+  if (payload?.forceUnlock === true) {
+    await forceReleaseZombieJobs();
+    return Response.json({ ok: true, message: "已成功手动解除僵尸任务挂起锁" }, { status: 200 });
+  }
+
   const command = parseCommand(payload);
   if (!command) {
     return Response.json({ ok: false, error: "invalid_publication_command" }, { status: 400 });
@@ -71,6 +81,8 @@ export async function POST(request: Request): Promise<Response> {
           async: true,
           jobId: activeJob.jobId,
           status: "running",
+          progressPct: activeJob.progressPct,
+          stage: activeJob.stage,
           logs: activeJob.logs,
           reason: "已有发版任务在后台运行中，互斥锁已激活防重触发",
         },

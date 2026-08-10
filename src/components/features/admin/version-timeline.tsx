@@ -10,6 +10,9 @@ type VersionTimelineProps = {
   initialVersions?: VersionRecord[];
 };
 
+// 固定的兜底初次发版时间，绝不使用动态 new Date() 避免页面刷新时间变化
+const STABLE_INITIAL_TIME = "2026-08-10T12:00:00.000Z";
+
 export function VersionTimeline({ currentVersion = "未同步", initialVersions = [] }: VersionTimelineProps) {
   const [activeCurrent, setActiveCurrent] = useState<string>(currentVersion ?? "未同步");
   const [loadingVersion, setLoadingVersion] = useState<string | null>(null);
@@ -25,7 +28,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         {
           version: activeCurrent ?? "未同步",
           status: "published",
-          createdAt: new Date().toISOString(),
+          createdAt: STABLE_INITIAL_TIME,
           isCurrent: true,
         },
       ];
@@ -148,7 +151,16 @@ function formatDate(isoString: string): string {
   try {
     const d = new Date(isoString);
     if (Number.isNaN(d.getTime())) return isoString;
-    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+    return d.toLocaleString("zh-CN", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
   } catch {
     return isoString;
   }
