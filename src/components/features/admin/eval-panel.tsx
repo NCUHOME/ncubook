@@ -24,13 +24,32 @@ export function EvalPanel({ aiConnected = false }: EvalPanelProps) {
   const handleRunEval = async () => {
     if (running || !aiConnected) return;
     setRunning(true);
+    const start = performance.now();
     try {
       const response = await fetch("/api/ask?q=ping", { method: "GET" }).catch(() => null);
-      setMetrics({
-        citationValidity: 1.0,
-        abstentionAccuracy: 1.0,
-        p95LatencyMs: response ? 420 : 850,
-      });
+      const elapsed = Math.round(performance.now() - start);
+
+      if (response && response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          citations?: unknown[];
+          confidence?: string;
+        } | null;
+
+        const hasCitations = Array.isArray(data?.citations) && data.citations.length > 0;
+        const isGrounded = data?.confidence === "grounded";
+
+        setMetrics({
+          citationValidity: hasCitations ? 1.0 : 0,
+          abstentionAccuracy: isGrounded ? 1.0 : 0,
+          p95LatencyMs: elapsed,
+        });
+      } else {
+        setMetrics({
+          citationValidity: 0,
+          abstentionAccuracy: 0,
+          p95LatencyMs: elapsed,
+        });
+      }
       setEvaluated(true);
     } catch {
       setEvaluated(true);

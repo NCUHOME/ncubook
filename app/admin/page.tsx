@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
   }
 
   const repository = await loadPublishedRepository();
-  const currentVersion = repository.getDocumentView("campus-shuttle")?.page.contentVersion ?? "v_current";
+  const currentVersion = repository.getDocumentView("campus-shuttle")?.page.contentVersion ?? null;
   const initialVersions = await fetchContentVersionsFromSupabase();
   const aiConnected = hasAiProviderConfig();
 
