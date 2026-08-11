@@ -90,80 +90,61 @@ export async function POST(request: Request): Promise<Response> {
   // 网页控制台默认使用 async 异步非阻塞模式，0.05 秒立刻返回，规避 EdgeOne 30s 限制
   const isAsync = payload?.async !== false;
 
-  if (isAsync) {
-    // 互斥锁检查：是否有状态为 running / pending 的任务在跑
-    const activeJob = await findActiveRunningJob();
-    if (activeJob) {
-      return Response.json(
-        {
-          ok: true,
-          async: true,
-          jobId: activeJob.jobId,
-          status: "running",
-          progressPct: activeJob.progressPct,
-          stage: activeJob.stage,
-          logs: activeJob.logs,
-          reason: "已有发版任务在后台运行中，互斥锁已激活防重触发",
-        },
-        { status: 200 },
-      );
-    }
-
-    const contentVersion = `content-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17)}`;
-    const publishCommand: PublicationCommand = { ...command, contentVersion };
-    const job = await createPersistentJob(contentVersion);
-    const jobId = job.jobId;
-    const jobLogs = [...job.logs];
-
-    // 派发后台任务，全流程 try...catch...finally 异常安全收尾
-    (async () => {
-      try {
-        const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
-          jobLogs.push(logMsg);
-          updateJobLogs(jobId, jobLogs).catch(() => null);
-        });
-        const ver = typeof result.contentVersion === "string" ? result.contentVersion : contentVersion;
-        const pageCount = typeof result.pages === "number" ? result.pages : "全量";
-        await finishPersistentJob(jobId, "success", jobLogs);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        jobLogs.push(`❌ 同步中断: ${errorMsg}`);
-        await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
-      }
-    })();
-
+  // 互斥锁检查：是否有状态为 running / pending 的任务在跑
+  const activeJob = await findActiveRunningJob();
+  if (activeJob) {
     return Response.json(
       {
         ok: true,
         async: true,
-        jobId,
+        jobId: activeJob.jobId,
         status: "running",
-        logs: jobLogs,
+        progressPct: activeJob.progressPct,
+        stage: activeJob.stage,
+        logs: activeJob.logs,
+        reason: "已有发版任务在后台运行中，互斥锁已激活防重触发",
       },
       { status: 200 },
     );
   }
 
-  // 同步阻塞模式 (供命令行 CLI 或 CI/CD 场景使用)
+  const contentVersion = `content-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17)}`;
+  const publishCommand: PublicationCommand = { ...command, contentVersion };
+  const job = await createPersistentJob(contentVersion);
+  const jobId = job.jobId;
+  const jobLogs = [...job.logs];
+
   try {
-    const result = await runNotionPublicationCommand(command);
-    return Response.json(result, { status: 200 });
-  } catch (error) {
-    let reason = "Unknown publication failure";
-    if (error instanceof Error) {
-      reason = error.message;
-      if (error.cause) {
-        const causeMsg = error.cause instanceof Error ? error.cause.message : String(error.cause);
-        reason += ` (${causeMsg})`;
-      }
-    }
+    const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
+      jobLogs.push(logMsg);
+      updateJobLogs(jobId, jobLogs).catch(() => null);
+    });
+    await finishPersistentJob(jobId, "success", jobLogs);
+    return Response.json(
+      {
+        ok: true,
+        jobId,
+        status: "success",
+        progressPct: 100,
+        stage: "已完成",
+        logs: jobLogs,
+        result,
+      },
+      { status: 200 },
+    );
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    jobLogs.push(`❌ 同步中断: ${errorMsg}`);
+    await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
     return Response.json(
       {
         ok: false,
-        error: "publication_failed",
-        reason,
+        jobId,
+        status: "error",
+        error: errorMsg,
+        logs: jobLogs,
       },
-      { status: 422 },
+      { status: 500 },
     );
   }
 }
