@@ -40,15 +40,20 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
     return () => window.removeEventListener("content-published", handlePublished);
   }, []);
 
+  const effectiveCurrent =
+    activeCurrent && activeCurrent !== "未同步"
+      ? activeCurrent
+      : versions.find((v) => v.isCurrent)?.version || versions[0]?.version || "未同步";
+
   // 严格仅保留真实版本记录，绝不加入任何假数据
   const displayVersions: VersionRecord[] = versions.length > 0
     ? versions.map((item) => ({
         ...item,
-        isCurrent: item.version === activeCurrent,
+        isCurrent: item.version === effectiveCurrent,
       }))
     : [
         {
-          version: activeCurrent ?? "未同步",
+          version: effectiveCurrent,
           status: "published",
           createdAt: "",
           isCurrent: true,

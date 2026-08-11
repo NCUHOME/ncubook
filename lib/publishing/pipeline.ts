@@ -1,6 +1,6 @@
 // Notion 发布引擎：Notion 节点筛选、完整发布与版本回滚指令的主调度管线 (Pipeline)
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { buildSearchIndex } from "@/lib/publishing/index";
 import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/assets";
 import { createNotionClient, batchMap, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
@@ -78,6 +78,11 @@ export async function runNotionPublicationCommand(
     onProgress?.(formatLog(`↺ 正在将线上网站切线恢复至历史版本: ${command.version}...`));
     const store = createSupabasePublicationStore(supabase);
     await rollbackPublishedVersion(store, command.version);
+    try {
+      revalidateTag("published-content-pointer");
+      revalidateTag("published-content");
+      revalidatePath("/", "layout");
+    } catch {}
     onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
     return { ok: true, operation: "rollback", contentVersion: command.version };
   }
