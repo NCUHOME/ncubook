@@ -10,7 +10,7 @@ import {
   updateJobLogs,
 } from "@/lib/publishing/job-store";
 import { runNotionPublicationCommand } from "@/lib/publishing/pipeline";
-import { parseCommand } from "@/lib/publishing/route";
+import { parseCommand, type PublicationCommand } from "@/lib/publishing/route";
 
 import { fetchContentVersionsFromSupabase } from "@/lib/content/supabase-repo";
 
@@ -76,6 +76,17 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ ok: false, error: "invalid_publication_command" }, { status: 400 });
   }
 
+  // 网页版本切线与回滚指令：立即高效切线，无需异步长时间轮询
+  if (command.operation === "rollback") {
+    try {
+      const result = await runNotionPublicationCommand(command);
+      return Response.json({ ok: true, operation: "rollback", version: command.version, result }, { status: 200 });
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      return Response.json({ ok: false, error: "rollback_failed", reason: errorMsg }, { status: 500 });
+    }
+  }
+
   // 网页控制台默认使用 async 异步非阻塞模式，0.05 秒立刻返回，规避 EdgeOne 30s 限制
   const isAsync = payload?.async !== false;
 
@@ -99,6 +110,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const contentVersion = `content-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17)}`;
+    const publishCommand: PublicationCommand = { ...command, contentVersion };
     const job = await createPersistentJob(contentVersion);
     const jobId = job.jobId;
     const jobLogs = [...job.logs];
@@ -106,7 +118,7 @@ export async function POST(request: Request): Promise<Response> {
     // 派发后台任务，全流程 try...catch...finally 异常安全收尾
     (async () => {
       try {
-        const result = await runNotionPublicationCommand(command, (logMsg) => {
+        const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
           jobLogs.push(logMsg);
           updateJobLogs(jobId, jobLogs).catch(() => null);
         });

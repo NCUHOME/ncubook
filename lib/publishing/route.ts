@@ -2,7 +2,7 @@
 import { timingSafeEqual } from "node:crypto";
 
 export type PublicationCommand =
-  | { operation: "publish"; dryRun: boolean; all: boolean; pageIds: string[] }
+  | { operation: "publish"; dryRun: boolean; all: boolean; pageIds: string[]; contentVersion?: string }
   | { operation: "rollback"; version: string };
 
 export type PublicationCommandRunner = (command: PublicationCommand) => Promise<Record<string, unknown>>;
@@ -49,7 +49,10 @@ export function parseCommand(value: unknown): PublicationCommand | null {
   const all = value.all === true;
   if (!all && pageIds.length === 0) return null;
   if (new Set(pageIds).size !== pageIds.length) return null;
-  return { operation: "publish", dryRun: value.dryRun === true, all, pageIds };
+  const contentVersion = typeof value.contentVersion === "string" && value.contentVersion.trim()
+    ? value.contentVersion.trim()
+    : undefined;
+  return { operation: "publish", dryRun: value.dryRun === true, all, pageIds, contentVersion };
 }
 
 function bearerToken(request: Request): string {

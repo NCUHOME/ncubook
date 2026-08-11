@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { loadPublishedRepository } from "@/lib/content/supabase";
-import { fetchContentVersionsFromSupabase } from "@/lib/content/supabase-repo";
+import { fetchContentVersionsFromSupabase, getLivePublishedContentPointer } from "@/lib/content/supabase-repo";
 import { hasAiProviderConfig } from "@/lib/ai/service";
 import { EvalPanel } from "@/src/components/features/admin/eval-panel";
 import { SyncPanel } from "@/src/components/features/admin/sync-panel";
@@ -24,7 +24,8 @@ export default async function AdminDashboardPage() {
   }
 
   const repository = await loadPublishedRepository();
-  const currentVersion = repository.getDocumentView("campus-shuttle")?.page.contentVersion ?? null;
+  const livePointer = await getLivePublishedContentPointer();
+  const currentVersion = livePointer ?? repository.getPublishedSections()[0]?.contentVersion ?? null;
   const initialVersions = await fetchContentVersionsFromSupabase();
   const aiConnected = hasAiProviderConfig();
 

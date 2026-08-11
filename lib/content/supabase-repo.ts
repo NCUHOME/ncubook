@@ -216,13 +216,30 @@ export type VersionRecord = {
   isCurrent: boolean;
 };
 
+export async function getLivePublishedContentPointer(): Promise<string | null> {
+  const client = getSupabaseAdmin();
+  if (!client) return null;
+
+  try {
+    const pointerResult = await client
+      .from("published_content_pointer")
+      .select("content_version")
+      .eq("singleton", true)
+      .maybeSingle();
+    if (pointerResult.error) return null;
+    return optionalString(asRecord(pointerResult.data).content_version) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[]> {
   if (!hasSupabaseConfig()) return [];
   const client = getSupabaseAdmin();
   if (!client) return [];
 
   try {
-    const currentPointer = await readPublishedContentPointer();
+    const currentPointer = await getLivePublishedContentPointer();
     const { data, error } = await client
       .from("content_versions")
       .select("id, status, created_at")

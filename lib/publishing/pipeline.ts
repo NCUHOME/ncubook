@@ -97,7 +97,9 @@ export async function runNotionPublicationCommand(
   });
   onProgress?.(formatLog(`📄 [阶段 3/5] 已完成 ${selected.length} 篇文章的修改时间与基础格式校验`));
 
-  const contentVersion = createContentVersion();
+  const contentVersion = (command.operation === "publish" && command.contentVersion)
+    ? command.contentVersion
+    : createContentVersion();
   const publishedAt = new Date().toISOString();
   const normalizedPages = new Map(selected.map((item) => {
     const rawPage = requireMapValue(rawPages, item.node.id);
