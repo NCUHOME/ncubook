@@ -75,10 +75,10 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const { data, error } = await supabase
       .from("content_versions")
-      .select("id, status, failure_reason, created_at")
+      .select("id, status, failure_reason, started_at")
       .eq("status", "pending")
-      .gte("created_at", fifteenMinsAgo)
-      .order("created_at", { ascending: false })
+      .gte("started_at", fifteenMinsAgo)
+      .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -102,7 +102,7 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
       progressPct,
       stage,
       logs,
-      createdAt: new Date(data.created_at).getTime(),
+      createdAt: new Date(data.started_at).getTime(),
     };
   } catch {
     return null;
@@ -184,7 +184,7 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
   try {
     const { data, error } = await supabase
       .from("content_versions")
-      .select("id, status, checksum, failure_reason, created_at")
+      .select("id, status, checksum, failure_reason, started_at")
       .eq("id", jobId)
       .maybeSingle();
 
@@ -222,7 +222,7 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
       logs,
       ...(failureReason ? { error: failureReason } : {}),
       ...(data.checksum ? { result: { checksum: data.checksum } } : {}),
-      createdAt: new Date(data.created_at).getTime(),
+      createdAt: new Date(data.started_at).getTime(),
     };
   } catch {
     return fallbackMemoryJobs.get(jobId) ?? null;

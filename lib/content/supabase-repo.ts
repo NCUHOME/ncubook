@@ -242,8 +242,8 @@ export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[
     const currentPointer = await getLivePublishedContentPointer();
     const { data, error } = await client
       .from("content_versions")
-      .select("id, status, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, status, started_at, published_at")
+      .order("started_at", { ascending: false })
       .limit(10);
 
     if (error || !data || data.length === 0) return [];
@@ -251,7 +251,7 @@ export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[
     return data.map((row) => ({
       version: row.id,
       status: row.status === "failed" ? "failed" : row.status === "pending" ? "pending" : "published",
-      createdAt: row.created_at,
+      createdAt: row.published_at || row.started_at || "",
       isCurrent: row.id === currentPointer,
     }));
   } catch {

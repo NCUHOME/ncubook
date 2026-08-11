@@ -1,5 +1,6 @@
 // API 路由：Notion 远程发布与版本回滚 Webhook 触发入口 (支持 Session/Token 鉴权、Supabase 持久化 Job 存储、并发互斥锁与异常收尾)
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import {
   createPersistentJob,
@@ -114,38 +115,45 @@ export async function POST(request: Request): Promise<Response> {
   const jobId = job.jobId;
   const jobLogs = [...job.logs];
 
-  try {
-    const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
-      jobLogs.push(logMsg);
-      updateJobLogs(jobId, jobLogs).catch(() => null);
+  // 网页端默认使用 Next.js 15 官方 after() 上下文调度后台任务，0.05秒极速返回规避 EdgeOne 30s 网关超时
+  if (isAsync) {
+    after(async () => {
+      try {
+        await runNotionPublicationCommand(publishCommand, (logMsg) => {
+          jobLogs.push(logMsg);
+          updateJobLogs(jobId, jobLogs).catch(() => null);
+        });
+        await finishPersistentJob(jobId, "success", jobLogs);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        jobLogs.push(`❌ 同步中断: ${errorMsg}`);
+        await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
+      }
     });
-    await finishPersistentJob(jobId, "success", jobLogs);
+
     return Response.json(
       {
         ok: true,
+        async: true,
         jobId,
-        status: "success",
-        progressPct: 100,
-        stage: "已完成",
+        status: "running",
         logs: jobLogs,
-        result,
       },
       { status: 200 },
     );
+  }
+
+  // 同步阻塞模式 (供 CLI / CI/CD 快速脚本使用)
+  try {
+    const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
+      jobLogs.push(logMsg);
+    });
+    await finishPersistentJob(jobId, "success", jobLogs);
+    return Response.json({ ok: true, jobId, status: "success", result }, { status: 200 });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    jobLogs.push(`❌ 同步中断: ${errorMsg}`);
     await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
-    return Response.json(
-      {
-        ok: false,
-        jobId,
-        status: "error",
-        error: errorMsg,
-        logs: jobLogs,
-      },
-      { status: 500 },
-    );
+    return Response.json({ ok: false, jobId, status: "error", reason: errorMsg }, { status: 500 });
   }
 }
 
