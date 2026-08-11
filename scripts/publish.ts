@@ -1,5 +1,20 @@
 // Notion 内容一键发布脚本 (scripts/publish.ts)
-// 用法: node scripts/publish.ts [--dry-run] (--all | --page <id>...) | --rollback <version>
+//
+// 命令行具体使用示例：
+// 1. 直连本地/生产环境全量发布 Notion 文章:
+//    npx tsx scripts/publish.ts --all
+//
+// 2. 预检模式（仅检查与校验格式，不真正写入数据库）:
+//    npx tsx scripts/publish.ts --dry-run --all
+//
+// 3. 仅发布指定 ID 的 Notion 页面:
+//    npx tsx scripts/publish.ts --page <NOTION_PAGE_ID>
+//
+// 4. 一键恢复切线至历史特定版本:
+//    npx tsx scripts/publish.ts --rollback content-20260811132640160
+//
+// 5. 通过 Remote Webhook Endpoint 远程发版 (需配置 PUBLICATION_ENDPOINT 和 PUBLICATION_ADMIN_TOKEN):
+//    PUBLICATION_ENDPOINT="https://book.ncuos.com/api/admin/publish-notion" PUBLICATION_ADMIN_TOKEN="xxx" npx tsx scripts/publish.ts --all
 
 type CommandBody =
   | { operation: "publish"; dryRun: boolean; all?: true; pageIds?: string[] }
@@ -7,8 +22,11 @@ type CommandBody =
 
 export {};
 
+import { loadEnvConfig } from "@next/env";
 import { runNotionPublicationCommand } from "../lib/publishing/pipeline";
 import { parseCommand, type PublicationCommand } from "../lib/publishing/route";
+
+loadEnvConfig(process.cwd());
 
 async function main() {
   const args = process.argv.slice(2);

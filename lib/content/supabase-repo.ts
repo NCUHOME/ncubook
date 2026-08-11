@@ -8,13 +8,49 @@ import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase
 export async function fetchPublishedFixtureFromSupabase(): Promise<PublishedFixture | null> {
   if (!hasSupabaseConfig()) return null;
   const contentVersion = await readPublishedContentPointer();
-  if (!contentVersion) return null;
+  if (contentVersion) {
+    try {
+      const fixture = await unstable_cache(
+        () => loadVersionFixture(contentVersion),
+        ["published-content", contentVersion],
+        { tags: [`published-content:${contentVersion}`] },
+      )();
+      if (fixture && fixture.pages.length > 0) return fixture;
+    } catch {
+      // try fallback below
+    }
+  }
 
-  return unstable_cache(
-    () => loadVersionFixture(contentVersion),
-    ["published-content", contentVersion],
-    { tags: [`published-content:${contentVersion}`] },
-  )();
+  return findFallbackPublishedFixture();
+}
+
+async function findFallbackPublishedFixture(): Promise<PublishedFixture | null> {
+  const client = getSupabaseAdmin();
+  if (!client) return null;
+
+  try {
+    const { data: versions } = await client
+      .from("content_versions")
+      .select("id")
+      .eq("status", "published")
+      .order("started_at", { ascending: false })
+      .limit(10);
+
+    if (versions) {
+      for (const row of versions) {
+        try {
+          const candidate = await loadVersionFixture(row.id);
+          if (candidate && candidate.pages.length > 0) return candidate;
+        } catch {
+          // try next version
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
 }
 
 const readPublishedContentPointer = unstable_cache(
@@ -27,7 +63,7 @@ const readPublishedContentPointer = unstable_cache(
       .select("content_version")
       .eq("singleton", true)
       .maybeSingle();
-    if (pointerResult.error) throw new Error(`Unable to read published content pointer: ${pointerResult.error.message}`);
+    if (pointerResult.error || !pointerResult.data) return null;
     return optionalString(asRecord(pointerResult.data).content_version) ?? null;
   },
   ["published-content-pointer"],
