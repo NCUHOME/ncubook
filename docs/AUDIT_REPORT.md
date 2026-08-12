@@ -272,21 +272,21 @@
 
 ---
 
-### Task 2: 补充 `student_feedback` 数据库 Schema 定义与 RLS 策略 (对应 F-03)
+### Task 2: 解耦 `POST /api/feedback` 的 Supabase 依赖并留出飞书问卷预留接口 (对应 F-03)
 
 - **改动范围**：
-  - [supabase/schema.sql](file:///c:/chengxu/ncubook/supabase/schema.sql)
+  - [app/api/feedback/route.ts](file:///c:/chengxu/ncubook/app/api/feedback/route.ts)
   - [tests/lib/content/feedback.test.ts](file:///c:/chengxu/ncubook/tests/lib/content/feedback.test.ts) [NEW]
 - **改动内容**：
-  1. 在 `supabase/schema.sql` 中新增 `student_feedback` 数据库表定义（包含 `id`, `page_path`, `question`, `comment`, `card_slug`, `status`, `created_at`）。
-  2. 启用 RLS (`alter table student_feedback enable row level security`)，配置 `service_role` 专属读写策略，严禁 `anon` 直接查询他人反馈。
-  3. 增加 `/api/feedback` 的单元路由测试。
+  1. 修改 `app/api/feedback/route.ts` 移除对 Supabase 数据表 `student_feedback` 的尝试写入，解耦数据库依赖。
+  2. 保留防刷限流与 Payload 内容校验，预留 `LARK_FORM_URL` 环境变量分支与飞书问卷 (Lark Forms) 存根响应。
+  3. 编写 `/api/feedback` 的单元路由测试。
 - **验收标准**：
-  - `supabase/schema.sql` 语法正确。
+  - 无需在 Supabase 中创建 `student_feedback` 数据表。
   - `npx tsc --noEmit` 0 错误，`npm test` 通过。
 - **风险与回滚方式**：
-  - **风险**：无破坏性风险（纯 SQL 追加与测试补充）。
-  - **回滚**：`git checkout supabase/schema.sql` 并删除新建测试文件。
+  - **风险**：无风险。
+  - **回滚**：`git checkout app/api/feedback/route.ts`。
 
 ---
 
