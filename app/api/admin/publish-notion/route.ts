@@ -1,7 +1,6 @@
 // API 路由：Notion 远程发布与版本回滚 Webhook 触发入口 (支持 Session/Token 鉴权、Supabase 持久化 Job 存储、并发互斥锁与异常收尾)
-import { cookies } from "next/headers";
 import { after } from "next/server";
-import { timingSafeEqual } from "node:crypto";
+import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import {
   createPersistentJob,
   findActiveRunningJob,
@@ -19,6 +18,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request): Promise<Response> {
+  const isAuthenticated = await authenticateAdminRequest(request);
+  if (!isAuthenticated) {
+    return Response.json({ ok: false, error: "unauthorized", reason: "未登录或鉴权秘钥无效" }, { status: 401 });
+  }
+
   const url = new URL(request.url);
   const action = url.searchParams.get("action");
   if (action === "versions") {
@@ -48,19 +52,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const expectedToken = process.env.ADMIN_PASSWORD || process.env.PUBLICATION_ADMIN_TOKEN;
-
-  // 1. 优先校验 Session Cookie
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  const isAuthenticatedByCookie = session === "authenticated";
-
-  // 2. 校验 Header Authorization Bearer Token
-  const authHeader = request.headers.get("authorization") ?? "";
-  const providedToken = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
-  const isAuthenticatedByToken = Boolean(expectedToken && safeTokenEqual(providedToken, expectedToken));
-
-  if (!isAuthenticatedByCookie && !isAuthenticatedByToken) {
+  const isAuthenticated = await authenticateAdminRequest(request);
+  if (!isAuthenticated) {
     return Response.json({ ok: false, error: "unauthorized", reason: "未登录或鉴权秘钥无效" }, { status: 401 });
   }
 
@@ -157,8 +150,3 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-function safeTokenEqual(provided: string, expected: string): boolean {
-  const left = Buffer.from(provided);
-  const right = Buffer.from(expected);
-  return left.length === right.length && timingSafeEqual(left, right);
-}

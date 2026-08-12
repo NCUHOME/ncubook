@@ -10,6 +10,8 @@ import { SyncPanel } from "@/src/components/features/admin/sync-panel";
 import { VersionTimeline } from "@/src/components/features/admin/version-timeline";
 import { AppHeader } from "@/src/components/primitives/header";
 
+import { getAdminSecret, verifyAdminSessionToken } from "@/lib/publishing/auth";
+
 export const metadata: Metadata = {
   title: "开发者运维控制台 - 此间",
   description: "南昌大学 AI 知识库内容一键同步、版本控制与 RAG 质量评估后台",
@@ -18,8 +20,9 @@ export const metadata: Metadata = {
 export default async function AdminDashboardPage() {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session")?.value;
+  const secret = getAdminSecret();
 
-  if (session !== "authenticated") {
+  if (!secret || !verifyAdminSessionToken(session, secret)) {
     redirect("/admin/login");
   }
 
