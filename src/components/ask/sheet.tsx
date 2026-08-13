@@ -2,8 +2,9 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowUp, X } from "lucide-react";
+import { X } from "lucide-react";
 import type { AnswerSession } from "@/lib/ai/session";
+import { AskInputBar } from "@/src/components/ask/input-bar";
 import type { AskStatus, PageContext } from "@/src/components/ask/provider";
 
 type AskSheetProps = {
@@ -93,13 +94,17 @@ export function AskSheet({
               </section>
             ) : null}
           </div>
-          <form onSubmit={(event) => { event.preventDefault(); onSubmit(draft); }}>
-            <label className="sr-only" htmlFor="ask-follow-up">继续追问</label>
-            <div className="flex items-center border-y border-line py-s2 pl-s1">
-              <input id="ask-follow-up" value={draft} onChange={(event) => onDraftChange(event.target.value)} className="min-w-0 flex-1 bg-transparent font-body text-label outline-none placeholder:text-muted" placeholder="继续追问" />
-              <button type="submit" className="focus-ring tap-target grid place-items-center rounded-round bg-action text-surface" aria-label="提交追问"><ArrowUp className="size-icon" /></button>
-            </div>
-          </form>
+          <AskInputBar
+            id="ask-follow-up"
+            label="继续追问"
+            placeholder="继续追问"
+            submitLabel="提交追问"
+            value={draft}
+            onChange={onDraftChange}
+            onSubmit={() => onSubmit(draft)}
+            innerClassName="border-y border-line py-s2 pl-s1"
+            inputClassName="text-label"
+          />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
