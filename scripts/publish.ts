@@ -24,7 +24,7 @@ export {};
 
 import { loadEnvConfig } from "@next/env";
 import { runNotionPublicationCommand } from "../lib/publishing/pipeline";
-import { parseCommand, type PublicationCommand } from "../lib/publishing/route";
+import { parseCommand } from "../lib/publishing/route";
 
 loadEnvConfig(process.cwd());
 
