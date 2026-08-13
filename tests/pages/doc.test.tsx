@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { describe, expect, it } from "vitest";
+import type { Block, Page } from "@/lib/content/schema";
 import {
   getAsset,
   getDocumentView,
@@ -46,7 +47,7 @@ describe("published page views", () => {
               <h2 id="section-pages-title" className="text-title leading-heading font-semibold">板块页面</h2>
               <span className="text-caption text-muted">{children.length} 篇</span>
             </div>
-            {children.map((page) => (
+            {children.map((page: Page) => (
               <Link key={page.id} href={resolvePageRoute(page.id)} className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-body">
                 <span>{page.title}</span>
                 <ChevronRight className="size-icon-small text-muted" strokeWidth={1.9} />
@@ -93,7 +94,7 @@ describe("published page views", () => {
         </main>
         <DocumentAskEntry
           pageId={view.page.id}
-          initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor}
+          initialAnchor={view.blocks.find((block: Block) => block.type === "heading")?.anchor}
         />
       </AskProvider>
     );

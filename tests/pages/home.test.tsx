@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { describe, expect, it } from "vitest";
+import type { Page } from "@/lib/content/schema";
 import { getPublishedSections, resolvePageRoute } from "@/lib/content/fixture";
 import { AskProvider } from "@/src/components/ask/provider";
 import { QuestionForm } from "@/src/components/ask/form";
@@ -35,7 +36,7 @@ function TestHomePage() {
             <span className="text-caption text-muted">查看目录</span>
           </div>
           <div className="grid grid-cols-2">
-            {sections.slice(0, 6).map((section) => (
+            {sections.slice(0, 6).map((section: Page) => (
               <Link
                 key={section.id}
                 href={resolvePageRoute(section.id)}

@@ -231,3 +231,13 @@ function firstPlainText(blocks: Block[]): string {
 export function createFixtureRepository(fixture?: PublishedFixture): ContentRepository {
   return new FixtureContentRepository(fixture);
 }
+
+const defaultFixtureRepo = new FixtureContentRepository();
+export const getAsset = defaultFixtureRepo.getAsset;
+export const getDocumentView = defaultFixtureRepo.getDocumentView;
+export const getSectionChildren = defaultFixtureRepo.getSectionChildren;
+export const getSectionForPage = defaultFixtureRepo.getSectionForPage;
+export const getSectionTree = defaultFixtureRepo.getSectionTree;
+export const getSectionView = defaultFixtureRepo.getSectionView;
+export const getPublishedSections = defaultFixtureRepo.getPublishedSections;
+export const resolvePageRoute = defaultFixtureRepo.resolvePageRoute;

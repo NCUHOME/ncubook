@@ -1,4 +1,6 @@
 // 组件：全站吸顶 Header 导航栏原语 (AppHeader)，包含返回按钮、PageTreeDrawer 板块抽屉触发按钮、标题与搜索页入口
+"use client";
+
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";

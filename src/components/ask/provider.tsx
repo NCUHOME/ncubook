@@ -4,6 +4,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
+import { resolvePageRoute as defaultResolvePageRoute } from "@/lib/content/fixture";
 
 const AskSheet = dynamic(() => import("@/src/components/ask/sheet").then((mod) => mod.AskSheet), { ssr: false });
 
@@ -34,10 +35,6 @@ async function requestAnswerFromApi(input: { question: string; pageContext?: Pag
   });
   if (!response.ok) throw new Error("回答暂时无法获取");
   return response.json() as Promise<AnswerSession>;
-}
-
-function defaultResolvePageRoute(pageId: string): string {
-  return `/docs/${pageId}`;
 }
 
 export function AskProvider({
