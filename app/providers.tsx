@@ -4,14 +4,9 @@
 import type { ReactNode } from "react";
 import { AskProvider } from "@/src/components/ask/provider";
 
-export function Providers({ children, pageRoutes }: { children: ReactNode; pageRoutes?: Record<string, string> }) {
+export function Providers({ children }: { children: ReactNode }) {
   return (
-    <AskProvider
-      resolvePageRoute={(pageId) => {
-        if (pageRoutes && pageRoutes[pageId]) return pageRoutes[pageId];
-        return `/docs/${pageId}`;
-      }}
-    >
+    <AskProvider resolvePageRoute={(pageId) => `/docs/${pageId}`}>
       {children}
     </AskProvider>
   );
