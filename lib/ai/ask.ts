@@ -91,14 +91,6 @@ export function createProductionAnswerService(): AnswerService {
   };
 }
 
-export function hasAiProviderConfig(): boolean {
-  return Boolean(
-    (process.env.AI_PROVIDER_API_KEY && process.env.AI_PROVIDER_API_KEY.trim()) ||
-    (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim()) ||
-    (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim())
-  );
-}
-
 async function parseInput(request: Request): Promise<{ question: string; pageContext?: AnswerSession["pageContext"] } | null> {
   const value: unknown = await request.json().catch(() => null);
   if (!isRecord(value) || typeof value.question !== "string" || !value.question.trim()) return null;

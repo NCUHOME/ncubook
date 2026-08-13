@@ -1,9 +1,8 @@
 // 核心业务领域：Supabase 线上数据库版本化仓储与 ContentRepository 依赖注入工厂 (S5 合并)
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { FixtureContentRepository, createFixtureRepository, publishedFixture } from "@/lib/content/fixture";
+import { createFixtureRepository, publishedFixture } from "@/lib/content/fixture";
 import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/schema";
-import { isRiskLevel } from "@/lib/content/schema";
 import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
 
 export type PageTreeNode = {
@@ -349,5 +348,3 @@ export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[
     return [];
   }
 }
-
-export class SupabaseContentRepository extends FixtureContentRepository {}
