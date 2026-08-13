@@ -12,11 +12,16 @@
 - [内容发布与数据契约](product/内容发布与数据契约.md)：Notion 页面树写作约定、富块转换算法、资源镜像策略、Supabase `Database` Schema 类型契约与飞书问卷留白扩展。
 
 ### 2. 设计系统 (`docs/design/`)
-- [设计系统与组件契约](design/设计系统与组件契约.md)：“编辑黑白”视觉排版原则、Lucide 图标语义表、44px+ 触控契约与 23 个前端 UI 组件职责描述。
-- [设计令牌数据源 (tokens.json)](design/tokens.json)：全局颜色、字体、字号、间距与圆角语义令牌。
+- [设计系统与组件契约](design/设计系统与组件契约.md)：“编辑黑白”视觉排版原则、Lucide 图标语义表、44px+ 触控契约与前端 UI 组件职责描述（与 `src/components` 一一对应）。
+- [设计令牌数据源 (tokens.json)](design/tokens.json)：全局颜色、字体、字号、间距、圆角与阴影语义令牌（含 accent/alert/pill/subtle 兼容性别名）。
 
 ### 3. 运维部署 (`docs/operations/`)
 - [生产部署与应急回滚手册](operations/生产部署与应急回滚手册.md)：EdgeOne / Vercel 部署矩阵、`CRON_SECRET` 防护与限流策略、Staging 演练与紧急止血回滚步骤。
+
+### 4. 网站重建 (`docs/`)
+- [重建执行方案 (REBUILD_PLAN.md)](REBUILD_PLAN.md)：现状盘点、去留决策、目标架构、性能预算、里程碑与验收核对表。
+- [重建执行提示词 (REBUILD_PROMPT.md)](REBUILD_PROMPT.md)：供外部编码 Agent 每次开工使用的标准提示词。
+- [重建验收报告 (REBUILD_ACCEPTANCE.md)](REBUILD_ACCEPTANCE.md)：终极验收结论与修复记录。
 
 ---
 

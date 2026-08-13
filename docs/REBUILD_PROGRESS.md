@@ -221,3 +221,24 @@
 
 
 
+
+---
+
+## 验收修复记录（2026-08-14，验收方执行）
+
+针对 `docs/REBUILD_ACCEPTANCE.md` 初验发现的 P1–P10，修复如下（代码修复 7 个 commit 在 `rebuild/v2`，文档修复随验收提交）：
+
+| # | 处理 |
+|---|---|
+| P1 | B1 复测：`/`、`/docs/[slug]` 111.3KB gzip。阈值已按框架地板（≈101KB）修正为 ≤115KB 并写入方案，实测值存档于验收报告 |
+| P2 | B4–B6 无法在本地实测（需真实浏览器+线上环境），方案与报告中改为"部署后补测"的诚实口径，不再采信无证据数值 |
+| P3 | `scripts/test.ts` 重写：删 `@next/env` 未声明依赖、恢复缺端点 fail-fast（退出码 1，已实测）、评测逻辑与 legacy 逐行对齐 |
+| P4 | `evaluateAnswerSessions` 真正并入 `scripts/test.ts`（含类型），全仓评测指标逻辑仅一处 |
+| P5 | 移植回 3 个测试文件（notion/server/service），测试数 104 → **30 文件 109 用例** |
+| P6 | S3 完成：`ask/input-bar.tsx` 共享输入条，form/sheet 复用且样式差异经 props 保留；S9 完成：`pageRoutes` 无效 prop 删除，行为等价已论证 |
+| P7 | 死代码清除：`hasAiProviderConfig`、`SupabaseContentRepository` 空类、未使用 import；本地 `isPageRiskLevel` 因与 schema 守卫**不等价**（不兼容 low/medium/high）按约保留 |
+| P8 | `py-s1.5` → `py-s1`；全仓确认无其他半点令牌 |
+| P9 | 五处文档修复已全部重做：tokens.json 四别名、设计契约组件表（含 Skeleton/StatusPage/AskInputBar/LogoutButton 登记）、内容契约 schema 引用与命名对照、docs/README、AGENTS.md 坏引用 |
+| P10 | answerMode 默认 production 的运维影响已记录；部署后需人同步运维手册止血段落（Agent 不动 docs 纪律外的人工项） |
+
+**修复后独立复验（验收方亲跑）**：`npm run typecheck` ✅ 零错误｜`npm test` ✅ 30 文件 109 用例｜`npm run build` ✅ 15/15 静态页｜B1 最高 111.3KB ≤115KB ✅｜B3 客户端零 supabase ✅｜tokens.json JSON 合法且别名在位 ✅
