@@ -1,11 +1,12 @@
 // Notion 发布引擎：Supabase 发布存储事务接入层（包含 assertServerOnly 服务端隔离；管理页面、Block 树与 Asset 的 RPC 原子提交）
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 import type { PublicationCommit, PublicationStore } from "@/lib/publishing/version";
 import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("Supabase Publication Store");
 
-export function createSupabasePublicationStore(client: SupabaseClient): PublicationStore {
+export function createSupabasePublicationStore(client: SupabaseClient<Database>): PublicationStore {
   return {
     async getVersionStatus(contentVersion) {
       const result = await client.from("content_versions").select("status").eq("id", contentVersion).maybeSingle();

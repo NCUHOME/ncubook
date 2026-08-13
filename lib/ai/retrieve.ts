@@ -1,6 +1,7 @@
 // AI 问答引擎：知识库 Block 混合检索算法（支持三元组模糊匹配、向量 Embedding 相似度与页面上下文 Boosting）
 import type { EmbeddingModel } from "@/lib/ai/provider";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 import { assertServerOnly } from "@/lib/integrations/server";
 
 assertServerOnly("AI retrieval");
@@ -80,12 +81,12 @@ export async function retrieveGroundingSources({
     .map(({ source }) => source);
 }
 
-export function createSupabaseRetrievalRepository(client: SupabaseClient): RetrievalRepository {
+export function createSupabaseRetrievalRepository(client: SupabaseClient<Database>): RetrievalRepository {
   return {
     async getCurrentVersion() {
       const result = await client.from("published_content_pointer").select("content_version").eq("singleton", true).maybeSingle();
       if (result.error) throw new Error(`Unable to read current content version: ${result.error.message}`);
-      const version = asRecord(result.data).content_version;
+      const version = result.data?.content_version;
       return typeof version === "string" ? version : null;
     },
     async searchCurrentVersion({ question, queryEmbedding, limit }) {

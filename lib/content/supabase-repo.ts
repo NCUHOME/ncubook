@@ -64,7 +64,7 @@ const readPublishedContentPointer = unstable_cache(
       .eq("singleton", true)
       .maybeSingle();
     if (pointerResult.error || !pointerResult.data) return null;
-    return optionalString(asRecord(pointerResult.data).content_version) ?? null;
+    return optionalString(pointerResult.data.content_version) ?? null;
   },
   ["published-content-pointer"],
   { revalidate: false, tags: ["published-content-pointer"] },
@@ -263,7 +263,7 @@ export async function getLivePublishedContentPointer(): Promise<string | null> {
       .eq("singleton", true)
       .maybeSingle();
     if (pointerResult.error) return null;
-    return optionalString(asRecord(pointerResult.data).content_version) ?? null;
+    return optionalString(pointerResult.data?.content_version) ?? null;
   } catch {
     return null;
   }
