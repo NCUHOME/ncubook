@@ -1,9 +1,66 @@
-// 核心业务领域：Supabase 线上数据库版本化仓储实现 (SupabaseContentRepository)，处理版本号指针解析与数据表映射
+// 核心业务领域：Supabase 线上数据库版本化仓储与 ContentRepository 依赖注入工厂 (S5 合并)
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { FixtureContentRepository } from "@/lib/content/fixture-repo";
+import { FixtureContentRepository, createFixtureRepository, publishedFixture } from "@/lib/content/fixture";
 import type { Asset, Block, Page, PublishedFixture, SearchIndexEntry } from "@/lib/content/schema";
+import { isRiskLevel } from "@/lib/content/schema";
 import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
+
+export type PageTreeNode = {
+  id: string;
+  title: string;
+  href: string;
+  children: PageTreeNode[];
+};
+
+export type DocumentView = {
+  page: Page;
+  blocks: Block[];
+  description: string;
+};
+
+export interface ContentRepository {
+  getDocumentView(slug: string): DocumentView | null;
+  getSectionView(slug: string): DocumentView | null;
+  getPublishedSections(): Page[];
+  getSectionTree(sectionSlug: string): PageTreeNode[];
+  getSectionChildren(sectionSlug: string): Page[];
+  getSectionForPage(pageId: string): Page | null;
+  getAsset(assetId: string): Asset | null;
+  getSearchIndex(): SearchIndexEntry[];
+  getPageRoutes(): Record<string, string>;
+  resolvePageRoute(pageId: string): string;
+}
+
+export type LoadRepositoryOptions = {
+  environment?: string;
+  configured?: boolean;
+  loadPublishedFixture?: () => Promise<PublishedFixture | null>;
+};
+
+export const getContentRepository = cache(async function getContentRepository(
+  options: LoadRepositoryOptions = {},
+): Promise<ContentRepository> {
+  const environment = options.environment ?? process.env.PUBLISHED_CONTENT_ENV ?? process.env.VERCEL_ENV ?? "development";
+  const configured = options.configured ?? hasSupabaseConfig();
+
+  if (!configured) {
+    if (environment === "production") throw new Error("Published content storage is not configured");
+    return createFixtureRepository(publishedFixture);
+  }
+
+  try {
+    const fixture = await (options.loadPublishedFixture ?? fetchPublishedFixtureFromSupabase)();
+    if (fixture) return createFixtureRepository(fixture);
+    if (environment === "production") throw new Error("No published content version is available");
+  } catch (error) {
+    if (environment === "production") throw error;
+  }
+
+  return createFixtureRepository(publishedFixture);
+});
+
+export { getContentRepository as loadPublishedRepository };
 
 export async function fetchPublishedFixtureFromSupabase(): Promise<PublishedFixture | null> {
   if (!hasSupabaseConfig()) return null;
@@ -233,10 +290,6 @@ function optionalString(value: unknown): string | undefined {
 
 function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
-}
-
-function isRiskLevel(value: string): value is Page["metadata"]["riskLevel"] {
-  return value === "normal" || value === "needs-verification" || value === "sensitive";
 }
 
 function isSearchBlockType(value: string): value is SearchIndexEntry["blockType"] {

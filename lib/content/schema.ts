@@ -134,3 +134,6 @@ export function isRiskLevel(value: string): value is RiskLevel {
   return value === "normal" || value === "needs-verification" || value === "sensitive" || value === "low" || value === "medium" || value === "high";
 }
 
+export function anchorFromSourceId(sourceId: string): string {
+  return `b-${sourceId}`;
+}
