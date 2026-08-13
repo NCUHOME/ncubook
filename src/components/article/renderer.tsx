@@ -1,0 +1,66 @@
+// 组件：文章富文本块树主渲染器，根据 Block 节点类型 (paragraph, heading, quote, table 等) 递归分派至底层 blocks/ 组件
+import type { Asset, Block } from "@/lib/content/schema";
+import { CalloutBlock } from "@/src/components/article/blocks/callout";
+import { ColumnsBlock } from "@/src/components/article/blocks/columns";
+import { DividerBlock } from "@/src/components/article/blocks/divider";
+import { EmbedBlock } from "@/src/components/article/blocks/embed";
+import { FileBlock } from "@/src/components/article/blocks/file";
+import { ImageBlock } from "@/src/components/article/blocks/image";
+import { ListBlock } from "@/src/components/article/blocks/list";
+import { PageLinkBlock } from "@/src/components/article/blocks/link";
+import { QuoteBlock } from "@/src/components/article/blocks/quote";
+import { RichText } from "@/src/components/article/blocks/richtext";
+import { TableBlock } from "@/src/components/article/blocks/table";
+
+export type ArticleRendererProps = {
+  blocks: Block[];
+  getAsset: (assetId: string) => Asset | null;
+  resolvePageRoute: (pageId: string) => string;
+};
+
+export function ArticleRenderer({ blocks, getAsset, resolvePageRoute }: ArticleRendererProps) {
+  return <ArticleBlockList blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="space-y-s5" />;
+}
+
+function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: ArticleRendererProps & { className: string }) {
+  return (
+    <div className={className}>
+      {blocks.map((block) => {
+        switch (block.type) {
+          case "paragraph": return <p id={block.anchor} key={block.id} className="font-body text-body leading-body"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>;
+          case "quote": return <QuoteBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
+            {block.children.length > 0
+              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3 text-ink" />
+              : null}
+          </QuoteBlock>;
+          case "heading": return <HeadingBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
+          case "bulleted-list":
+          case "numbered-list": return <ListBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
+          case "callout": return <CalloutBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
+            {block.children.length > 0
+              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3" />
+              : null}
+          </CalloutBlock>;
+          case "divider": return <DividerBlock key={block.id} block={block} />;
+          case "table": return <TableBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
+          case "columns": return <ColumnsBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
+          case "image": return <ImageBlock key={block.id} block={block} asset={getAsset(block.assetId)} resolvePageRoute={resolvePageRoute} />;
+          case "file": return <FileBlock key={block.id} block={block} asset={getAsset(block.assetId)} />;
+          case "embed": return <EmbedBlock key={block.id} block={block} />;
+          case "page-link": return <PageLinkBlock key={block.id} block={block} href={resolvePageRoute(block.pageId)} resolvePageRoute={resolvePageRoute} />;
+          default: return assertNever(block);
+        }
+      })}
+    </div>
+  );
+}
+
+function HeadingBlock({ block, resolvePageRoute }: { block: Extract<Block, { type: "heading" }>; resolvePageRoute: (pageId: string) => string }) {
+  if (block.level === 1) return <h1 id={block.anchor} className="font-display text-heading leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h1>;
+  if (block.level === 2) return <h2 id={block.anchor} className="text-title leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h2>;
+  return <h3 id={block.anchor} className="text-body-large leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h3>;
+}
+
+function assertNever(block: never): never {
+  throw new Error(`Unsupported block: ${JSON.stringify(block)}`);
+}
