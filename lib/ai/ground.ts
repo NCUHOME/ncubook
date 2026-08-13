@@ -4,7 +4,7 @@ import { buildAnswerPrompt } from "@/lib/ai/prompt";
 import { applyGroundingPolicy } from "@/lib/ai/policy";
 import type { RetrievalSource } from "@/lib/ai/retrieve";
 import { validateAnswerSession, type AnswerClaim, type AnswerSession, type Citation } from "@/lib/ai/session";
-import { assertServerOnly } from "@/lib/integrations/server";
+import { assertServerOnly } from "@/lib/integrations/server-only";
 
 assertServerOnly("Grounded answers");
 

@@ -1,13 +1,16 @@
-// AI 问答引擎：/api/ask 路由 Handler 工厂，处理请求体参数解析、IP 速率限制 (Rate Limit) 与 HTTP 状态码响应
+// AI 问答引擎：/api/ask 路由 Handler 工厂与生产环境问答服务装配 (S6 合并，X5 移除了 shadow 模式)
 import { createHash, randomUUID } from "node:crypto";
-import { ACTIVE_CONTENT_VERSION, createAnswerFixture, validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
-import { ProviderError } from "@/lib/ai/provider";
-import { assertServerOnly } from "@/lib/integrations/server";
+import { groundAnswer } from "@/lib/ai/ground";
+import { ProviderError, createOpenAICompatibleProvider } from "@/lib/ai/provider";
+import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
+import { createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
+import { assertServerOnly } from "@/lib/integrations/server-only";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
-assertServerOnly("AI answer route");
+assertServerOnly("AI answer route and service");
 
 export type AnswerService = (input: { question: string; pageContext?: AnswerSession["pageContext"] }) => Promise<AnswerSession>;
-export type AnswerMode = "fixture" | "shadow" | "production";
+export type AnswerMode = "fixture" | "production";
 
 type TelemetryEvent = {
   requestId: string;
@@ -41,12 +44,10 @@ export function createAskHandler({ mode, answer, allowRequest, recordTelemetry =
       }
 
       const generated = await answer(input);
-      const session = mode === "shadow" ? insufficientSession(input.question, input.pageContext) : generated;
-      recordTelemetry(eventFor(requestId, startedAt, mode, session));
-      return json(session, 200);
+      recordTelemetry(eventFor(requestId, startedAt, mode, generated));
+      return json(generated, 200);
     } catch (error) {
       recordTelemetry({ requestId, latencyMs: elapsed(startedAt), confidence: "error", citationCount: 0, mode });
-      if (mode === "shadow") return json(insufficientSession(input.question, input.pageContext), 200);
       if (error instanceof ProviderError) return json({ error: "answer_temporarily_unavailable", requestId }, 503);
       return json({ error: "answer_failed", requestId }, 500);
     }
@@ -69,15 +70,33 @@ export function createMinuteRateLimiter(limit: number): (request: Request) => bo
   };
 }
 
-function insufficientSession(question: string, pageContext?: AnswerSession["pageContext"]): AnswerSession {
-  return validateAnswerSession({
-    id: `answer-shadow-${createHash("sha256").update(question).digest("hex").slice(0, 12)}`,
-    question,
-    ...(pageContext ? { pageContext } : {}),
-    confidence: "insufficient",
-    claims: [],
-    citations: [],
-  }, ACTIVE_CONTENT_VERSION);
+export function createProductionAnswerService(): AnswerService {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Supabase published content is not configured");
+  const provider = createOpenAICompatibleProvider({
+    baseUrl: environment("AI_PROVIDER_BASE_URL"),
+    apiKey: environment("AI_PROVIDER_API_KEY"),
+    chatModel: environment("AI_CHAT_MODEL"),
+    embeddingModel: optionalEnvironment("AI_EMBEDDING_MODEL"),
+    timeoutMs: positiveInteger(process.env.AI_REQUEST_TIMEOUT_MS, 8000),
+  });
+  const embedding = provider.embed ? { embed: provider.embed } : undefined;
+  const repository = createSupabaseRetrievalRepository(supabase);
+
+  return async ({ question, pageContext }) => {
+    const activeContentVersion = await repository.getCurrentVersion();
+    if (!activeContentVersion) throw new Error("No published content version is available");
+    const sources = await retrieveGroundingSources({ question, pageContext, repository, embedding });
+    return groundAnswer({ question, pageContext, activeContentVersion, sources, model: provider });
+  };
+}
+
+export function hasAiProviderConfig(): boolean {
+  return Boolean(
+    (process.env.AI_PROVIDER_API_KEY && process.env.AI_PROVIDER_API_KEY.trim()) ||
+    (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim()) ||
+    (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim())
+  );
 }
 
 async function parseInput(request: Request): Promise<{ question: string; pageContext?: AnswerSession["pageContext"] } | null> {
@@ -108,4 +127,20 @@ function json(value: unknown, status: number): Response {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function environment(name: string): string {
+  const value = process.env[name];
+  if (!value?.trim()) throw new Error(`${name} is required`);
+  return value;
+}
+
+function optionalEnvironment(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value || undefined;
+}
+
+function positiveInteger(value: string | undefined, fallback: number): number {
+  const parsed = value ? Number(value) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
