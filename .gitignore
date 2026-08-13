@@ -12,7 +12,11 @@ dist/
 
 # TypeScript 编译缓存
 *.tsbuildinfo
+tsconfig.tsbuildinfo
 next-env.d.ts.bak
+
+# --- 重建方案只读目录 ---
+legacy code/
 
 # --- 环境变量与私密配置 ---
 .env
