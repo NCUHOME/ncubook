@@ -214,7 +214,7 @@ function parsePageRow(row: unknown): Page {
   const value = asRecord(row);
   const metadata = asRecord(value.metadata);
   const riskLevel = requiredString(metadata.riskLevel, "Published page risk level");
-  if (!isRiskLevel(riskLevel)) throw new Error(`Invalid published page risk level: ${riskLevel}`);
+  if (!isPageRiskLevel(riskLevel)) throw new Error(`Invalid published page risk level: ${riskLevel}`);
   return {
     id: requiredString(value.source_page_id, "Published page id"),
     schemaVersion: 1,
@@ -234,6 +234,10 @@ function parsePageRow(row: unknown): Page {
       riskLevel,
     },
   };
+}
+
+function isPageRiskLevel(value: string): value is Page["metadata"]["riskLevel"] {
+  return value === "normal" || value === "needs-verification" || value === "sensitive";
 }
 
 function parseAssetRow(row: unknown): Asset {

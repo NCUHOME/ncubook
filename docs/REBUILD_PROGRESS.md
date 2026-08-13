@@ -61,3 +61,62 @@
   - 重建 `lib/publishing/` (11 个模块原样平移)
   - 重建 `scripts/{publish,test}.ts` 与 `evals/test.json`
   - 迁移幸存模块单元测试 `tests/lib/**`
+
+---
+
+## 里程碑 M2 执行记录 (2026-08-14)
+
+### 1. 本次完成的里程碑与逻辑单元
+- **里程碑**: M2 — 数据层与 AI 引擎
+- **逻辑单元**:
+  - `lib/integrations/`: `server-only.ts` (`assertServerOnly` 隔断)、`supabase.ts` (S8 单例缓存)
+  - `lib/database.types.ts`: Supabase Schema 数据库 TS 类型定义
+  - `lib/content/`: `schema.ts` (S7 `anchorFromSourceId` 单点导出)、`fixture.ts` (S5 合并 `fixtures.ts` + `fixture-repo.ts`)、`server.ts` (S5 合并 `factory`/`supabase`/`supabase-repo`/`repository`)、`search.ts`
+  - `lib/ai/`: `session.ts` (数据契约与反序列化校验)、`ask.ts` (S6 合并 `route` + `service`，X5 移除 shadow 模式)、`retrieve.ts` (混合检索)、`ground.ts` (事实归因)、`policy.ts` (敏感词保护)、`prompt.ts`、`provider.ts`
+  - `lib/publishing/`: 重建全套 11 个模块 (`client.ts`, `blocks.ts`, `page.ts`, `assets.ts`, `index.ts`, `version.ts`, `store.ts`, `route.ts`, `pipeline.ts`, `job-store.ts`, `auth.ts`)，更新 `anchorFromSourceId` 统一向 `schema.ts` 导入
+  - `supabase/`: 包含完整 `supabase/schema.sql` SQL 契约文件（7 张核心表、索引、RLS 策略与事务 RPC）
+  - `scripts/`: `publish.ts` (CLI 发版工具)、`test.ts` (X9 合并 `eval.ts` AI 评测脚本)
+  - `evals/`: `test.json` (防幻觉评测用例集)
+  - `tests/lib/`: 迁移全套 18 个幸存单元测试文件（86 个测试用例，覆盖 content, ai, publishing 领域 logic）
+
+### 2. 修改 / 新建文件清单
+- `[NEW] lib/integrations/server-only.ts`
+- `[NEW] lib/integrations/supabase.ts`
+- `[NEW] lib/database.types.ts`
+- `[NEW] lib/content/schema.ts`
+- `[NEW] lib/content/fixture.ts`
+- `[NEW] lib/content/server.ts`
+- `[NEW] lib/content/search.ts`
+- `[NEW] lib/ai/session.ts`
+- `[NEW] lib/ai/ask.ts`
+- `[NEW] lib/ai/retrieve.ts`
+- `[NEW] lib/ai/ground.ts`
+- `[NEW] lib/ai/policy.ts`
+- `[NEW] lib/ai/prompt.ts`
+- `[NEW] lib/ai/provider.ts`
+- `[NEW] lib/publishing/*.ts` (11 个模块)
+- `[NEW] supabase/schema.sql`
+- `[NEW] scripts/publish.ts`
+- `[NEW] scripts/test.ts`
+- `[NEW] evals/test.json`
+- `[NEW] tests/lib/**/*.test.ts` (18 个单测文件)
+- `[DELETE] legacy code` 中已被清理的废弃模块 (X3 飞书, X4 废弃 content 门面, X5 shadow 模式, X8/X9 smoke/eval 旧文件)
+
+### 3. 运行的验证指令及结果
+- `npm run typecheck`: **PASS** (Zero TS errors)
+- `npm test`: **PASS** (18 test files, 86 tests passed in 2.45s)
+- `npm run build`: **PASS** (Compiled successfully, static pages generated, First Load JS ~103 kB)
+
+### 4. ⚠️ 待确认事项的实际处理
+- **X3** (飞书清理): 彻底移除 `lib/integrations/lark.ts`, `lark-mapper.ts`, `upsert-cards.ts` 等死代码。
+- **X4** (废弃 content 门面): 清理 `repo.ts`, `sample-cards.ts`, `topics.ts` 等二次维护摘要，统一使用 `schema.ts`, `fixture.ts`, `server.ts` 3 清洁文件。
+- **X5** (shadow 模式移除): `AnswerMode` 仅保留 `fixture` 与 `production`。
+- **S7** (`anchorFromSourceId` 巩固): 统一在 `lib/content/schema.ts` 导出，`lib/publishing` 中其它模块均更新向其导入。
+- **S8** (Supabase 单利化): `getSupabaseAdmin()` 在 `lib/integrations/supabase.ts` 实现模块级内存单例缓存。
+
+### 5. 遗留问题与下一个里程碑入口
+- **遗留问题**: 无
+- **下一个里程碑入口**: **里程碑 M3 — 全局搜索与文档阅读器 UI 组装**
+  - 重建 `src/components/` 领域 UI 组件 (Navigation, Search, Reader, AI Panel)
+  - 接入 `lib/content` 与 `lib/ai` 交互 API 逻辑
+
