@@ -1,5 +1,5 @@
 // Notion 发布引擎：从 Block 富文本树抽取纯文本摘要与生成全站 SearchIndexEntry 检索索引项
-import type { Block, Page, RichText, SearchIndexEntry } from "@/lib/content/schema";
+import { anchorFromSourceId, type Block, type Page, type RichText, type SearchIndexEntry } from "@/lib/content/schema";
 
 type SearchableBlockType = SearchIndexEntry["blockType"];
 
@@ -102,10 +102,6 @@ export function buildSearchIndex(
 
 function richText(value: RichText): string {
   return value.map((part) => part.plainText).join("");
-}
-
-function anchorFromSourceId(sourceId: string): string {
-  return `b-${sourceId}`;
 }
 
 function assertNever(value: never): never {

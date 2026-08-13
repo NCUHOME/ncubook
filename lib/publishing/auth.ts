@@ -1,7 +1,7 @@
 // 核心业务领域：管理员身份鉴权与 HMAC Cookie Session / Bearer Token 校验模块 (lib/publishing/auth.ts)
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { assertServerOnly } from "@/lib/integrations/server";
+import { assertServerOnly } from "@/lib/integrations/server-only";
 
 assertServerOnly("Admin Authentication Module");
 

@@ -2,7 +2,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { PublicationCommit, PublicationStore } from "@/lib/publishing/version";
-import { assertServerOnly } from "@/lib/integrations/server";
+import { assertServerOnly } from "@/lib/integrations/server-only";
 
 assertServerOnly("Supabase Publication Store");
 

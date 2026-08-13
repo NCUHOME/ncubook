@@ -1,7 +1,7 @@
 // Notion 发布引擎：内容版本控制状态机 (pending/published/failed)、页面校验和 (checksum) 匹配与指针切换
 import { batchMap } from "@/lib/publishing/client";
 import { createHash } from "node:crypto";
-import type { Asset, Block, Page, SearchIndexEntry } from "@/lib/content/schema";
+import { anchorFromSourceId, type Asset, type Block, type Page, type SearchIndexEntry } from "@/lib/content/schema";
 
 export type PagePublication = {
   page: Page;
@@ -237,10 +237,6 @@ function sourceBlockId(error: unknown): { sourceBlockId?: string } {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-function anchorFromSourceId(sourceId: string): string {
-  return `b-${sourceId}`;
 }
 
 function requireValue(value: string, label: string): void {
