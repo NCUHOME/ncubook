@@ -28,7 +28,7 @@ export function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={loading}
-      className="focus-ring tap-target flex items-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s1.5 text-caption font-medium hover:bg-surface-subtle disabled:opacity-50"
+      className="focus-ring tap-target flex items-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s1text-caption font-medium hover:bg-surface-subtle disabled:opacity-50"
     >
       <LogOut className="size-icon-small" />
       <span>{loading ? "正在退出..." : "退出登录"}</span>
