@@ -14,6 +14,8 @@
   --warning: #9b5a12;
   --danger: #9f3d2e;
   --focus: #111111;
+  --accent: #111111;
+  --alert: #9f3d2e;
   --font-family-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
   --font-family-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-family-display: "Songti SC", STSong, SimSun, serif;
@@ -42,12 +44,14 @@
   --corner-medium: 12px;
   --corner-large: 16px;
   --corner-round: 999px;
+  --corner-pill: 999px;
   --icon-small: 16px;
   --icon: 20px;
   --icon-large: 24px;
   --tap-target: 44px;
   --border-default: 1px;
   --elevation-floating: 0 8px 24px rgba(17, 17, 17, 0.14);
+  --elevation-subtle: 0 2px 8px rgba(17, 17, 17, 0.08);
   --layer-base: 0;
   --layer-header: 10;
   --layer-floating-action: 20;
@@ -70,6 +74,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-focus: var(--focus);
+  --color-accent: var(--accent);
+  --color-alert: var(--alert);
   --font-sans: var(--font-family-ui);
   --font-body: var(--font-family-body);
   --font-display: var(--font-family-display);
@@ -102,8 +108,10 @@
   --radius-medium: var(--corner-medium);
   --radius-large: var(--corner-large);
   --radius-round: var(--corner-round);
+  --radius-pill: var(--corner-pill);
   --border-width-default: var(--border-default);
   --shadow-floating: var(--elevation-floating);
+  --shadow-subtle: var(--elevation-subtle);
   --duration-fast: var(--motion-fast);
   --duration-standard: var(--motion-standard);
 }
@@ -113,6 +121,11 @@
 @utility z-floating-action { z-index: var(--layer-floating-action); }
 @utility z-drawer { z-index: var(--layer-drawer); }
 @utility z-modal { z-index: var(--layer-modal); }
+
+@utility text-accent { color: var(--accent); }
+@utility text-alert { color: var(--alert); }
+@utility rounded-pill { border-radius: var(--corner-pill); }
+@utility shadow-subtle { box-shadow: var(--elevation-subtle); }
 
 * { box-sizing: border-box; }
 
