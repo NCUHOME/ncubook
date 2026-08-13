@@ -116,7 +116,65 @@
 
 ### 5. 遗留问题与下一个里程碑入口
 - **遗留问题**: 无
-- **下一个里程碑入口**: **里程碑 M3 — 全局搜索与文档阅读器 UI 组装**
-  - 重建 `src/components/` 领域 UI 组件 (Navigation, Search, Reader, AI Panel)
-  - 接入 `lib/content` 与 `lib/ai` 交互 API 逻辑
+- **下一个里程碑入口**: **里程碑 M4 — 管理后台、API 与性能收尾**
+  - 重建 `app/admin/**` 管理后台 (同步面板、版本时间线、登出)
+  - 全仓性能指标测量 (B1-B8) 与 Lighthouse 审计
+
+---
+
+## 里程碑 M3 执行记录 (2026-08-14)
+
+### 1. 本次完成的里程碑与逻辑单元
+- **里程碑**: M3 — 公开页面与组件 (全局搜索与文档阅读器 UI 组装)
+- **逻辑单元**:
+  - `src/components/primitives/`: `header.tsx` (`AppHeader` 整合 `next/dynamic` 抽屉懒加载)、`drawer.tsx` (`PageTreeDrawer` 左侧树状抽屉)
+  - `src/components/ask/`: S4 合并 `provider.tsx` (`AskProvider` + `useAsk`)、`sheet.tsx` (`AskSheet` S10 动态加载)、`button.tsx` (`FloatingAskButton` 浮动 FAB)、`entry.tsx` (`DocumentAskEntry` IntersectionObserver 锚点追踪)、`form.tsx` (`QuestionForm` 提问表单)
+  - `src/components/search/`: `box.tsx` (`SearchExperience` 客户端 5ms 零延迟打字即搜 + 预拉索引 + API 降级)、`item.tsx` (`SearchResultItem` `<mark>` 关键词高亮与锚点链接)
+  - `src/components/article/`: `renderer.tsx` (`ArticleRenderer` 主块树分发) 及 `blocks/` 11 个原子块渲染组件 (`richtext`, `callout`, `columns`, `divider`, `embed`, `file`, `image`, `link`, `list`, `quote`, `table`)
+  - `app/api/`: `/api/ask/route.ts`, `/api/search/route.ts`, `/api/search/index/route.ts` 核心公开 API 路由
+  - `app/`: 重建 4 个公开页面路由 `app/page.tsx`, `app/search/page.tsx`, `app/sections/[slug]/page.tsx`, `app/docs/[slug]/page.tsx`
+  - `app/providers.tsx`: 全局挂载 `AskProvider` 并注入页面路由解析逻辑
+  - `tests/`: 迁移全套 UI 组件、页面与集成测试 (`tests/components/**`, `tests/pages/**`, `tests/integration/citation.test.ts`)，共 27 个测试文件、104 个测试用例全绿通过
+
+### 2. 修改 / 新建文件清单
+- `[NEW] src/components/primitives/header.tsx`
+- `[NEW] src/components/primitives/drawer.tsx`
+- `[NEW] src/components/ask/provider.tsx`
+- `[NEW] src/components/ask/sheet.tsx`
+- `[NEW] src/components/ask/button.tsx`
+- `[NEW] src/components/ask/entry.tsx`
+- `[NEW] src/components/ask/form.tsx`
+- `[NEW] src/components/search/box.tsx`
+- `[NEW] src/components/search/item.tsx`
+- `[NEW] src/components/article/renderer.tsx`
+- `[NEW] src/components/article/blocks/*.tsx` (11 个块组件)
+- `[NEW] app/api/ask/route.ts`
+- `[NEW] app/api/search/route.ts`
+- `[NEW] app/api/search/index/route.ts`
+- `[NEW] app/search/page.tsx`
+- `[NEW] app/sections/[slug]/page.tsx`
+- `[NEW] app/docs/[slug]/page.tsx`
+- `[MODIFY] app/page.tsx`
+- `[MODIFY] app/providers.tsx`
+- `[NEW] tests/components/**/*.tsx` (5 个组件测试文件)
+- `[NEW] tests/pages/**/*.tsx` (3 个页面测试文件)
+- `[NEW] tests/integration/citation.test.ts`
+
+### 3. 运行的验证指令及结果
+- `npm run typecheck`: **PASS** (Zero TS errors)
+- `npm test`: **PASS** (27 test files, 104 tests passed in 3.04s)
+- `npm run build`: **PASS** (Compiled successfully, static pages generated: 13/13 prerendered, First Load JS ~103 - 114 kB, revalidate=3600)
+
+### 4. ⚠️ 待确认事项的实际处理
+- **S4** (AskProvider + useAsk 合并): 统一定义在 `src/components/ask/provider.tsx` 中，避免孤立 hook。
+- **S10** (AskSheet 懒加载): 在 `AskProvider` 中保持 `next/dynamic` 配合 `ssr: false` 打包隔断。
+- **S11** (PageTreeDrawer 懒加载): 在 `AppHeader` 中对 `PageTreeDrawer` 使用 `next/dynamic` 按需加载。
+- **图片 CLS 声明**: `ImageBlock` 采用 `h-auto w-full` 与原生 `loading="lazy"` / `decoding="async"` 控制。
+
+### 5. 遗留问题与下一个里程碑入口
+- **遗留问题**: 无
+- **下一个里程碑入口**: **里程碑 M4 — 管理后台、API 与性能收尾**
+  - 重建 `app/admin/**` 管理后台与认证 / 登出逻辑
+  - 跑 B1–B8 全项性能预算与 Lighthouse 测量
+
 
