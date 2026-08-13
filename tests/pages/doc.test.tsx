@@ -21,19 +21,20 @@ import { AppHeader } from "@/src/components/primitives/header";
 describe("published page views", () => {
   it("renders a free-form section introduction followed by child documents", () => {
     const view = getSectionView("campus-life");
-    expect(view).not.toBeNull();
+    if (!view) throw new Error("Section view 'campus-life' not found");
+
     const children = getSectionChildren("campus-life");
     const tree = getSectionTree("campus-life");
-    const contentBlocks = view!.blocks[0]?.type === "paragraph" ? view!.blocks.slice(1) : view!.blocks;
+    const contentBlocks = view.blocks[0]?.type === "paragraph" ? view.blocks.slice(1) : view.blocks;
 
     render(
       <>
-        <AppHeader title={view!.page.title} backHref="/" sectionTitle={view!.page.title} sectionTree={tree} currentPageId={view!.page.id} />
+        <AppHeader title={view.page.title} backHref="/" sectionTitle={view.page.title} sectionTree={tree} currentPageId={view.page.id} />
         <main className="pb-s7">
           <section className="border-b border-line px-s5 py-s7">
             <p className="text-caption leading-ui tracking-widest text-muted">校园内容板块</p>
-            <h1 className="mt-s3 font-display text-display leading-heading font-semibold">{view!.page.title}</h1>
-            <p className="mt-s4 max-w-prose font-body text-body leading-body text-muted">{view!.description}</p>
+            <h1 className="mt-s3 font-display text-display leading-heading font-semibold">{view.page.title}</h1>
+            <p className="mt-s4 max-w-prose font-body text-body leading-body text-muted">{view.description}</p>
           </section>
           {contentBlocks.length > 0 ? (
             <section className="px-s5 py-s6">
@@ -63,34 +64,36 @@ describe("published page views", () => {
 
   it("renders a reader-first document with section navigation", () => {
     const view = getDocumentView("campus-shuttle");
-    expect(view).not.toBeNull();
-    const section = getSectionForPage(view!.page.id);
-    expect(section).not.toBeNull();
-    const tree = getSectionTree(section!.slug);
+    if (!view) throw new Error("Document view 'campus-shuttle' not found");
+
+    const section = getSectionForPage(view.page.id);
+    if (!section) throw new Error("Section for page 'campus-shuttle' not found");
+
+    const tree = getSectionTree(section.slug);
 
     render(
       <AskProvider>
         <AppHeader
-          title={view!.page.title}
-          backHref={resolvePageRoute(section!.id)}
-          sectionTitle={section!.title}
+          title={view.page.title}
+          backHref={resolvePageRoute(section.id)}
+          sectionTitle={section.title}
           sectionTree={tree}
-          currentPageId={view!.page.id}
+          currentPageId={view.page.id}
         />
         <main className="px-s5 pb-s7 pt-s6">
           <article>
             <p className="text-caption leading-ui text-muted">
-              {section!.title}　/　{view!.page.title}
+              {section.title}　/　{view.page.title}
             </p>
-            <h1 className="mt-s4 font-display text-display leading-heading font-semibold">{view!.page.title}</h1>
+            <h1 className="mt-s4 font-display text-display leading-heading font-semibold">{view.page.title}</h1>
             <div className="pt-s5">
-              <ArticleRenderer blocks={view!.blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
+              <ArticleRenderer blocks={view.blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
             </div>
           </article>
         </main>
         <DocumentAskEntry
-          pageId={view!.page.id}
-          initialAnchor={view!.blocks.find((block) => block.type === "heading")?.anchor}
+          pageId={view.page.id}
+          initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor}
         />
       </AskProvider>
     );

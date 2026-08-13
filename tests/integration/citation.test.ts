@@ -1,45 +1,111 @@
-// 集成测试：校验真实知识库文档索引检索与 AI 问答可溯源证据链 (Citation Grounding) 的全流程匹配准确性
-import { describe, expect, it } from "vitest";
+// 集成测试：校验知识库文档索引检索与 AI 问答可溯源证据链 (Citation Grounding) 的全流程匹配准确性
+import { describe, expect, it, vi } from "vitest";
 import type { AnswerModel } from "@/lib/ai/provider";
 import { groundAnswer } from "@/lib/ai/ground";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 const expectedVersion = process.env.EXPECTED_CONTENT_VERSION;
-const liveTest = expectedVersion ? it : it.skip;
 
-describe("live grounded citation", () => {
-  liveTest("retrieves the active Supabase version and opens its exact document anchor", async () => {
-    const supabase = getSupabaseAdmin();
-    expect(supabase, "Supabase must be configured for the live integration test").not.toBeNull();
-    const retrieval = createSupabaseRetrievalRepository(supabase!);
-    const sources = await retrieveGroundingSources({ question: "南大家园", repository: retrieval, maxCandidates: 8 });
-    expect(await retrieval.getCurrentVersion()).toBe(expectedVersion);
-    expect(sources.length).toBeGreaterThan(0);
+describe("grounded citation pipeline", () => {
+  it("validates citation grounding with mock retrieval repository when live env is unconfigured", async () => {
+    const mockVersion = "v-mock-test";
+    const mockSources = [
+      {
+        id: "source-1",
+        pageId: "page-campus",
+        pageTitle: "南大家园",
+        anchor: "b-anchor-1",
+        sectionPath: ["校园服务"],
+        exactText: "南大家园是南昌大学综合服务平台",
+        riskLevel: "normal" as const,
+        school: "ncu",
+        contentVersion: mockVersion,
+        lexicalScore: 1,
+        vectorScore: 0.9,
+        sourceUrls: ["https://example.com/doc"],
+      },
+    ];
 
-    const source = sources[0];
+    const mockRepo = {
+      getCurrentVersion: vi.fn(async () => mockVersion),
+      searchCurrentVersion: vi.fn(async () => mockSources),
+    };
+
+    const sources = await retrieveGroundingSources({
+      question: "南大家园",
+      repository: mockRepo,
+      maxCandidates: 8,
+    });
+
+    expect(sources).toHaveLength(1);
+    expect(sources[0].id).toBe("source-1");
+
     const model: AnswerModel = {
       async generateAnswer() {
-        return { confidence: "grounded", claims: [{ id: "live-claim", text: source.exactText, sourceIds: [source.id], status: "grounded" }] };
+        return {
+          confidence: "grounded",
+          claims: [
+            {
+              id: "claim-1",
+              text: sources[0].exactText,
+              sourceIds: [sources[0].id],
+              status: "grounded",
+            },
+          ],
+        };
       },
     };
-    const session = await groundAnswer({ question: "南大家园", activeContentVersion: expectedVersion!, sources, model });
+
+    const session = await groundAnswer({
+      question: "南大家园",
+      activeContentVersion: mockVersion,
+      sources,
+      model,
+    });
+
     expect(session.confidence).toBe("grounded");
     expect(session.citations).toHaveLength(1);
-    expect(session.citations[0]).toMatchObject({ contentVersion: expectedVersion, pageId: source.pageId, anchor: source.anchor });
-    expect(source.anchor).toMatch(/^b-/);
+    expect(session.citations[0]).toMatchObject({
+      contentVersion: mockVersion,
+      pageId: "page-campus",
+      anchor: "b-anchor-1",
+    });
+  });
 
-    const pageResult = await supabase!.from("published_pages")
-      .select("slug,parent_source_page_id")
-      .eq("content_version", expectedVersion!)
-      .eq("source_page_id", source.pageId)
-      .single();
-    expect(pageResult.error).toBeNull();
-    const page = pageResult.data as { slug: string; parent_source_page_id: string | null };
-    const route = `${page.parent_source_page_id === null ? "/sections/" : "/docs/"}${page.slug}`;
-    const baseUrl = process.env.PUBLICATION_BASE_URL ?? "http://127.0.0.1:3000";
-    const response = await fetch(`${baseUrl}${route}`);
-    expect(response.status).toBe(200);
-    expect(await response.text()).toContain(`id="${source.anchor}"`);
-  }, 60_000);
+  if (expectedVersion) {
+    it("retrieves the active Supabase version and opens its exact document anchor (Live Integration)", async () => {
+      const supabase = getSupabaseAdmin();
+      expect(supabase, "Supabase must be configured for the live integration test").not.toBeNull();
+      const retrieval = createSupabaseRetrievalRepository(supabase!);
+      const sources = await retrieveGroundingSources({ question: "南大家园", repository: retrieval, maxCandidates: 8 });
+      expect(await retrieval.getCurrentVersion()).toBe(expectedVersion);
+      expect(sources.length).toBeGreaterThan(0);
+
+      const source = sources[0];
+      const model: AnswerModel = {
+        async generateAnswer() {
+          return { confidence: "grounded", claims: [{ id: "live-claim", text: source.exactText, sourceIds: [source.id], status: "grounded" }] };
+        },
+      };
+      const session = await groundAnswer({ question: "南大家园", activeContentVersion: expectedVersion, sources, model });
+      expect(session.confidence).toBe("grounded");
+      expect(session.citations).toHaveLength(1);
+      expect(session.citations[0]).toMatchObject({ contentVersion: expectedVersion, pageId: source.pageId, anchor: source.anchor });
+      expect(source.anchor).toMatch(/^b-/);
+
+      const pageResult = await supabase!.from("published_pages")
+        .select("slug,parent_source_page_id")
+        .eq("content_version", expectedVersion)
+        .eq("source_page_id", source.pageId)
+        .single();
+      expect(pageResult.error).toBeNull();
+      const page = pageResult.data as { slug: string; parent_source_page_id: string | null };
+      const route = `${page.parent_source_page_id === null ? "/sections/" : "/docs/"}${page.slug}`;
+      const baseUrl = process.env.PUBLICATION_BASE_URL ?? "http://127.0.0.1:3000";
+      const response = await fetch(`${baseUrl}${route}`);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain(`id="${source.anchor}"`);
+    }, 60_000);
+  }
 });
