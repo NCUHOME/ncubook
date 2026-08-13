@@ -53,9 +53,11 @@ export async function retrieveGroundingSources({
 }: RetrieveInput): Promise<RetrievalSource[]> {
   const normalizedQuestion = question.trim();
   if (!normalizedQuestion) return [];
-  const contentVersion = await repository.getCurrentVersion();
+  const [contentVersion, queryEmbedding] = await Promise.all([
+    repository.getCurrentVersion(),
+    embedding ? embedding.embed([normalizedQuestion]).then((res) => res[0]) : Promise.resolve(undefined),
+  ]);
   if (!contentVersion) return [];
-  const queryEmbedding = embedding ? (await embedding.embed([normalizedQuestion]))[0] : undefined;
   const candidates = await repository.searchCurrentVersion({
     question: normalizedQuestion,
     ...(queryEmbedding ? { queryEmbedding } : {}),

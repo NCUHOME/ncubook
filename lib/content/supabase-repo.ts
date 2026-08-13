@@ -36,14 +36,12 @@ async function findFallbackPublishedFixture(): Promise<PublishedFixture | null> 
       .order("started_at", { ascending: false })
       .limit(10);
 
-    if (versions) {
-      for (const row of versions) {
-        try {
-          const candidate = await loadVersionFixture(row.id);
-          if (candidate && candidate.pages.length > 0) return candidate;
-        } catch {
-          // try next version
-        }
+    if (versions && versions.length > 0) {
+      const candidates = await Promise.all(
+        versions.map((row) => loadVersionFixture(row.id).catch(() => null))
+      );
+      for (const candidate of candidates) {
+        if (candidate && candidate.pages.length > 0) return candidate;
       }
     }
   } catch {
