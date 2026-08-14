@@ -63,10 +63,21 @@ export async function authenticateAdminRequest(request: Request): Promise<boolea
     return true;
   }
 
-  // 2. 校验 Session Cookie
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("admin_session")?.value;
-  return verifyAdminSessionToken(sessionToken, secret);
+  // 2. 校验 Request Header 中的 Cookie
+  const rawCookies = request.headers.get("cookie") ?? "";
+  const sessionMatch = rawCookies.match(/(?:^|;\s*)admin_session=([^;]+)/);
+  if (sessionMatch && verifyAdminSessionToken(sessionMatch[1], secret)) {
+    return true;
+  }
+
+  // 3. 校验 Next.js Server Request Store 中的 Session Cookie
+  try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("admin_session")?.value;
+    return verifyAdminSessionToken(sessionToken, secret);
+  } catch {
+    return false;
+  }
 }
 
 /**

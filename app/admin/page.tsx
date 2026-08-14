@@ -5,8 +5,7 @@ import { redirect } from "next/navigation";
 import { fetchContentVersionsFromSupabase, getLivePublishedContentPointer, loadPublishedRepository } from "@/lib/content/server";
 import { getAdminSecret, verifyAdminSessionToken } from "@/lib/publishing/auth";
 import { LogoutButton } from "@/src/components/admin/logout-button";
-import { SyncPanel } from "@/src/components/admin/sync-panel";
-import { VersionTimeline } from "@/src/components/admin/version-timeline";
+import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { AppHeader } from "@/src/components/primitives/header";
 
 export const metadata: Metadata = {
@@ -46,11 +45,8 @@ export default async function AdminDashboardPage() {
           <LogoutButton />
         </header>
 
-        {/* 1. Notion 一键同步控制台 */}
-        <SyncPanel currentVersion={currentVersion} />
-
-        {/* 2. 真实版本控制与一键止血回滚 */}
-        <VersionTimeline currentVersion={currentVersion} initialVersions={initialVersions} />
+        {/* 管理员核心运维、AI 质量评测与沙盒三大模块 Tab 容器 */}
+        <AdminTabs currentVersion={currentVersion} initialVersions={initialVersions} />
       </main>
     </>
   );

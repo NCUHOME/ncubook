@@ -1,7 +1,7 @@
 // 组件：Notion 内容一键同步控制台 (SyncPanel)，支持百分比进度条、预检干跑 (Dry-Run) 开关、自愈断路器与手动解锁
 "use client";
 
-import { Play, RefreshCw, Terminal, CheckCircle2, AlertCircle, ShieldAlert, TestTube } from "lucide-react";
+import { Play, RefreshCw, Terminal, CheckCircle2, AlertCircle, ShieldAlert, TestTube, Copy, Check, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -17,6 +17,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
   const [progressPct, setProgressPct] = useState(0);
   const [stageText, setStageText] = useState("");
+  const [copied, setCopied] = useState(false);
   const terminalRef = useRef<HTMLPreElement>(null);
 
   // 日志更新时自动滚动到终端底部
@@ -25,6 +26,13 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [logs]);
+
+  const handleCopyVersion = () => {
+    if (!currentVersion || currentVersion === "未同步") return;
+    navigator.clipboard.writeText(currentVersion);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const appendLocalLog = (message: string) => {
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
@@ -147,9 +155,15 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
         <div>
           <div className="flex items-center gap-s2 flex-wrap">
             <h2 className="font-display text-title font-semibold">Notion 文章一键更新控制台</h2>
-            <span className="rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption font-mono text-muted">
-              当前线上指针: {currentVersion ?? "未同步"}
-            </span>
+            <button
+              type="button"
+              onClick={handleCopyVersion}
+              title="点击复制版本号"
+              className="flex items-center gap-s1 rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption font-mono text-muted hover:text-ink hover:border-ink transition-colors"
+            >
+              <span>当前线上指针: {currentVersion ?? "未同步"}</span>
+              {copied ? <Check className="size-icon-small text-ink" /> : <Copy className="size-icon-small" />}
+            </button>
           </div>
           <p className="mt-s1 text-caption leading-ui text-muted">
             一键抓取 Notion 校园指南文章与图片，生成最新网页快照并刷新线上前端
@@ -205,6 +219,17 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
           <div className="flex items-center gap-s2 text-surface/80">
             <Terminal className="size-icon-small" />
             <span>实时更新日志</span>
+            {logs.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setLogs([])}
+                className="flex items-center gap-s1 text-surface/60 hover:text-surface ml-s2 transition-colors"
+                title="清空终端日志"
+              >
+                <Trash2 className="size-icon-small" />
+                <span>清空</span>
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-s3">
             {status === "running" && (

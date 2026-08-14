@@ -46,19 +46,10 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       : versions.find((v) => v.isCurrent)?.version || versions[0]?.version || "未同步";
 
   // 严格仅保留真实版本记录，绝不加入任何假数据
-  const displayVersions: VersionRecord[] = versions.length > 0
-    ? versions.map((item) => ({
-        ...item,
-        isCurrent: item.version === effectiveCurrent,
-      }))
-    : [
-        {
-          version: effectiveCurrent,
-          status: "published",
-          createdAt: "",
-          isCurrent: true,
-        },
-      ];
+  const displayVersions: VersionRecord[] = versions.map((item) => ({
+    ...item,
+    isCurrent: item.version === effectiveCurrent,
+  }));
 
   const handleRollback = async (targetVersion: string) => {
     if (loadingVersion || targetVersion === activeCurrent) return;
@@ -108,6 +99,14 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         </div>
       )}
 
+      {/* 无版本记录时的真实空状态 */}
+      {displayVersions.length === 0 && (
+        <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s4 text-caption text-muted">
+          <Info className="size-icon-small flex-shrink-0" />
+          <span>当前数据库暂无已发布版本记录。点击上方「一键同步 Notion 文章」开始首次发版。</span>
+        </div>
+      )}
+
       {/* 当系统目前只有 1 个版本记录时的提示 */}
       {displayVersions.length === 1 && (
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-caption text-muted">
@@ -118,18 +117,19 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         </div>
       )}
 
-      <div className="mt-s4 space-y-s3">
-        {displayVersions.map((item) => {
-          const formattedTime = formatDate(item.createdAt);
-          return (
-            <div
-              key={item.version}
-              className={`flex flex-col gap-s3 rounded-small border p-s4 text-label sm:flex-row sm:items-center sm:justify-between transition-colors ${
-                item.isCurrent
-                  ? "border-ink bg-surface shadow-subtle"
-                  : "border-line bg-surface hover:bg-surface-subtle/50"
-              }`}
-            >
+      {displayVersions.length > 0 && (
+        <div className="mt-s4 space-y-s3">
+          {displayVersions.map((item) => {
+            const formattedTime = formatDate(item.createdAt);
+            return (
+              <div
+                key={item.version}
+                className={`flex flex-col gap-s3 rounded-small border p-s4 text-label sm:flex-row sm:items-center sm:justify-between transition-colors ${
+                  item.isCurrent
+                    ? "border-ink bg-surface shadow-subtle"
+                    : "border-line bg-surface hover:bg-surface-subtle/50"
+                }`}
+              >
               <div className="flex flex-col gap-s1">
                 <div className="flex items-center gap-s2 flex-wrap">
                   <span className="font-mono text-body font-bold text-ink">
@@ -170,7 +170,8 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </section>
   );
 }

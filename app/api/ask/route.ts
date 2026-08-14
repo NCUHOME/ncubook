@@ -1,5 +1,5 @@
-// API 路由：AI 知识库问答主入口 (含 IP 分钟级 Rate Limit 限流防护与 fixture/production 两模式分发)
 import { createAskHandler, createMinuteRateLimiter, createProductionAnswerService, type AnswerMode, type AnswerService } from "@/lib/ai/ask";
+import { hasSupabaseConfig } from "@/lib/integrations/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,8 +25,15 @@ export async function POST(request: Request): Promise<Response> {
 
 function answerMode(): AnswerMode {
   const value = process.env.AI_ANSWER_MODE;
-  const productionContent = process.env.PUBLISHED_CONTENT_ENV === "production" || process.env.VERCEL_ENV === "production";
+  if (value === "fixture") return "fixture";
   if (value === "production") return "production";
+
+  // 若本地环境已配置 AI API Key 与 Supabase，直接走真实生产 RAG 问答，绝不退回假数据
+  if (process.env.AI_PROVIDER_API_KEY && hasSupabaseConfig()) {
+    return "production";
+  }
+
+  const productionContent = process.env.PUBLISHED_CONTENT_ENV === "production" || process.env.VERCEL_ENV === "production";
   return productionContent ? "production" : "fixture";
 }
 
