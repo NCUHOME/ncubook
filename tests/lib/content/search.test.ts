@@ -63,10 +63,8 @@ describe("document-grouped search algorithm", () => {
     // 标题精确匹配排第一
     expect(results[0].pageId).toBe("page-yellow-pages");
     expect(results[0].isTitleMatch).toBe(true);
-    // 黄页文档智能提取前序段落作为导读预览（2 条），且清洗末尾冒号标点
-    expect(results[0].snippets.length).toBe(2);
-    expect(results[0].snippets[0].headingPath).toEqual(["常用信息"]);
-    expect(results[0].snippets[0].text).toContain("83969110");
+    // 黄页文档仅标题命中，正文无重复词时不强制生成断片
+    expect(results[0].snippets.length).toBe(0);
 
     // 第二个文档是正文匹配
     expect(results[1].pageId).toBe("page-other");

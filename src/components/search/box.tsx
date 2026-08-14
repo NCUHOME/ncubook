@@ -126,18 +126,6 @@ export function SearchExperience({
         const finalScore = Math.max(titleScore, maxContentScore) + Math.min(matchingSnippets.length * 2, 10);
         const totalMatches = matchingSnippets.length + (isTitleMatch ? 1 : 0);
 
-        // 智能导读补全：若标题精准命中但正文无关键词，提取首部 1~2 个关键段落作为导读
-        if (isTitleMatch && matchingSnippets.length === 0 && group.items.length > 0) {
-          for (const item of group.items.slice(0, 2)) {
-            matchingSnippets.push({
-              anchor: item.a,
-              headingPath: item.p.slice(1).map(cleanHeadingPunctuation),
-              text: item.e.length > 90 ? `${item.e.slice(0, 90)}…` : item.e,
-              isHeading: item.b === "heading",
-            });
-          }
-        }
-
         groupedList.push({
           pageId: group.pageId,
           pageTitle: group.pageTitle,

@@ -67,8 +67,8 @@ describe("search component interactions", () => {
 
     expect(screen.getByText("校园生活")).toBeVisible();
     expect(screen.getByRole("heading", { name: /前湖校区全景地图/ })).toBeVisible();
-    expect(screen.getByText("标题精准匹配")).toBeVisible();
-    expect(screen.getByText("阅读完整文档内容")).toBeVisible();
+    expect(screen.getByText("页面直达")).toBeVisible();
+    expect(screen.getByText(/完整章节与通讯录内容/)).toBeVisible();
   });
 
   it("renders SearchResultItem with multiple snippets and toggles fold/unfold", () => {

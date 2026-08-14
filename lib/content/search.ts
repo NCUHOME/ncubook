@@ -138,18 +138,6 @@ export function searchGroupedEntries(
     if (isTitleMatch || matchingSnippets.length > 0) {
       const finalScore = Math.max(titleScore, maxContentScore) + Math.min(matchingSnippets.length * 2, 10);
 
-      // 智能导读补全：若标题精准命中但正文段落无重复关键词，提取首部 1~2 个关键段落作为导读，杜绝空壳卡片
-      if (isTitleMatch && matchingSnippets.length === 0 && group.entries.length > 0) {
-        for (const entry of group.entries.slice(0, 2)) {
-          matchingSnippets.push({
-            anchor: entry.anchor,
-            headingPath: entry.sectionPath.slice(1).map(cleanHeadingPunctuation),
-            text: entry.plainText.length > 90 ? `${entry.plainText.slice(0, 90)}…` : entry.plainText,
-            isHeading: entry.blockType === "heading",
-          });
-        }
-      }
-
       results.push({
         pageId: group.pageId,
         pageTitle: group.pageTitle,
