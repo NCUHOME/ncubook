@@ -1,18 +1,18 @@
-// 部署后路由冒烟探针：测量核心路由的状态码 / TTFB / HTML 体积 / title 与 viewport 存在性
-// 注意：本脚本不是 Lighthouse。B4–B6（LCP / Performance 分 / CLS）需真实浏览器测量，
-// 请在部署后运行：npx lighthouse <url> --form-factor=mobile --throttling-method=simulate
-// 用法: node scripts/audit-routes.ts --url http://localhost:3000
+// 部署后路由冒烟探针：测量核心路由的状态码 / TTFB / HTML 体积 / title 与 viewport 存在性 (scripts/audit-routes.ts)
+// 用法:
+//   - 默认本地冒烟: npx tsx scripts/audit-routes.ts
+//   - 指定目标服务: npx tsx scripts/audit-routes.ts --url https://cijian.ncu.edu.cn
+//   - 指定线上页面: npx tsx scripts/audit-routes.ts --url http://localhost:3000 --doc-slug page-24a7d60a0dda8094
 
 import http from "node:http";
 import https from "node:https";
 
 const DEFAULT_BASE_URL = process.env.AUDIT_TARGET_URL || process.env.SITE_URL || "http://localhost:3000";
 
-const ROUTES = [
-  { path: "/", name: "首页" },
-  { path: "/docs/campus-shuttle", name: "文档阅读页" },
-  { path: "/search", name: "关键词搜索页" },
-];
+type RouteConfig = {
+  path: string;
+  name: string;
+};
 
 async function measureRoute(baseUrl: string, routePath: string) {
   const url = `${baseUrl.replace(/\/$/, "")}${routePath}`;
@@ -61,12 +61,40 @@ async function measureRoute(baseUrl: string, routePath: string) {
   });
 }
 
-async function runAudit() {
+export async function runAudit() {
   const args = process.argv.slice(2);
   let baseUrl = DEFAULT_BASE_URL;
+
   const urlArgIndex = args.indexOf("--url");
   if (urlArgIndex !== -1 && args[urlArgIndex + 1]) {
     baseUrl = args[urlArgIndex + 1];
+  }
+
+  // 支持通过 --doc-slug 或 --doc-path 或环境变量动态配置文档测试路径
+  let docPath = process.env.AUDIT_DOC_PATH || "/docs/campus-shuttle";
+  const docSlugIndex = args.indexOf("--doc-slug");
+  if (docSlugIndex !== -1 && args[docSlugIndex + 1]) {
+    const rawSlug = args[docSlugIndex + 1].trim();
+    docPath = rawSlug.startsWith("/") ? rawSlug : `/docs/${rawSlug}`;
+  }
+  const docPathIndex = args.indexOf("--doc-path");
+  if (docPathIndex !== -1 && args[docPathIndex + 1]) {
+    docPath = args[docPathIndex + 1].trim();
+  }
+
+  const routes: RouteConfig[] = [
+    { path: "/", name: "首页" },
+    { path: "/search", name: "关键词搜索页" },
+    { path: docPath, name: "文档阅读页" },
+  ];
+
+  const sectionSlugIndex = args.indexOf("--section-slug");
+  if (sectionSlugIndex !== -1 && args[sectionSlugIndex + 1]) {
+    const rawSection = args[sectionSlugIndex + 1].trim();
+    routes.push({
+      path: rawSection.startsWith("/") ? rawSection : `/sections/${rawSection}`,
+      name: "板块目录页",
+    });
   }
 
   console.log(`\n======================================================`);
@@ -79,13 +107,19 @@ async function runAudit() {
   console.log(`|---|---|---|---|---|---|---|`);
 
   let failures = 0;
-  for (const route of ROUTES) {
+  for (const route of routes) {
     try {
       const result = await measureRoute(baseUrl, route.path);
-      if (result.statusCode !== 200 || !result.hasTitle || !result.hasViewport) failures += 1;
+      const isPass = result.statusCode === 200 && result.hasTitle && result.hasViewport;
+      if (!isPass) failures += 1;
+
       console.log(
         `| \`${route.path}\` (${route.name}) | ${result.statusCode} | ${result.ttfbMs}ms | ${result.totalMs}ms | ${(result.contentLength / 1024).toFixed(2)} KB | ${result.hasViewport ? "✅" : "❌"} | ${result.hasTitle ? "✅" : "❌"} |`
       );
+
+      if (result.statusCode === 404 && route.path.startsWith("/docs/")) {
+        console.warn(`  ⚠️ 提示：若当前连接了 Supabase 线上数据库，请通过 '--doc-slug <slug>' 指定已发布的真实文档 slug。`);
+      }
     } catch (err: unknown) {
       failures += 1;
       const message = err instanceof Error ? err.message : String(err);
@@ -103,7 +137,9 @@ async function runAudit() {
   }
 }
 
-runAudit().catch((err) => {
-  console.error("Audit run error:", err);
-  process.exit(1);
-});
+if (process.argv[1]?.includes("audit-routes.ts") || process.argv[1]?.includes("audit-routes.js")) {
+  runAudit().catch((err) => {
+    console.error("Audit run error:", err);
+    process.exit(1);
+  });
+}

@@ -1,7 +1,7 @@
-// 单元与集成测试：管理员评测 API 与数据飞轮路由 (tests/api/admin-evals.test.ts)
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { POST as runEvalPost } from "@/app/api/admin/evals/run/route";
 import { GET as getCases, POST as postCase } from "@/app/api/admin/evals/cases/route";
+import { validateEvaluationCase } from "@/lib/ai/eval";
 import { createAdminSessionToken } from "@/lib/publishing/auth";
 
 describe("admin evals API suite", () => {
@@ -53,6 +53,43 @@ describe("admin evals API suite", () => {
     expect(data.cases.length).toBeGreaterThanOrEqual(35);
   });
 
+  describe("validateEvaluationCase schema tests", () => {
+    it("validates correct evaluation case", () => {
+      const valid = validateEvaluationCase({
+        id: "case-new-1",
+        question: "校园网多少钱一个月？",
+        category: "网络卡证",
+        expectedAnswerable: true,
+        riskClass: "normal",
+        mustInclude: ["20元", "电信"],
+        mustNotInclude: ["免费"],
+        expectedPageSlug: "page-network",
+      });
+      expect(valid.valid).toBe(true);
+      if (valid.valid) {
+        expect(valid.data.id).toBe("case-new-1");
+        expect(valid.data.mustInclude).toEqual(["20元", "电信"]);
+      }
+    });
+
+    it("rejects invalid fields", () => {
+      expect(validateEvaluationCase(null).valid).toBe(false);
+      expect(validateEvaluationCase({ id: "" }).valid).toBe(false);
+      expect(validateEvaluationCase({ id: "1", question: "" }).valid).toBe(false);
+      expect(validateEvaluationCase({ id: "1", question: "q", expectedAnswerable: "yes" }).valid).toBe(false);
+      expect(validateEvaluationCase({ id: "1", question: "q", expectedAnswerable: true, riskClass: "invalid" }).valid).toBe(false);
+      expect(
+        validateEvaluationCase({
+          id: "1",
+          question: "q",
+          expectedAnswerable: true,
+          riskClass: "normal",
+          mustInclude: "not-array",
+        }).valid,
+      ).toBe(false);
+    });
+  });
+
   it("validates new case input for POST /api/admin/evals/cases", async () => {
     const invalidReq = new Request("http://localhost:3000/api/admin/evals/cases", {
       method: "POST",
@@ -60,9 +97,12 @@ describe("admin evals API suite", () => {
         "content-type": "application/json",
         cookie: `admin_session=${validToken}`,
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ newCase: { id: "bad" } }),
     });
     const res = await postCase(invalidReq);
     expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.ok).toBe(false);
+    expect(data.error).toContain("提问内容");
   });
 });

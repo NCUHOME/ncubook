@@ -14,6 +14,65 @@ export type EvaluationCase = {
   expectedPageSlug?: string;
 };
 
+// 评测用例参数强校验与防御收敛
+export function validateEvaluationCase(input: unknown): { valid: true; data: EvaluationCase } | { valid: false; error: string } {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { valid: false, error: "用例参数必须为对象结构" };
+  }
+
+  const raw = input as Record<string, unknown>;
+
+  if (typeof raw.id !== "string" || !raw.id.trim()) {
+    return { valid: false, error: "题目 ID (id) 不能为空且必须为字符串" };
+  }
+
+  if (typeof raw.question !== "string" || !raw.question.trim()) {
+    return { valid: false, error: "提问内容 (question) 不能为空且必须为字符串" };
+  }
+
+  if (typeof raw.expectedAnswerable !== "boolean") {
+    return { valid: false, error: "期望是否可答 (expectedAnswerable) 必须为布尔值" };
+  }
+
+  const validRiskClasses = ["normal", "sensitive", "adversarial"];
+  if (typeof raw.riskClass !== "string" || !validRiskClasses.includes(raw.riskClass)) {
+    return { valid: false, error: `风险分类 (riskClass) 必须为 ${validRiskClasses.join(" / ")} 之一` };
+  }
+
+  if (raw.category !== undefined && typeof raw.category !== "string") {
+    return { valid: false, error: "板块分类 (category) 必须为字符串" };
+  }
+
+  if (raw.expectedPageSlug !== undefined && typeof raw.expectedPageSlug !== "string") {
+    return { valid: false, error: "关联文档 Slug (expectedPageSlug) 必须为字符串" };
+  }
+
+  if (raw.mustInclude !== undefined) {
+    if (!Array.isArray(raw.mustInclude) || raw.mustInclude.some((item) => typeof item !== "string")) {
+      return { valid: false, error: "关键事实列表 (mustInclude) 必须为字符串数组" };
+    }
+  }
+
+  if (raw.mustNotInclude !== undefined) {
+    if (!Array.isArray(raw.mustNotInclude) || raw.mustNotInclude.some((item) => typeof item !== "string")) {
+      return { valid: false, error: "禁用幻觉词列表 (mustNotInclude) 必须为字符串数组" };
+    }
+  }
+
+  const validated: EvaluationCase = {
+    id: raw.id.trim(),
+    question: raw.question.trim(),
+    category: typeof raw.category === "string" ? raw.category.trim() : undefined,
+    expectedAnswerable: raw.expectedAnswerable,
+    riskClass: raw.riskClass as "normal" | "sensitive" | "adversarial",
+    mustInclude: Array.isArray(raw.mustInclude) ? raw.mustInclude.map((s) => String(s).trim()).filter(Boolean) : undefined,
+    mustNotInclude: Array.isArray(raw.mustNotInclude) ? raw.mustNotInclude.map((s) => String(s).trim()).filter(Boolean) : undefined,
+    expectedPageSlug: typeof raw.expectedPageSlug === "string" ? raw.expectedPageSlug.trim() : undefined,
+  };
+
+  return { valid: true, data: validated };
+}
+
 export type EvaluationResult = {
   citationValidity: number;
   abstentionAccuracy: number;
