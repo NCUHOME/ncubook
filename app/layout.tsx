@@ -25,6 +25,11 @@ export const metadata: Metadata = {
     title: "此间 - 南昌大学校园知识库",
     description: "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",
   },
+  other: {
+    "itemprop:name": "此间 - 南昌大学校园知识库",
+    "itemprop:description": "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",
+    "itemprop:image": `${getSiteUrl()}/opengraph-image`,
+  },
 };
 
 export const viewport: Viewport = {
