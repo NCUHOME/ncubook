@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "publish": "node scripts/publish.ts",
-    "eval": "node scripts/test.ts",
-    "audit:routes": "node scripts/audit-routes.ts"
+    "publish": "npx tsx scripts/publish.ts",
+    "eval": "npx tsx scripts/eval.ts",
+    "audit:routes": "npx tsx scripts/audit-routes.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.19",

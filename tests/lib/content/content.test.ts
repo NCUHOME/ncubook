@@ -1,9 +1,10 @@
-// 单测：测试内容仓库 (FixtureContentRepository) 树结构构造、板块层级关系解析、页面 Slug 路径映射与元数据提取
+// 单测：测试内容仓库 (FixtureContentRepository) 树结构构造、板块层级关系解析、页面 Slug 路径映射、元数据提取与线上发布块解码
 import { describe, expect, it } from "vitest";
 import { anchorFromSourceId } from "@/lib/content/schema";
 import { createFixtureRepository } from "@/lib/content/fixture";
+import { decodePublishedBlock } from "@/lib/content/server";
 
-describe("published document fixture", () => {
+describe("published document fixture & content server", () => {
   const repo = createFixtureRepository();
 
   it("keeps stable block anchors and a two-level section tree", () => {
@@ -48,5 +49,22 @@ describe("published document fixture", () => {
     expect(repo.getAsset("asset-campus-map")?.publicUrl).toBe("/images/campus-map.svg");
     expect(repo.resolvePageRoute("page-campus-shuttle")).toBe("/docs/campus-shuttle");
     expect(anchorFromSourceId("table-row-fare")).toBe("b-table-row-fare");
+  });
+
+  it("normalizes a legacy schema-v1 quote without children during decodePublishedBlock", () => {
+    expect(
+      decodePublishedBlock({
+        id: "legacy-quote",
+        anchor: "b-legacy-quote",
+        type: "quote",
+        richText: [{ plainText: "旧引用", annotations: {} }],
+      }),
+    ).toEqual({
+      id: "legacy-quote",
+      anchor: "b-legacy-quote",
+      type: "quote",
+      richText: [{ plainText: "旧引用", annotations: {} }],
+      children: [],
+    });
   });
 });

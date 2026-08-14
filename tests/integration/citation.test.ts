@@ -8,73 +8,75 @@ import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 const expectedVersion = process.env.EXPECTED_CONTENT_VERSION;
 
 describe("grounded citation pipeline", () => {
-  it("validates citation grounding with mock retrieval repository when live env is unconfigured", async () => {
-    const mockVersion = "v-mock-test";
-    const mockSources = [
-      {
-        id: "source-1",
-        pageId: "page-campus",
-        pageTitle: "南大家园",
-        anchor: "b-anchor-1",
-        sectionPath: ["校园服务"],
-        exactText: "南大家园是南昌大学综合服务平台",
-        riskLevel: "normal" as const,
-        school: "ncu",
+  describe("[Unit Mock Pipeline]", () => {
+    it("validates citation grounding with mock retrieval repository and stable anchors", async () => {
+      const mockVersion = "v-mock-test";
+      const mockSources = [
+        {
+          id: "source-1",
+          pageId: "page-campus",
+          pageTitle: "南大家园",
+          anchor: "b-anchor-1",
+          sectionPath: ["校园服务"],
+          exactText: "南大家园是南昌大学综合服务平台",
+          riskLevel: "normal" as const,
+          school: "ncu",
+          contentVersion: mockVersion,
+          lexicalScore: 1,
+          vectorScore: 0.9,
+          sourceUrls: ["https://example.com/doc"],
+        },
+      ];
+
+      const mockRepo = {
+        getCurrentVersion: vi.fn(async () => mockVersion),
+        searchCurrentVersion: vi.fn(async () => mockSources),
+      };
+
+      const sources = await retrieveGroundingSources({
+        question: "南大家园",
+        repository: mockRepo,
+        maxCandidates: 8,
+      });
+
+      expect(sources).toHaveLength(1);
+      expect(sources[0].id).toBe("source-1");
+
+      const model: AnswerModel = {
+        async generateAnswer() {
+          return {
+            confidence: "grounded",
+            claims: [
+              {
+                id: "claim-1",
+                text: sources[0].exactText,
+                sourceIds: [sources[0].id],
+                status: "grounded",
+              },
+            ],
+          };
+        },
+      };
+
+      const session = await groundAnswer({
+        question: "南大家园",
+        activeContentVersion: mockVersion,
+        sources,
+        model,
+      });
+
+      expect(session.confidence).toBe("grounded");
+      expect(session.citations).toHaveLength(1);
+      expect(session.citations[0]).toMatchObject({
         contentVersion: mockVersion,
-        lexicalScore: 1,
-        vectorScore: 0.9,
-        sourceUrls: ["https://example.com/doc"],
-      },
-    ];
-
-    const mockRepo = {
-      getCurrentVersion: vi.fn(async () => mockVersion),
-      searchCurrentVersion: vi.fn(async () => mockSources),
-    };
-
-    const sources = await retrieveGroundingSources({
-      question: "南大家园",
-      repository: mockRepo,
-      maxCandidates: 8,
-    });
-
-    expect(sources).toHaveLength(1);
-    expect(sources[0].id).toBe("source-1");
-
-    const model: AnswerModel = {
-      async generateAnswer() {
-        return {
-          confidence: "grounded",
-          claims: [
-            {
-              id: "claim-1",
-              text: sources[0].exactText,
-              sourceIds: [sources[0].id],
-              status: "grounded",
-            },
-          ],
-        };
-      },
-    };
-
-    const session = await groundAnswer({
-      question: "南大家园",
-      activeContentVersion: mockVersion,
-      sources,
-      model,
-    });
-
-    expect(session.confidence).toBe("grounded");
-    expect(session.citations).toHaveLength(1);
-    expect(session.citations[0]).toMatchObject({
-      contentVersion: mockVersion,
-      pageId: "page-campus",
-      anchor: "b-anchor-1",
+        pageId: "page-campus",
+        anchor: "b-anchor-1",
+      });
     });
   });
 
-  if (expectedVersion) {
-    it("retrieves the active Supabase version and opens its exact document anchor (Live Integration)", async () => {
+  describe("[Supabase Live E2E Pipeline]", () => {
+    it.runIf(Boolean(expectedVersion))("retrieves the active Supabase version and opens its exact document anchor", async () => {
       const supabase = getSupabaseAdmin();
       expect(supabase, "Supabase must be configured for the live integration test").not.toBeNull();
       const retrieval = createSupabaseRetrievalRepository(supabase!);
@@ -88,7 +90,7 @@ describe("grounded citation pipeline", () => {
           return { confidence: "grounded", claims: [{ id: "live-claim", text: source.exactText, sourceIds: [source.id], status: "grounded" }] };
         },
       };
-      const session = await groundAnswer({ question: "南大家园", activeContentVersion: expectedVersion, sources, model });
+      const session = await groundAnswer({ question: "南大家园", activeContentVersion: expectedVersion!, sources, model });
       expect(session.confidence).toBe("grounded");
       expect(session.citations).toHaveLength(1);
       expect(session.citations[0]).toMatchObject({ contentVersion: expectedVersion, pageId: source.pageId, anchor: source.anchor });
@@ -96,7 +98,7 @@ describe("grounded citation pipeline", () => {
 
       const pageResult = await supabase!.from("published_pages")
         .select("slug,parent_source_page_id")
-        .eq("content_version", expectedVersion)
+        .eq("content_version", expectedVersion!)
         .eq("source_page_id", source.pageId)
         .single();
       expect(pageResult.error).toBeNull();
@@ -107,5 +109,5 @@ describe("grounded citation pipeline", () => {
       expect(response.status).toBe(200);
       expect(await response.text()).toContain(`id="${source.anchor}"`);
     }, 60_000);
-  }
+  });
 });
