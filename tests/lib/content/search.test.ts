@@ -1,7 +1,7 @@
 // 单测：测试文章级聚合全文检索算法 (searchGroupedEntries 与 searchEntries)
 import { describe, expect, it } from "vitest";
 import { searchIndexFixture, createFixtureRepository } from "@/lib/content/fixture";
-import { extractSnippet, searchEntries, searchGroupedEntries } from "@/lib/content/search";
+import { cleanHeadingPunctuation, extractSnippet, searchEntries, searchGroupedEntries } from "@/lib/content/search";
 import type { SearchIndexEntry } from "@/lib/content/schema";
 
 describe("document-grouped search algorithm", () => {
@@ -18,7 +18,7 @@ describe("document-grouped search algorithm", () => {
     expect(grouped[0].href).toBe("/docs/campus-shuttle");
   });
 
-  it("prioritizes title matches and isolates irrelevant paragraphs", () => {
+  it("prioritizes title matches and fills smart overview snippets for empty bodies", () => {
     const customIndex: SearchIndexEntry[] = [
       {
         id: "v1-p1",
@@ -26,7 +26,7 @@ describe("document-grouped search algorithm", () => {
         contentVersion: "v1",
         pageId: "page-yellow-pages",
         pageTitle: "黄页",
-        sectionPath: ["校园生活", "常用信息"],
+        sectionPath: ["校园生活", "常用信息:"],
         anchor: "b-phone-1",
         plainText: "83969110（前湖校区）",
         blockType: "paragraph",
@@ -38,7 +38,7 @@ describe("document-grouped search algorithm", () => {
         contentVersion: "v1",
         pageId: "page-yellow-pages",
         pageTitle: "黄页",
-        sectionPath: ["校园生活", "常用信息"],
+        sectionPath: ["校园生活", "常用信息:"],
         anchor: "b-phone-2",
         plainText: "83969119（保卫处值班室）",
         blockType: "paragraph",
@@ -63,12 +63,20 @@ describe("document-grouped search algorithm", () => {
     // 标题精确匹配排第一
     expect(results[0].pageId).toBe("page-yellow-pages");
     expect(results[0].isTitleMatch).toBe(true);
-    // 黄页文档下没有正文包含“黄页”，所以不会产生 17 个子段落
-    expect(results[0].snippets.length).toBe(0);
+    // 黄页文档智能提取前序段落作为导读预览（2 条），且清洗末尾冒号标点
+    expect(results[0].snippets.length).toBe(2);
+    expect(results[0].snippets[0].headingPath).toEqual(["常用信息"]);
+    expect(results[0].snippets[0].text).toContain("83969110");
 
     // 第二个文档是正文匹配
     expect(results[1].pageId).toBe("page-other");
     expect(results[1].snippets.length).toBe(1);
+  });
+
+  it("cleans trailing punctuation from headings", () => {
+    expect(cleanHeadingPunctuation("书院核心的三化三制:")).toBe("书院核心的三化三制");
+    expect(cleanHeadingPunctuation("学习相关 / 实验班：")).toBe("学习相关 / 实验班");
+    expect(cleanHeadingPunctuation("生活指南/")).toBe("生活指南");
   });
 
   it("extracts smart snippet window around search query", () => {

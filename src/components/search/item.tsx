@@ -1,9 +1,9 @@
-// 组件：文档级聚合搜索结果条目卡片 (Grouped Search Result Item)，呈现所属板块、页面标题、精准章节片段与高亮锚点跳转
+// 组件：文档级聚合搜索结果条目卡片 (Grouped Search Result Item)，呈现所属板块、页面标题、整卡直达精准章节片段与高亮
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import type { GroupedSearchResult } from "@/lib/content/search";
 
 export function SearchResultItem({ result, query }: { result: GroupedSearchResult; query: string }) {
@@ -25,43 +25,50 @@ export function SearchResultItem({ result, query }: { result: GroupedSearchResul
         </Link>
       </h2>
 
-      {/* 场景 A：纯标题命中，正文无匹配 */}
+      {/* 场景 A：无正文段落，纯标题命中的轻量卡片 */}
       {result.snippets.length === 0 ? (
-        <div className="mt-s3">
-          <p className="font-body text-label leading-body text-muted">
-            匹配文档标题《<HighlightedText text={result.pageTitle} query={query} />》
-          </p>
-          <Link
-            href={result.href}
-            className="focus-ring mt-s3 inline-flex min-h-tap items-center text-caption underline underline-offset-4 text-ink"
-          >
-            阅读完整文档 →
-          </Link>
-        </div>
+        <Link
+          href={result.href}
+          className="group focus-ring tap-target mt-s3 flex items-center justify-between rounded-small border border-line bg-surface p-s3 transition-colors hover:border-ink hover:bg-surface-subtle/50 active:bg-surface-subtle"
+        >
+          <div className="min-w-0 flex-1">
+            <span className="rounded-round bg-action-subtle px-s2 py-0.5 text-caption font-medium text-ink">
+              标题精准匹配
+            </span>
+            <p className="mt-s2 font-body text-label leading-body text-muted">
+              阅读完整文档内容
+            </p>
+          </div>
+          <ChevronRight className="size-icon-small text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-ink flex-shrink-0" />
+        </Link>
       ) : null}
 
-      {/* 场景 B：正文/章节有精准匹配片段 */}
+      {/* 场景 B：正文/章节有精准匹配片段或导读（整卡直接点击跳转） */}
       {result.snippets.length > 0 ? (
-        <div className="mt-s3 space-y-s4">
+        <div className="mt-s3 space-y-s3">
           {visibleSnippets.map((snippet, index) => {
-            const sectionName = snippet.headingPath.at(-1) ?? result.pageTitle;
             const snippetHref = snippet.anchor ? `${result.href}#${snippet.anchor}` : result.href;
 
             return (
-              <div key={`${snippet.anchor}-${index}`} className="border-l-2 border-line pl-s3">
-                {snippet.headingPath.length > 0 ? (
-                  <p className="text-caption font-medium text-muted">{snippet.headingPath.join(" / ")}</p>
-                ) : null}
-                <p className="mt-s1 font-body text-label leading-body text-ink">
-                  <HighlightedText text={snippet.text} query={query} />
-                </p>
-                <Link
-                  href={snippetHref}
-                  className="focus-ring mt-s2 inline-flex min-h-tap items-center text-caption underline underline-offset-4 text-ink"
-                >
-                  跳到“{sectionName}”
-                </Link>
-              </div>
+              <Link
+                key={`${snippet.anchor}-${index}`}
+                href={snippetHref}
+                className="group focus-ring tap-target block rounded-small border border-line bg-surface p-s3 transition-colors hover:border-ink hover:bg-surface-subtle/50 active:bg-surface-subtle"
+              >
+                <div className="flex items-start justify-between gap-s2">
+                  <div className="min-w-0 flex-1">
+                    {snippet.headingPath.length > 0 ? (
+                      <p className="text-caption font-medium text-muted truncate">
+                        {snippet.headingPath.join(" / ")}
+                      </p>
+                    ) : null}
+                    <p className="mt-s1 font-body text-label leading-body text-ink line-clamp-3">
+                      <HighlightedText text={snippet.text} query={query} />
+                    </p>
+                  </div>
+                  <ChevronRight className="size-icon-small text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-ink flex-shrink-0 mt-s1" />
+                </div>
+              </Link>
             );
           })}
 

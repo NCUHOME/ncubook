@@ -3,7 +3,7 @@
 
 import { Search, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { extractSnippet, type GroupedSearchResult, type SearchSnippet } from "@/lib/content/search";
+import { cleanHeadingPunctuation, extractSnippet, type GroupedSearchResult, type SearchSnippet } from "@/lib/content/search";
 import type { CompactSearchItem } from "@/app/api/search/index/route";
 import { SearchResultItem } from "@/src/components/search/item";
 
@@ -77,10 +77,11 @@ export function SearchExperience({
     for (const item of items) {
       let group = pageMap.get(item.pid);
       if (!group) {
+        const topSection = item.p.length > 0 ? [item.p[0]] : ["综合指南"];
         group = {
           pageId: item.pid,
           pageTitle: item.t,
-          sectionPath: item.p.length > 0 ? [item.p[0]] : [],
+          sectionPath: topSection,
           route: item.r,
           items: [],
         };
@@ -114,7 +115,7 @@ export function SearchExperience({
 
           matchingSnippets.push({
             anchor: item.a,
-            headingPath: item.p.slice(1),
+            headingPath: item.p.slice(1).map(cleanHeadingPunctuation),
             text: extractSnippet(item.e, needle),
             isHeading,
           });
@@ -123,6 +124,20 @@ export function SearchExperience({
 
       if (isTitleMatch || matchingSnippets.length > 0) {
         const finalScore = Math.max(titleScore, maxContentScore) + Math.min(matchingSnippets.length * 2, 10);
+        const totalMatches = matchingSnippets.length + (isTitleMatch ? 1 : 0);
+
+        // 智能导读补全：若标题精准命中但正文无关键词，提取首部 1~2 个关键段落作为导读
+        if (isTitleMatch && matchingSnippets.length === 0 && group.items.length > 0) {
+          for (const item of group.items.slice(0, 2)) {
+            matchingSnippets.push({
+              anchor: item.a,
+              headingPath: item.p.slice(1).map(cleanHeadingPunctuation),
+              text: item.e.length > 90 ? `${item.e.slice(0, 90)}…` : item.e,
+              isHeading: item.b === "heading",
+            });
+          }
+        }
+
         groupedList.push({
           pageId: group.pageId,
           pageTitle: group.pageTitle,
@@ -131,7 +146,7 @@ export function SearchExperience({
           isTitleMatch,
           score: finalScore,
           snippets: matchingSnippets,
-          totalMatches: matchingSnippets.length + (isTitleMatch ? 1 : 0),
+          totalMatches,
         });
       }
     }

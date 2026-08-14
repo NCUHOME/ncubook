@@ -29,6 +29,13 @@ export type SearchResult = {
 };
 
 /**
+ * 标点清洗工具：剔除章节标题末尾的冒号、斜杠等悬挂标点
+ */
+export function cleanHeadingPunctuation(text: string): string {
+  return text.replace(/[:：/、\s]+$/, "").trim();
+}
+
+/**
  * 提取关键词前后的紧凑上下文视窗 (Smart Context Snippet Window)
  */
 export function extractSnippet(text: string, query: string, maxLength = 80): string {
@@ -78,10 +85,11 @@ export function searchGroupedEntries(
   for (const entry of entries) {
     let group = pageMap.get(entry.pageId);
     if (!group) {
+      const topSection = entry.sectionPath.length > 0 ? [entry.sectionPath[0]] : ["综合指南"];
       group = {
         pageId: entry.pageId,
         pageTitle: entry.pageTitle,
-        sectionPath: entry.sectionPath.length > 0 ? [entry.sectionPath[0]] : [],
+        sectionPath: topSection,
         route: resolvePageRoute(entry.pageId),
         entries: [],
       };
@@ -117,7 +125,7 @@ export function searchGroupedEntries(
 
         matchingSnippets.push({
           anchor: entry.anchor,
-          headingPath: entry.sectionPath.slice(1), // 排除顶层所属板块，保留章节名
+          headingPath: entry.sectionPath.slice(1).map(cleanHeadingPunctuation),
           text: extractSnippet(entry.plainText, needle),
           isHeading,
         });
@@ -129,6 +137,18 @@ export function searchGroupedEntries(
     // 只有当标题命中或者正文有内容命中时才返回该文档
     if (isTitleMatch || matchingSnippets.length > 0) {
       const finalScore = Math.max(titleScore, maxContentScore) + Math.min(matchingSnippets.length * 2, 10);
+
+      // 智能导读补全：若标题精准命中但正文段落无重复关键词，提取首部 1~2 个关键段落作为导读，杜绝空壳卡片
+      if (isTitleMatch && matchingSnippets.length === 0 && group.entries.length > 0) {
+        for (const entry of group.entries.slice(0, 2)) {
+          matchingSnippets.push({
+            anchor: entry.anchor,
+            headingPath: entry.sectionPath.slice(1).map(cleanHeadingPunctuation),
+            text: entry.plainText.length > 90 ? `${entry.plainText.slice(0, 90)}…` : entry.plainText,
+            isHeading: entry.blockType === "heading",
+          });
+        }
+      }
 
       results.push({
         pageId: group.pageId,
@@ -160,12 +180,11 @@ export function searchEntries(
 
   for (const group of grouped) {
     if (group.snippets.length === 0) {
-      // 纯标题命中
       flat.push({
         pageTitle: group.pageTitle,
         sectionPath: group.sectionPath,
         excerpt: `匹配文档标题《${group.pageTitle}》`,
-        anchor: "",
+        anchor: "b-root",
         href: group.href,
       });
     } else {

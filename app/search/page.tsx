@@ -36,7 +36,7 @@ export default async function SearchPage({
 
   return (
     <>
-      <AppHeader title="搜索文档" backHref="/" />
+      <AppHeader title="搜索文档" backHref="/" hideSearchAction />
       <main className="px-s5 pb-s7 pt-s5">
         <SearchExperience initialQuery={query} initialResults={results} />
       </main>

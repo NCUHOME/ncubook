@@ -17,6 +17,7 @@ type AppHeaderProps = {
   sectionTitle?: string;
   sectionTree?: PageTreeNode[];
   currentPageId?: string;
+  hideSearchAction?: boolean;
 };
 
 export function AppHeader({
@@ -25,6 +26,7 @@ export function AppHeader({
   sectionTitle,
   sectionTree,
   currentPageId,
+  hideSearchAction = false,
 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-header flex min-h-tap items-center justify-between border-b border-line bg-surface px-s5 py-s3">
@@ -39,9 +41,11 @@ export function AppHeader({
         ) : null}
         <strong className="truncate text-title leading-ui font-semibold">{title}</strong>
       </div>
-      <Link href="/search" className="focus-ring tap-target grid place-items-center rounded-round border border-line" aria-label="搜索文档">
-        <Search className="size-icon" strokeWidth={1.9} />
-      </Link>
+      {!hideSearchAction ? (
+        <Link href="/search" className="focus-ring tap-target grid place-items-center rounded-round border border-line" aria-label="搜索文档">
+          <Search className="size-icon" strokeWidth={1.9} />
+        </Link>
+      ) : null}
     </header>
   );
 }

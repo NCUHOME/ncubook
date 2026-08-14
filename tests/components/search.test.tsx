@@ -1,4 +1,4 @@
-// 单测：测试搜索前端交互组件 (SearchExperience 与 SearchResultItem)，验证打字即搜、清空按钮、多段落折叠展开与高亮渲染
+// 单测：测试搜索前端交互组件 (SearchExperience 与 SearchResultItem)，验证打字即搜、清空按钮、整卡直达、多段落折叠展开与高亮渲染
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -67,8 +67,8 @@ describe("search component interactions", () => {
 
     expect(screen.getByText("校园生活")).toBeVisible();
     expect(screen.getByRole("heading", { name: /前湖校区全景地图/ })).toBeVisible();
-    expect(screen.getByText(/匹配文档标题《/)).toBeVisible();
-    expect(screen.getByRole("link", { name: "阅读完整文档 →" })).toHaveAttribute("href", "/docs/campus-map");
+    expect(screen.getByText("标题精准匹配")).toBeVisible();
+    expect(screen.getByText("阅读完整文档内容")).toBeVisible();
   });
 
   it("renders SearchResultItem with multiple snippets and toggles fold/unfold", () => {
@@ -89,7 +89,7 @@ describe("search component interactions", () => {
 
     render(<SearchResultItem result={multiSnippetResult} query="路线" />);
 
-    // 默认展示前 2 个片段，第 3 个折叠；高亮关键词会拆分为 mark 节点
+    // 默认展示前 2 个片段，第 3 个折叠；整卡直接点击链接，无分散跳转文字
     expect(screen.getByText("北院至南院环形")).toBeVisible();
     expect(screen.getByText("单次票价 0.9 元")).toBeVisible();
     expect(screen.queryByText("早 7:00 至晚 22:30")).not.toBeInTheDocument();
