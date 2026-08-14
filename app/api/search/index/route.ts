@@ -6,11 +6,14 @@ export const runtime = "nodejs";
 export const revalidate = 3600;
 
 export type CompactSearchItem = {
-  t: string; // pageTitle
+  pid: string; // pageId
+  t: string;   // pageTitle
   p: string[]; // sectionPath
-  e: string; // excerpt (plainText)
-  a: string; // anchor
-  h: string; // href
+  e: string;   // excerpt (plainText)
+  a: string;   // anchor
+  h: string;   // href (with #anchor)
+  r: string;   // base route
+  b: string;   // blockType
 };
 
 export async function GET() {
@@ -23,13 +26,19 @@ export async function GET() {
     const entries = repository.getSearchIndex();
     const resolveRoute = repository.resolvePageRoute;
 
-    const items: CompactSearchItem[] = entries.map((entry) => ({
-      t: entry.pageTitle,
-      p: [...entry.sectionPath],
-      e: entry.plainText,
-      a: entry.anchor,
-      h: `${resolveRoute(entry.pageId)}#${entry.anchor}`,
-    }));
+    const items: CompactSearchItem[] = entries.map((entry) => {
+      const baseRoute = resolveRoute(entry.pageId);
+      return {
+        pid: entry.pageId,
+        t: entry.pageTitle,
+        p: [...entry.sectionPath],
+        e: entry.plainText,
+        a: entry.anchor,
+        h: entry.anchor ? `${baseRoute}#${entry.anchor}` : baseRoute,
+        r: baseRoute,
+        b: entry.blockType,
+      };
+    });
 
     return NextResponse.json(items, {
       headers: {

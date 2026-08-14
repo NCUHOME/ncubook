@@ -1,7 +1,7 @@
 // API 路由：关键词搜索 API 接口 (处理 GET/POST 请求，Node.js runtime，含 IP 分钟级 Rate Limit 限流防护与 JSON 错误捕获)
 import { NextRequest, NextResponse } from "next/server";
 import { createMinuteRateLimiter } from "@/lib/ai/ask";
-import { searchEntries } from "@/lib/content/search";
+import { searchGroupedEntries } from "@/lib/content/search";
 import { loadPublishedRepository } from "@/lib/content/server";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
     const repository = await loadPublishedRepository();
-    const results = searchEntries(query, repository.getSearchIndex(), repository.resolvePageRoute);
+    const results = searchGroupedEntries(query, repository.getSearchIndex(), repository.resolvePageRoute);
     return NextResponse.json({ query, results });
   } catch (error) {
     const message = error instanceof Error ? error.message : "search_internal_error";
