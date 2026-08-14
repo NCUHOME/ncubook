@@ -1,7 +1,7 @@
 // 管理员 AI 质量评测执行 API 路由 (app/api/admin/evals/run/route.ts)
 import { NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
-import { runEvaluationSuite } from "@/scripts/eval";
+import { runEvaluationSuite } from "@/lib/ai/eval";
 
 export const dynamic = "force-dynamic";
 

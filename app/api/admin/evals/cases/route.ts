@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
-import type { EvaluationCase, TestConfig } from "@/scripts/eval";
+import type { EvaluationCase, TestConfig } from "@/lib/ai/eval";
 
 export const dynamic = "force-dynamic";
 

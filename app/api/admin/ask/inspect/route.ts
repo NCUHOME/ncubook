@@ -1,5 +1,7 @@
 // 管理员问答测试沙盒与 RAG 白盒探针 API 路由 (app/api/admin/ask/inspect/route.ts)
+// 消解内部 HTTP Loopback，直接调用生产 AnswerService，支持真实全链路与基准探针分析
 import { NextResponse } from "next/server";
+import { createProductionAnswerService, type AnswerService } from "@/lib/ai/ask";
 import { buildAnswerPrompt } from "@/lib/ai/prompt";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources, type RetrievalSource } from "@/lib/ai/retrieve";
 import { createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
@@ -7,6 +9,8 @@ import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 export const dynamic = "force-dynamic";
+
+let productionServiceCache: AnswerService | undefined;
 
 export async function POST(request: Request) {
   const isAuthenticated = await authenticateAdminRequest(request);
@@ -37,12 +41,14 @@ export async function POST(request: Request) {
     let candidates: RetrievalSource[] = [];
     let promptSnapshot = { system: "", user: "" };
     let mode: "live" | "mock" = "live";
+    let executionError: string | null = null;
 
     const supabase = getSupabaseAdmin();
     const hasAiKey = Boolean(process.env.AI_PROVIDER_API_KEY);
 
     if (!forceMock && supabase && hasAiKey) {
-      // 真实全链路模式
+      // 真实全链路模式：直接内部调用服务，消除内部 HTTP 自循环回环 (HTTP Loopback)
+      mode = "live";
       try {
         const repo = createSupabaseRetrievalRepository(supabase);
         candidates = await retrieveGroundingSources({
@@ -53,21 +59,17 @@ export async function POST(request: Request) {
         });
 
         promptSnapshot = buildAnswerPrompt(question, candidates);
-        mode = "live";
 
-        const origin = new URL(request.url).origin;
-        const res = await fetch(`${origin}/api/ask`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ question, pageContext }),
-        });
-
-        if (res.ok) {
-          session = (await res.json()) as AnswerSession;
-        } else {
+        try {
+          productionServiceCache ??= createProductionAnswerService();
+          session = await productionServiceCache({ question, pageContext });
+        } catch (serviceErr) {
+          executionError = serviceErr instanceof Error ? serviceErr.message : "大模型生成服务执行异常";
+          // 真实模型异常时，记录真实错误并使用基准 fixture 保底，向管理员如实上报 executionError
           session = createAnswerFixture(question, pageContext);
         }
-      } catch {
+      } catch (retrievalErr) {
+        executionError = retrievalErr instanceof Error ? retrievalErr.message : "检索服务执行异常";
         session = createAnswerFixture(question, pageContext);
         mode = "mock";
       }
@@ -127,6 +129,7 @@ export async function POST(request: Request) {
         pageContext,
         mode,
         latencyMs,
+        executionError,
         candidates: candidates.map((c) => ({
           id: c.id,
           pageId: c.pageId,

@@ -16,7 +16,7 @@ import {
   ChevronUp,
   Sparkles,
 } from "lucide-react";
-import type { EvaluationReport } from "@/scripts/eval";
+import type { EvaluationReport } from "@/lib/ai/eval";
 
 type EvalDashboardProps = {
   initialReport?: EvaluationReport | null;

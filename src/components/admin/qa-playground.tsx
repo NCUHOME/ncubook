@@ -11,14 +11,16 @@ import {
   Layers,
   Sparkles,
   Clock,
+  AlertCircle,
 } from "lucide-react";
 import type { AnswerSession } from "@/lib/ai/session";
 
 type InspectionData = {
   question: string;
   pageContext?: { pageId: string; anchor?: string };
-  mode: "live" | "fixture";
+  mode: "live" | "mock";
   latencyMs: number;
+  executionError?: string | null;
   candidates: Array<{
     id: string;
     pageId: string;
@@ -229,7 +231,15 @@ export function QAPlayground() {
 
       {/* 2. 双栏透视主视图 */}
       {inspection && session && (
-        <div className="grid grid-cols-1 gap-s5 lg:grid-cols-12">
+        <div className="space-y-s4">
+          {inspection.executionError && (
+            <div className="flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-label text-ink">
+              <AlertCircle className="size-icon-small text-muted flex-shrink-0" />
+              <span>服务提示：{inspection.executionError}（已自动调用离线基准保底，供白盒链路排查）</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-s5 lg:grid-cols-12">
           {/* 左栏：学生端真实视觉还原 (5/12) */}
           <div className="lg:col-span-5 space-y-s4">
             <div className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
@@ -451,6 +461,7 @@ export function QAPlayground() {
               )}
             </div>
           </div>
+        </div>
         </div>
       )}
     </section>

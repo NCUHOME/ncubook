@@ -79,4 +79,26 @@ describe("admin inspect API suite", () => {
     expect(data.session.confidence).toBe("insufficient");
     expect(data.session.claims.length).toBe(0);
   });
+
+  it("handles live inspection mode without HTTP loopback and returns inspection telemetry", async () => {
+    const req = new Request("http://localhost:3000/api/admin/ask/inspect", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: `admin_session=${validToken}`,
+      },
+      body: JSON.stringify({
+        question: "校园环游车怎么付费？",
+        forceMock: false,
+      }),
+    });
+    const res = await inspectPost(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(data.session).toBeDefined();
+    expect(data.inspection).toBeDefined();
+    expect(data.inspection.question).toBe("校园环游车怎么付费？");
+    expect(data.inspection.latencyMs).toBeGreaterThanOrEqual(0);
+  });
 });
