@@ -46,7 +46,8 @@ describe("search API routes", () => {
 
   describe("GET /api/search/index", () => {
     it("returns compact pre-computed search entries with caching headers", async () => {
-      const response = await getSearchIndex();
+      const request = new NextRequest("http://localhost:3000/api/search/index");
+      const response = await getSearchIndex(request);
 
       expect(response.status).toBe(200);
       expect(response.headers.get("Cache-Control")).toContain("public");
@@ -65,6 +66,16 @@ describe("search API routes", () => {
       expect(first).toHaveProperty("h");
       expect(first).toHaveProperty("r");
       expect(first).toHaveProperty("b");
+
+      const etag = response.headers.get("ETag");
+      expect(etag).toBeTruthy();
+
+      // 测试 If-None-Match 条件协商 304 缓存返回
+      const conditionalReq = new NextRequest("http://localhost:3000/api/search/index", {
+        headers: { "if-none-match": etag! },
+      });
+      const res304 = await getSearchIndex(conditionalReq);
+      expect(res304.status).toBe(304);
     });
   });
 });

@@ -1,4 +1,5 @@
-// API 路由：轻量级全量搜索索引 JSON 接口 (为前端提供 Instant Search as you type 5ms 零延迟打字即搜体验)
+// API 路由：轻量级全量搜索索引 JSON 接口 (为前端提供 Instant Search as you type 5ms 零延迟打字即搜体验，支持 ETag 条件协商缓存)
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { loadPublishedRepository } from "@/lib/content/server";
 
@@ -16,7 +17,7 @@ export type CompactSearchItem = {
   b: string;   // blockType
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const repository = await loadPublishedRepository();
     if (!repository) {
@@ -40,8 +41,24 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(items, {
+    const body = JSON.stringify(items);
+    const etag = `W/"${createHash("sha1").update(body).digest("hex").slice(0, 16)}"`;
+
+    if (request && request.headers && request.headers.get("if-none-match") === etag) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          ETag: etag,
+          "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
+        },
+      });
+    }
+
+    return new Response(body, {
+      status: 200,
       headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        ETag: etag,
         "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
       },
     });

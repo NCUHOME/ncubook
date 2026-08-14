@@ -1,4 +1,4 @@
-// AI 问答引擎：/api/ask 路由 Handler 工厂与生产环境问答服务装配 (S6 合并，X5 移除了 shadow 模式)
+// AI 问答引擎：/api/ask 路由 Handler 工厂与生产环境问答服务装配 (支持版本绑定的 Exact Match 内存会话缓存)
 import { createHash, randomUUID } from "node:crypto";
 import { groundAnswer } from "@/lib/ai/ground";
 import { ProviderError, createOpenAICompatibleProvider } from "@/lib/ai/provider";
@@ -26,6 +26,15 @@ type AskHandlerOptions = {
   allowRequest: (request: Request) => boolean;
   recordTelemetry?: (event: TelemetryEvent) => void;
 };
+
+// 进程级精准问答会话缓存（Exact Match Cache）：绑定内容版本与规范化问题，极大提升高频热门问答响应速度并节约 Token
+const exactAnswerCache = new Map<string, { session: AnswerSession; cachedAt: number }>();
+const MAX_EXACT_CACHE_SIZE = 256;
+const EXACT_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 小时
+
+export function clearExactAnswerCache(): void {
+  exactAnswerCache.clear();
+}
 
 export function createAskHandler({ mode, answer, allowRequest, recordTelemetry = () => undefined }: AskHandlerOptions) {
   return async function handle(request: Request): Promise<Response> {
@@ -86,8 +95,32 @@ export function createProductionAnswerService(): AnswerService {
   return async ({ question, pageContext }) => {
     const activeContentVersion = await repository.getCurrentVersion();
     if (!activeContentVersion) throw new Error("No published content version is available");
+
+    const normalizedQ = question.trim().toLocaleLowerCase("zh-CN").replace(/\s+/g, "");
+    const contextKey = pageContext?.pageId ? `${pageContext.pageId}:${pageContext.anchor ?? ""}` : "global";
+    const cacheKey = `${activeContentVersion}:${contextKey}:${normalizedQ}`;
+
+    const cached = exactAnswerCache.get(cacheKey);
+    if (cached && Date.now() - cached.cachedAt < EXACT_CACHE_TTL_MS) {
+      return {
+        ...cached.session,
+        id: randomUUID(), // 返回新的唯一会话 ID
+      };
+    }
+
     const sources = await retrieveGroundingSources({ question, pageContext, repository, embedding });
-    return groundAnswer({ question, pageContext, activeContentVersion, sources, model: provider });
+    const session = await groundAnswer({ question, pageContext, activeContentVersion, sources, model: provider });
+
+    // 仅对有效问答（有正文或明确归因结果）进行缓存
+    if (session.confidence !== "insufficient" || session.claims.length > 0) {
+      if (exactAnswerCache.size >= MAX_EXACT_CACHE_SIZE) {
+        const oldestKey = exactAnswerCache.keys().next().value;
+        if (oldestKey) exactAnswerCache.delete(oldestKey);
+      }
+      exactAnswerCache.set(cacheKey, { session, cachedAt: Date.now() });
+    }
+
+    return session;
   };
 }
 

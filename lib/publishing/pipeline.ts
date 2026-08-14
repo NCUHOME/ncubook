@@ -167,6 +167,8 @@ export async function runNotionPublicationCommand(
   if (!command.dryRun) {
     try {
       revalidateTag("published-content-pointer");
+      revalidateTag("published-content");
+      revalidatePath("/", "layout");
     } catch {
       // 在 CLI 直连模式下缺失 Next.js Request Context 时忽略 revalidateTag 错误
     }
