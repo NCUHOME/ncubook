@@ -77,7 +77,6 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
   await input.store.startVersion({ contentVersion: input.contentVersion, sourceRootId: input.sourceRootId });
 
   const pages: PagePublication[] = [];
-  let sourcePageId: string | undefined;
   let stage: PublicationFailure["stage"] = "build";
 
   try {

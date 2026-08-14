@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "publish": "node scripts/publish.ts",
-    "eval": "node scripts/test.ts"
+    "eval": "node scripts/test.ts",
+    "audit:routes": "node scripts/audit-routes.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.19",
@@ -28,6 +30,8 @@
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.3.0",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.8.0",

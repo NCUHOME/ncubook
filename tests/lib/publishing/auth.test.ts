@@ -24,7 +24,7 @@ describe("admin authentication module (lib/publishing/auth)", () => {
     const [timestamp, signature] = validToken.split(".");
 
     // 篡改 signature
-    const forgedSignatureToken = `${timestamp}.${signature.replace(/a/g, "b")}`;
+    const forgedSignatureToken = `${timestamp}.${signature.endsWith("0") ? signature.slice(0, -1) + "1" : signature.slice(0, -1) + "0"}`;
     expect(verifyAdminSessionToken(forgedSignatureToken, secret)).toBe(false);
 
     // 篡改 timestamp

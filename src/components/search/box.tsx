@@ -24,6 +24,8 @@ export function SearchExperience({
   const requestRef = useRef(0);
   const indexRef = useRef<CompactSearchItem[] | null>(null);
   const loadingIndexRef = useRef(false);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   function syncUrl(query: string) {
     const url = query ? `/search?q=${encodeURIComponent(query)}` : "/search";
@@ -40,8 +42,8 @@ export function SearchExperience({
       .then((data) => {
         if (Array.isArray(data)) {
           indexRef.current = data as CompactSearchItem[];
-          if (value.trim()) {
-            filterLocalIndex(value.trim(), data as CompactSearchItem[]);
+          if (valueRef.current.trim()) {
+            filterLocalIndex(valueRef.current.trim(), data as CompactSearchItem[]);
           }
         }
       })
