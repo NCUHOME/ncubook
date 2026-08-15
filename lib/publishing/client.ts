@@ -148,7 +148,10 @@ export async function batchMap<T, R>(
   async function worker() {
     while (index < items.length) {
       const currentIndex = index++;
-      results[currentIndex] = await fn(items[currentIndex]);
+      const item = items[currentIndex];
+      if (item !== undefined) {
+        results[currentIndex] = await fn(item);
+      }
     }
   }
   const workers = Array.from({ length: Math.min(concurrency, items.length) }, worker);

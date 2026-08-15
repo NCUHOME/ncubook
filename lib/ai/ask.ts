@@ -10,7 +10,7 @@ import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 assertServerOnly("AI answer route and service");
 
 export type AnswerService = (input: { question: string; pageContext?: AnswerSession["pageContext"] }) => Promise<AnswerSession>;
-export type AnswerMode = "fixture" | "production";
+export type AnswerMode = "fixture" | "production" | "shadow";
 
 type TelemetryEvent = {
   requestId: string;
@@ -50,6 +50,18 @@ export function createAskHandler({ mode, answer, allowRequest, recordTelemetry =
         const session = createAnswerFixture(input.question, input.pageContext);
         recordTelemetry(eventFor(requestId, startedAt, mode, session));
         return json(session, 200);
+      }
+
+      if (mode === "shadow") {
+        const fixtureSession = createAnswerFixture(input.question, input.pageContext);
+        try {
+          const generated = await answer(input);
+          recordTelemetry(eventFor(requestId, startedAt, "shadow", generated));
+          return json(generated, 200);
+        } catch {
+          recordTelemetry({ requestId, latencyMs: elapsed(startedAt), confidence: "error", citationCount: 0, mode: "shadow" });
+          return json(fixtureSession, 200);
+        }
       }
 
       const generated = await answer(input);

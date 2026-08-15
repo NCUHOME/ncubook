@@ -75,9 +75,11 @@ export function SearchExperience({
     >();
 
     for (const item of items) {
-      let group = pageMap.get(item.pid);
+      const existing = pageMap.get(item.pid);
+      let group = existing;
       if (!group) {
-        const topSection = item.p.length > 0 ? [item.p[0]] : ["综合指南"];
+        const firstSection = item.p[0];
+        const topSection = firstSection ? [firstSection] : ["综合指南"];
         group = {
           pageId: item.pid,
           pageTitle: item.t,

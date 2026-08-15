@@ -40,7 +40,9 @@ describe("grounded citation pipeline", () => {
       });
 
       expect(sources).toHaveLength(1);
-      expect(sources[0].id).toBe("source-1");
+      const firstSource = sources[0];
+      expect(firstSource).toBeDefined();
+      expect(firstSource?.id).toBe("source-1");
 
       const model: AnswerModel = {
         async generateAnswer() {
@@ -49,8 +51,8 @@ describe("grounded citation pipeline", () => {
             claims: [
               {
                 id: "claim-1",
-                text: sources[0].exactText,
-                sourceIds: [sources[0].id],
+                text: firstSource?.exactText ?? "",
+                sourceIds: firstSource ? [firstSource.id] : [],
                 status: "grounded",
               },
             ],
@@ -79,12 +81,16 @@ describe("grounded citation pipeline", () => {
     it.runIf(Boolean(expectedVersion))("retrieves the active Supabase version and opens its exact document anchor", async () => {
       const supabase = getSupabaseAdmin();
       expect(supabase, "Supabase must be configured for the live integration test").not.toBeNull();
-      const retrieval = createSupabaseRetrievalRepository(supabase!);
+      if (!supabase) return;
+      const retrieval = createSupabaseRetrievalRepository(supabase);
       const sources = await retrieveGroundingSources({ question: "南大家园", repository: retrieval, maxCandidates: 8 });
       expect(await retrieval.getCurrentVersion()).toBe(expectedVersion);
       expect(sources.length).toBeGreaterThan(0);
 
       const source = sources[0];
+      expect(source).toBeDefined();
+      if (!source) return;
+
       const model: AnswerModel = {
         async generateAnswer() {
           return { confidence: "grounded", claims: [{ id: "live-claim", text: source.exactText, sourceIds: [source.id], status: "grounded" }] };
@@ -96,7 +102,7 @@ describe("grounded citation pipeline", () => {
       expect(session.citations[0]).toMatchObject({ contentVersion: expectedVersion, pageId: source.pageId, anchor: source.anchor });
       expect(source.anchor).toMatch(/^b-/);
 
-      const pageResult = await supabase!.from("published_pages")
+      const pageResult = await supabase.from("published_pages")
         .select("slug,parent_source_page_id")
         .eq("content_version", expectedVersion!)
         .eq("source_page_id", source.pageId)

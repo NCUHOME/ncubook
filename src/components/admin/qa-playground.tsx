@@ -61,7 +61,7 @@ const PRESET_QUESTIONS = [
 ];
 
 export function QAPlayground() {
-  const [question, setQuestion] = useState(PRESET_QUESTIONS[0]);
+  const [question, setQuestion] = useState<string>(PRESET_QUESTIONS[0] ?? "");
   const [maxCandidates, setMaxCandidates] = useState(6);
   const [forceMock, setForceMock] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,8 +71,9 @@ export function QAPlayground() {
   const [savingFlywheel, setSavingFlywheel] = useState(false);
   const [flywheelMessage, setFlywheelMessage] = useState<string | null>(null);
 
-  const handleInspect = async (q = question) => {
-    if (loading || !q.trim()) return;
+  const handleInspect = async (q?: string) => {
+    const targetQ = (typeof q === "string" ? q : question).trim();
+    if (loading || !targetQ) return;
     setLoading(true);
     setFlywheelMessage(null);
 
@@ -81,7 +82,7 @@ export function QAPlayground() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          question: q.trim(),
+          question: targetQ,
           maxCandidates,
           forceMock,
         }),

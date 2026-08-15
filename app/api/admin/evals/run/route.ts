@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import { runEvaluationSuite } from "@/lib/ai/eval";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {

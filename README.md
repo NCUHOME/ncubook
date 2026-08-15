@@ -31,5 +31,5 @@ EdgeOne 使用仓库根目录、npm lockfile、`npm run build` 和 Next.js prese
 
 ## 架构与历史版本说明
 
-网站现已全量重构为 Next.js 15 纯静态（SSG + ISR）极速架构。旧版 Docusaurus 历史代码已清理，如需调阅或回滚至重构前版本，请参考 Git 提交历史 `b0e4de1d4a6aaa8979777b4ded21e5d45d4c4088`。
+网站现已全量重构为 Next.js 15 现代架构（页面 SSG + ISR 增量缓存，配合 Node.js API Routes 服务端问答与搜索）。旧版 Docusaurus 历史代码已清理，如需调阅或回滚至重构前版本，请参考 Git 提交历史 `b0e4de1d4a6aaa8979777b4ded21e5d45d4c4088`。
 

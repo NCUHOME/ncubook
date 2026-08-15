@@ -19,6 +19,10 @@ export function normalizeNotionBlocks(nodes: NotionBlockNode[], options: Normali
   const blocks: Block[] = [];
   for (let index = 0; index < nodes.length;) {
     const node = nodes[index];
+    if (!node) {
+      index += 1;
+      continue;
+    }
     const type = blockType(node);
     if (type === "embed" && !hasText(payload(node, type).url)) {
       options.onWarning?.({ blockId: node.id, code: "empty-embed" });
@@ -27,20 +31,25 @@ export function normalizeNotionBlocks(nodes: NotionBlockNode[], options: Normali
     }
     if (type === "bulleted_list_item" || type === "numbered_list_item") {
       const listNodes: NotionBlockNode[] = [];
-      while (index < nodes.length && blockType(nodes[index]) === type) {
-        listNodes.push(nodes[index]);
+      while (index < nodes.length) {
+        const current = nodes[index];
+        if (!current || blockType(current) !== type) break;
+        listNodes.push(current);
         index += 1;
       }
-      blocks.push({
-        id: listNodes[0].id,
-        anchor: anchor(listNodes[0].id),
-        type: type === "bulleted_list_item" ? "bulleted-list" : "numbered-list",
-        items: listNodes.map((item) => ({
-          id: item.id,
-          richText: richText(payload(item, type).rich_text),
-          children: normalizeNotionBlocks(item.children, options),
-        })),
-      });
+      const firstListNode = listNodes[0];
+      if (firstListNode) {
+        blocks.push({
+          id: firstListNode.id,
+          anchor: anchor(firstListNode.id),
+          type: type === "bulleted_list_item" ? "bulleted-list" : "numbered-list",
+          items: listNodes.map((item) => ({
+            id: item.id,
+            richText: richText(payload(item, type).rich_text),
+            children: normalizeNotionBlocks(item.children, options),
+          })),
+        });
+      }
       continue;
     }
     blocks.push(normalizeSingle(node, type, options));

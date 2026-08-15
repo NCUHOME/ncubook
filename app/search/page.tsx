@@ -5,6 +5,8 @@ import { searchGroupedEntries, type GroupedSearchResult } from "@/lib/content/se
 import { SearchExperience } from "@/src/components/search/box";
 import { AppHeader } from "@/src/components/primitives/header";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   searchParams,
 }: {

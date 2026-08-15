@@ -8,6 +8,7 @@ import { createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 let productionServiceCache: AnswerService | undefined;

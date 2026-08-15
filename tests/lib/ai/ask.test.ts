@@ -43,6 +43,27 @@ describe("production ask boundary", () => {
     expect(await response.json()).toMatchObject({ error: "answer_temporarily_unavailable" });
   });
 
+  it("supports shadow mode: returns production answers on success and falls back to fixture on failure", async () => {
+    const successAnswer = vi.fn<AnswerService>(async () => grounded());
+    const telemetryLogs: unknown[] = [];
+    const recordTelemetry = (e: unknown) => { telemetryLogs.push(e); };
+
+    const successHandler = createAskHandler({ mode: "shadow", answer: successAnswer, allowRequest: () => true, recordTelemetry });
+    const successRes = await successHandler(request({ question: "环游车怎么付费？" }));
+    expect(successRes.status).toBe(200);
+    expect(successAnswer).toHaveBeenCalledTimes(1);
+    expect(telemetryLogs).toContainEqual(expect.objectContaining({ mode: "shadow", confidence: "grounded" }));
+
+    // Shadow mode fallback on provider failure
+    const failingAnswer = vi.fn<AnswerService>(async () => { throw new Error("RAG upstream offline"); });
+    const failingHandler = createAskHandler({ mode: "shadow", answer: failingAnswer, allowRequest: () => true, recordTelemetry });
+    const fallbackRes = await failingHandler(request({ question: "环游车怎么付费？" }));
+    expect(fallbackRes.status).toBe(200);
+    const body = await fallbackRes.json();
+    expect(body).toMatchObject({ confidence: expect.any(String) });
+    expect(telemetryLogs).toContainEqual(expect.objectContaining({ mode: "shadow", confidence: "error" }));
+  });
+
   it("supports clearing exact answer cache without throwing", () => {
     expect(() => clearExactAnswerCache()).not.toThrow();
   });

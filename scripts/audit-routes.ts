@@ -66,20 +66,23 @@ export async function runAudit() {
   let baseUrl = DEFAULT_BASE_URL;
 
   const urlArgIndex = args.indexOf("--url");
-  if (urlArgIndex !== -1 && args[urlArgIndex + 1]) {
-    baseUrl = args[urlArgIndex + 1];
+  const nextUrl = urlArgIndex !== -1 ? args[urlArgIndex + 1] : undefined;
+  if (nextUrl) {
+    baseUrl = nextUrl;
   }
 
   // 支持通过 --doc-slug 或 --doc-path 或环境变量动态配置文档测试路径
   let docPath = process.env.AUDIT_DOC_PATH || "/docs/campus-shuttle";
   const docSlugIndex = args.indexOf("--doc-slug");
-  if (docSlugIndex !== -1 && args[docSlugIndex + 1]) {
-    const rawSlug = args[docSlugIndex + 1].trim();
+  const nextSlug = docSlugIndex !== -1 ? args[docSlugIndex + 1] : undefined;
+  if (nextSlug) {
+    const rawSlug = nextSlug.trim();
     docPath = rawSlug.startsWith("/") ? rawSlug : `/docs/${rawSlug}`;
   }
   const docPathIndex = args.indexOf("--doc-path");
-  if (docPathIndex !== -1 && args[docPathIndex + 1]) {
-    docPath = args[docPathIndex + 1].trim();
+  const nextDocPath = docPathIndex !== -1 ? args[docPathIndex + 1] : undefined;
+  if (nextDocPath) {
+    docPath = nextDocPath.trim();
   }
 
   const routes: RouteConfig[] = [
@@ -89,8 +92,9 @@ export async function runAudit() {
   ];
 
   const sectionSlugIndex = args.indexOf("--section-slug");
-  if (sectionSlugIndex !== -1 && args[sectionSlugIndex + 1]) {
-    const rawSection = args[sectionSlugIndex + 1].trim();
+  const nextSectionSlug = sectionSlugIndex !== -1 ? args[sectionSlugIndex + 1] : undefined;
+  if (nextSectionSlug) {
+    const rawSection = nextSectionSlug.trim();
     routes.push({
       path: rawSection.startsWith("/") ? rawSection : `/sections/${rawSection}`,
       name: "板块目录页",

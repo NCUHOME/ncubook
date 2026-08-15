@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import { validateEvaluationCase, type TestConfig } from "@/lib/ai/eval";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {

@@ -8,6 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",
     start_url: "/",
     display: "standalone",
+    // PWA Manifest 无法直接解析 CSS 变量，严格对应 tokens.json 中的 color.canvas (#ffffff)
     background_color: "#ffffff",
     theme_color: "#ffffff",
     icons: [

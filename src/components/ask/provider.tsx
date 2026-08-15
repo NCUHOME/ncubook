@@ -33,7 +33,11 @@ async function requestAnswerFromApi(input: { question: string; pageContext?: Pag
     headers: { "content-type": "application/json" },
     body: JSON.stringify(input),
   });
-  if (!response.ok) throw new Error("回答暂时无法获取");
+  if (!response.ok) {
+    if (response.status === 429) throw new Error("提问过于频繁，请稍候再试。");
+    if (response.status === 503) throw new Error("AI 服务响应超时或暂时不可用，请稍候重试。");
+    throw new Error("回答暂时无法获取，请稍候重试。");
+  }
   return response.json() as Promise<AnswerSession>;
 }
 

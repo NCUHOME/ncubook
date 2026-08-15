@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { RotateCcw, TriangleAlert } from "lucide-react";
 
 export default function GlobalError({
   error,
@@ -18,14 +18,14 @@ export default function GlobalError({
   return (
     <html lang="zh-CN">
       <body className="bg-canvas font-body text-text antialiased">
-        <main className="mx-auto flex min-h-screen w-full max-w-[760px] flex-col items-center justify-center px-s5 py-s7 text-center">
-          <div className="flex h-[64px] w-[64px] items-center justify-center rounded-round bg-surface-subtle text-danger">
-            <AlertTriangle className="h-s6 w-s6" />
+        <main className="mx-auto flex min-h-screen w-full max-w-shell flex-col items-center justify-center px-s5 py-s7 text-center">
+          <div className="flex size-status-avatar items-center justify-center rounded-round bg-surface-subtle text-danger">
+            <TriangleAlert className="h-s6 w-s6" />
           </div>
           <h1 className="mt-s5 font-display text-heading leading-heading font-semibold text-text">
             系统遇到严重错误
           </h1>
-          <p className="mt-s3 max-w-[320px] font-body text-body leading-body text-muted">
+          <p className="mt-s3 max-w-status-card font-body text-body leading-body text-muted">
             应用初始化阶段发生异常，请重试或稍后再试。
           </p>
           <button

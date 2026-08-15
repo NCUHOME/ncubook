@@ -50,8 +50,13 @@ export function createOpenAICompatibleProvider({
   timeoutMs = 8000,
   sleep = wait,
 }: ProviderOptions): AnswerModel & Partial<EmbeddingModel> {
-  for (const [label, value] of [["base URL", baseUrl], ["API key", apiKey], ["chat model", chatModel]]) {
-    if (!value.trim()) throw new Error(`AI provider ${label} is required`);
+  const requiredConfig: Array<[string, string | undefined]> = [
+    ["base URL", baseUrl],
+    ["API key", apiKey],
+    ["chat model", chatModel],
+  ];
+  for (const [label, value] of requiredConfig) {
+    if (!value || !value.trim()) throw new Error(`AI provider ${label} is required`);
   }
 
   async function request(path: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {

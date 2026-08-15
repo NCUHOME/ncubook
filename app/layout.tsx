@@ -45,7 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="zh-CN">
       <body>
         <Providers>
-          <div className="mobile-shell">{children}</div>
+          <div className="mx-auto min-h-screen w-full max-w-shell bg-canvas">{children}</div>
         </Providers>
       </body>
     </html>

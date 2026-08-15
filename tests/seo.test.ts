@@ -40,8 +40,9 @@ describe("SEO & Search Engine Crawling metadata", () => {
     expect(result.rules).toBeDefined();
 
     const rules = Array.isArray(result.rules) ? result.rules[0] : result.rules;
-    expect(rules.userAgent).toBe("*");
-    expect(rules.allow).toBe("/");
-    expect(rules.disallow).toEqual(["/admin/", "/api/"]);
+    expect(rules).toBeDefined();
+    expect(rules?.userAgent).toBe("*");
+    expect(rules?.allow).toBe("/");
+    expect(rules?.disallow).toEqual(["/admin/", "/api/"]);
   });
 });

@@ -220,6 +220,7 @@ export function evaluateAnswerSessions(
 
   for (let i = 0; i < cases.length; i++) {
     const evaluationCase = cases[i];
+    if (!evaluationCase) continue;
     const session = sessions.get(evaluationCase.id);
     const latency = latencies[i] ?? 0;
 
@@ -306,6 +307,7 @@ export async function runEvaluationSuite(options: {
 
   for (let i = 0; i < cases.length; i++) {
     const evaluationCase = cases[i];
+    if (!evaluationCase) continue;
     const startedAt = performance.now();
     let session: AnswerSession;
 

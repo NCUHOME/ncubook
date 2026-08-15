@@ -30,7 +30,7 @@ describe("Notion asset mirroring", () => {
     expect(upload).toHaveBeenCalledTimes(1);
     expect(result.assets).toHaveLength(2);
     expect(result.assets[0]).toMatchObject({ id: "asset-image-one", sourceBlockId: "image-one", kind: "image", alt: "校园路线图" });
-    expect(result.assets[0].publicUrl).toBe(result.assets[1].publicUrl);
+    expect(result.assets[0]?.publicUrl).toBe(result.assets[1]?.publicUrl);
     expect(result.assets.every((asset) => !asset.publicUrl.includes("prod-files-secure"))).toBe(true);
     expect(result.warnings).toContainEqual({ blockId: "image-two", code: "missing-alt", message: "Image is missing alt text" });
   });
@@ -53,6 +53,13 @@ describe("Notion asset mirroring", () => {
       maxBytes: 4,
       download: async () => ({ bytes: new Uint8Array(5), mediaType: "application/pdf" }),
     })).rejects.toEqual(new AssetMirrorError("file-one", "file-too-large"));
+
+    await expect(mirrorNotionAssets([file], {
+      contentVersion: "v1",
+      pageId: "page-1",
+      storage,
+      download: async () => { throw new Error("Network timeout while downloading"); },
+    })).rejects.toEqual(new AssetMirrorError("file-one", "download-failed"));
   });
 
   it("mirrors zip attachments without putting Unicode display names in the storage key", async () => {
@@ -67,10 +74,10 @@ describe("Notion asset mirroring", () => {
     });
 
     expect(result.assets).toHaveLength(1);
-    const path = upload.mock.calls[0]?.[0].path;
+    const path = upload.mock.calls[0]?.[0]?.path;
     expect(path).toMatch(/\/asset\.zip$/);
     expect(path).not.toContain("学院实施细则");
-    expect(result.assets[0].publicUrl).toContain("asset.zip");
+    expect(result.assets[0]?.publicUrl).toContain("asset.zip");
   });
 
   it("uses an ASCII-safe storage key for legacy Word attachments", async () => {
@@ -100,7 +107,7 @@ describe("Notion asset mirroring", () => {
     });
 
     expect(result.assets).toHaveLength(1);
-    expect(result.assets[0].id).toBe("asset-nested-image");
+    expect(result.assets[0]?.id).toBe("asset-nested-image");
   });
 
   it("does not mirror assets that belong to a nested child page", async () => {

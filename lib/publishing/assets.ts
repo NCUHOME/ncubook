@@ -27,7 +27,8 @@ export type AssetStorage = {
 export type AssetMirrorFailureReason =
   | "missing-source-url"
   | "unsupported-media-type"
-  | "file-too-large";
+  | "file-too-large"
+  | "download-failed";
 
 export class AssetMirrorError extends Error {
   constructor(
@@ -70,24 +71,8 @@ export async function mirrorNotionAssets(
       let downloaded: { bytes: Uint8Array; mediaType: string };
       try {
         downloaded = await options.download(sourceUrl);
-      } catch (downloadError) {
-        const alt = kind === "image" ? captionText(value.caption) : undefined;
-        const checksum = createHash("sha256").update(sourceUrl).digest("hex");
-        const asset: Asset = {
-          id: `asset-${node.id}`,
-          sourceBlockId: node.id,
-          contentVersion: options.contentVersion,
-          kind,
-          publicUrl: sourceUrl,
-          checksum,
-          ...(alt ? { alt } : {}),
-        };
-        const warning = {
-          blockId: node.id,
-          code: "missing-alt" as const,
-          message: `Asset mirror warning: ${downloadError instanceof Error ? downloadError.message : String(downloadError)}`,
-        };
-        return { asset, warning };
+      } catch {
+        throw new AssetMirrorError(node.id, "download-failed");
       }
 
       const extension = allowedMediaTypes.get(normalizeMediaType(downloaded.mediaType));
@@ -171,7 +156,8 @@ function captionText(value: unknown): string | undefined {
 }
 
 function normalizeMediaType(value: string): string {
-  return value.split(";", 1)[0].trim().toLowerCase();
+  const primary = value.split(";", 1)[0];
+  return (primary ?? value).trim().toLowerCase();
 }
 
 function safePathPart(value: string): string {

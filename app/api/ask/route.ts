@@ -26,6 +26,7 @@ export async function POST(request: Request): Promise<Response> {
 function answerMode(): AnswerMode {
   const value = process.env.AI_ANSWER_MODE;
   if (value === "fixture") return "fixture";
+  if (value === "shadow") return "shadow";
   if (value === "production") return "production";
 
   // 若本地环境已配置 AI API Key 与 Supabase，直接走真实生产 RAG 问答，绝不退回假数据

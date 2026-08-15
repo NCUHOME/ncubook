@@ -21,7 +21,9 @@ describe("admin authentication module (lib/publishing/auth)", () => {
 
   it("rejects tampered or forged HMAC session tokens", () => {
     const validToken = createAdminSessionToken(secret);
-    const [timestamp, signature] = validToken.split(".");
+    const parts = validToken.split(".");
+    const timestamp = parts[0] ?? "";
+    const signature = parts[1] ?? "";
 
     // 篡改 signature
     const forgedSignatureToken = `${timestamp}.${signature.endsWith("0") ? signature.slice(0, -1) + "1" : signature.slice(0, -1) + "0"}`;

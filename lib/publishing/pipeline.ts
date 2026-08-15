@@ -82,7 +82,14 @@ export async function runNotionPublicationCommand(
       revalidateTag("published-content-pointer");
       revalidateTag("published-content");
       revalidatePath("/", "layout");
-    } catch {}
+    } catch (revalidateError) {
+      console.error(JSON.stringify({
+        event: "rollback_revalidate_failed",
+        version: command.version,
+        error: revalidateError instanceof Error ? revalidateError.message : String(revalidateError),
+      }));
+      onProgress?.(formatLog(`⚠️ 页面缓存即刻刷新未完全生效，但底层切线已完成: ${command.version}`));
+    }
     onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
     return { ok: true, operation: "rollback", contentVersion: command.version };
   }

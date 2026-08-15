@@ -46,7 +46,7 @@ export function AskSheet({
             <Dialog.Close asChild><button type="button" className="focus-ring tap-target grid place-items-center rounded-round" aria-label="关闭回答"><X className="size-icon" /></button></Dialog.Close>
           </div>
           {pageContext ? <div className="border-b border-line py-s4"><p className="text-label text-muted">{pageContext.anchor ? "基于当前文档与所在段落" : "基于当前文档"}</p></div> : null}
-          <div className="max-h-[58vh] overflow-y-auto py-s5">
+          <div className="max-h-sheet-content overflow-y-auto py-s5">
             <p className="text-caption text-muted">你的问题</p>
             <p className="mt-s2 font-display text-heading leading-heading font-semibold">{question || "输入你想了解的问题"}</p>
             {status === "loading" ? <p className="mt-s5 font-body text-label leading-body text-muted" role="status">正在核对已发布资料…</p> : null}

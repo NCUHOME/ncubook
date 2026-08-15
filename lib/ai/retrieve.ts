@@ -34,12 +34,15 @@ export type RetrievalRepository = {
 
 const MINIMUM_LEXICAL_SCORE = 0.08;
 
+export const MAX_GROUNDING_CHARACTERS = 12_000;
+
 type RetrieveInput = {
   question: string;
   pageContext?: { pageId: string; anchor?: string };
   repository: RetrievalRepository;
   embedding?: EmbeddingModel;
   maxCandidates?: number;
+  maxTotalCharacters?: number;
   allowedRiskLevels?: RetrievalSource["riskLevel"][];
 };
 
@@ -49,6 +52,7 @@ export async function retrieveGroundingSources({
   repository,
   embedding,
   maxCandidates = 8,
+  maxTotalCharacters = MAX_GROUNDING_CHARACTERS,
   allowedRiskLevels = ["normal", "needs-verification"],
 }: RetrieveInput): Promise<RetrievalSource[]> {
   const normalizedQuestion = question.trim();
@@ -67,7 +71,7 @@ export async function retrieveGroundingSources({
   });
   const allowed = new Set(allowedRiskLevels);
 
-  return candidates
+  const sorted = candidates
     .filter((source) => source.contentVersion === contentVersion
       && source.school === "ncu"
       && allowed.has(source.riskLevel)
@@ -78,9 +82,22 @@ export async function retrieveGroundingSources({
         + (pageContext?.pageId === source.pageId ? 2 : 0)
         + (pageContext?.pageId === source.pageId && pageContext.anchor === source.anchor ? 3 : 0),
     }))
-    .sort((left, right) => right.score - left.score || left.source.id.localeCompare(right.source.id))
-    .slice(0, maxCandidates)
-    .map(({ source }) => source);
+    .sort((left, right) => right.score - left.score || left.source.id.localeCompare(right.source.id));
+
+  const selected: RetrievalSource[] = [];
+  let totalCharacters = 0;
+
+  for (const { source } of sorted) {
+    if (selected.length >= maxCandidates) break;
+    const textLength = source.exactText.length;
+    if (selected.length > 0 && totalCharacters + textLength > maxTotalCharacters) {
+      break;
+    }
+    selected.push(source);
+    totalCharacters += textLength;
+  }
+
+  return selected;
 }
 
 export function createSupabaseRetrievalRepository(client: SupabaseClient<Database>): RetrievalRepository {

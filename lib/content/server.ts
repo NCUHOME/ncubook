@@ -72,8 +72,12 @@ export async function fetchPublishedFixtureFromSupabase(): Promise<PublishedFixt
         { tags: [`published-content:${contentVersion}`] },
       )();
       if (fixture && fixture.pages.length > 0) return fixture;
-    } catch {
-      // try fallback below
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: "content_cache_load_failed",
+        contentVersion,
+        error: error instanceof Error ? error.message : String(error),
+      }));
     }
   }
 
@@ -94,14 +98,24 @@ async function findFallbackPublishedFixture(): Promise<PublishedFixture | null> 
 
     if (versions && versions.length > 0) {
       const candidates = await Promise.all(
-        versions.map((row) => loadVersionFixture(row.id).catch(() => null))
+        versions.map((row) => loadVersionFixture(row.id).catch((err) => {
+          console.error(JSON.stringify({
+            event: "fallback_candidate_load_failed",
+            version: row.id,
+            error: err instanceof Error ? err.message : String(err),
+          }));
+          return null;
+        }))
       );
       for (const candidate of candidates) {
         if (candidate && candidate.pages.length > 0) return candidate;
       }
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "fallback_versions_query_failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
   }
 
   return null;
@@ -129,10 +143,10 @@ async function loadVersionFixture(contentVersion: string): Promise<PublishedFixt
   if (!client) throw new Error("Published content storage is not configured");
 
   const [pagesResult, blocksResult, assetsResult, searchResult] = await Promise.all([
-    client.from("published_pages").select("*").eq("content_version", contentVersion).order("id"),
-    client.from("published_blocks").select("*").eq("content_version", contentVersion).order("source_page_id").order("ordinal"),
-    client.from("published_assets").select("*").eq("content_version", contentVersion).order("id"),
-    client.from("published_search_entries").select("*").eq("content_version", contentVersion).order("id"),
+    client.from("published_pages").select("*").eq("content_version", contentVersion).order("id").limit(1000),
+    client.from("published_blocks").select("*").eq("content_version", contentVersion).order("source_page_id").order("ordinal").limit(10000),
+    client.from("published_assets").select("*").eq("content_version", contentVersion).order("id").limit(2000),
+    client.from("published_search_entries").select("*").eq("content_version", contentVersion).order("id").limit(10000),
   ]);
 
   for (const result of [pagesResult, blocksResult, assetsResult, searchResult]) {
@@ -316,9 +330,16 @@ export async function getLivePublishedContentPointer(): Promise<string | null> {
       .select("content_version")
       .eq("singleton", true)
       .maybeSingle();
-    if (pointerResult.error) return null;
+    if (pointerResult.error) {
+      console.error(JSON.stringify({ event: "live_pointer_query_error", error: pointerResult.error.message }));
+      return null;
+    }
     return optionalString(pointerResult.data?.content_version) ?? null;
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "live_pointer_query_failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
     return null;
   }
 }
@@ -336,7 +357,11 @@ export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[
       .order("started_at", { ascending: false })
       .limit(10);
 
-    if (error || !data || data.length === 0) return [];
+    if (error) {
+      console.error(JSON.stringify({ event: "fetch_content_versions_query_error", error: error.message }));
+      return [];
+    }
+    if (!data || data.length === 0) return [];
 
     return data.map((row) => ({
       version: row.id,
@@ -344,7 +369,11 @@ export async function fetchContentVersionsFromSupabase(): Promise<VersionRecord[
       createdAt: row.published_at || row.started_at || "",
       isCurrent: row.id === currentPointer,
     }));
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "fetch_content_versions_failed",
+      error: error instanceof Error ? error.message : String(error),
+    }));
     return [];
   }
 }

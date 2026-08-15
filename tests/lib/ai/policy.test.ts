@@ -16,7 +16,7 @@ describe("sensitive answer policy & server boundary", () => {
   it("requires authoritative sources for admissions deadlines and fees", () => {
     expect(applyGroundingPolicy("报名截止时间和费用？", [source()], [claim()]).claims).toEqual([]);
     const official = source({ sourceUrls: ["https://jwc.ncu.edu.cn/notice"] });
-    expect(applyGroundingPolicy("报名截止时间和费用？", [official], [claim()]).claims[0].status).toBe("needs-verification");
+    expect(applyGroundingPolicy("报名截止时间和费用？", [official], [claim()]).claims[0]?.status).toBe("needs-verification");
   });
 
   it("fails closed for unsupported medical and safety advice", () => {

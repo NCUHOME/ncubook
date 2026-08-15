@@ -29,7 +29,7 @@ describe("Notion publication client", () => {
     const client = createNotionClient({ token: "secret", fetchImpl });
 
     const tree = await client.readBlockTree("root-page");
-    expect(tree[0].children[0].children[0]).toMatchObject({ id: "paragraph-1", children: [] });
+    expect(tree[0]?.children[0]?.children[0]).toMatchObject({ id: "paragraph-1", children: [] });
   });
 
   it("honors Retry-After for a bounded rate-limit retry", async () => {

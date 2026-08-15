@@ -36,7 +36,7 @@ describe("editorial monochrome token contract", () => {
       /#[0-9a-f]{3,8}/i,
       /rgba?\(/i,
       /--(?:green|paper)/,
-      /(?:bg|text|border|p|m[trblxy]?|gap|rounded|shadow|z)-\[[^\]]+\]/,
+      /(?:bg|text|border|p|m[trblxy]?|gap|rounded|shadow|z|w|h|max-w|max-h|min-w|min-h)-\[[^\]]+\]/,
       /\btext-(?:xs|sm|base|lg|xl|[2-9]xl)\b/,
       /\b(?:p|m[trblxy]?|gap)-\d+\b/,
       /\brounded-(?:sm|md|lg|xl|2xl|3xl|full)\b/,

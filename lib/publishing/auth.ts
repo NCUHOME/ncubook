@@ -27,7 +27,9 @@ export function verifyAdminSessionToken(token: string | undefined | null, secret
   if (!token || !secret) return false;
   const parts = token.split(".");
   if (parts.length !== 2) return false;
-  const [timestampStr, providedHmac] = parts;
+  const timestampStr = parts[0];
+  const providedHmac = parts[1];
+  if (!timestampStr || !providedHmac) return false;
   const timestamp = Number(timestampStr);
   if (!Number.isFinite(timestamp) || timestamp <= 0) return false;
 

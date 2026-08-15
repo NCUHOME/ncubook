@@ -11,11 +11,11 @@ describe("document-grouped search algorithm", () => {
     const grouped = searchGroupedEntries("环游车", searchIndexFixture, repo.resolvePageRoute);
 
     expect(grouped.length).toBe(1);
-    expect(grouped[0].pageTitle).toBe("校园环游车乘坐指南");
-    expect(grouped[0].isTitleMatch).toBe(true);
-    expect(grouped[0].snippets.length).toBeGreaterThan(0);
-    expect(grouped[0].snippets[0].text).toContain("环游车");
-    expect(grouped[0].href).toBe("/docs/campus-shuttle");
+    expect(grouped[0]?.pageTitle).toBe("校园环游车乘坐指南");
+    expect(grouped[0]?.isTitleMatch).toBe(true);
+    expect(grouped[0]?.snippets.length).toBeGreaterThan(0);
+    expect(grouped[0]?.snippets[0]?.text).toContain("环游车");
+    expect(grouped[0]?.href).toBe("/docs/campus-shuttle");
   });
 
   it("prioritizes title matches and fills smart overview snippets for empty bodies", () => {
@@ -61,14 +61,14 @@ describe("document-grouped search algorithm", () => {
     const results = searchGroupedEntries("黄页", customIndex, (id) => `/docs/${id}`);
     expect(results.length).toBe(2);
     // 标题精确匹配排第一
-    expect(results[0].pageId).toBe("page-yellow-pages");
-    expect(results[0].isTitleMatch).toBe(true);
+    expect(results[0]?.pageId).toBe("page-yellow-pages");
+    expect(results[0]?.isTitleMatch).toBe(true);
     // 黄页文档仅标题命中，正文无重复词时不强制生成断片
-    expect(results[0].snippets.length).toBe(0);
+    expect(results[0]?.snippets.length).toBe(0);
 
     // 第二个文档是正文匹配
-    expect(results[1].pageId).toBe("page-other");
-    expect(results[1].snippets.length).toBe(1);
+    expect(results[1]?.pageId).toBe("page-other");
+    expect(results[1]?.snippets.length).toBe(1);
   });
 
   it("cleans trailing punctuation from headings", () => {
@@ -86,9 +86,10 @@ describe("document-grouped search algorithm", () => {
   it("returns compatible flat results via searchEntries", () => {
     const [result] = searchEntries("环游车", searchIndexFixture, repo.resolvePageRoute);
 
-    expect(result.pageTitle).toBe("校园环游车乘坐指南");
-    expect(result.excerpt).toContain("环游车");
-    expect(result.href).toMatch(/^\/docs\/campus-shuttle/);
+    expect(result).toBeDefined();
+    expect(result?.pageTitle).toBe("校园环游车乘坐指南");
+    expect(result?.excerpt).toContain("环游车");
+    expect(result?.href).toMatch(/^\/docs\/campus-shuttle/);
     expect(result).not.toHaveProperty("answer");
   });
 

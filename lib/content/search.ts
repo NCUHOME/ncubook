@@ -83,9 +83,11 @@ export function searchGroupedEntries(
   >();
 
   for (const entry of entries) {
-    let group = pageMap.get(entry.pageId);
+    const existing = pageMap.get(entry.pageId);
+    let group = existing;
     if (!group) {
-      const topSection = entry.sectionPath.length > 0 ? [entry.sectionPath[0]] : ["综合指南"];
+      const firstSection = entry.sectionPath[0];
+      const topSection = firstSection ? [firstSection] : ["综合指南"];
       group = {
         pageId: entry.pageId,
         pageTitle: entry.pageTitle,

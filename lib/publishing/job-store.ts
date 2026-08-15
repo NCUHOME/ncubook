@@ -28,7 +28,7 @@ export function calculateProgressAndStage(
 
   for (const log of logs) {
     const pageMatch = log.match(/已完成\s+(\d+)\/(\d+)\s+篇/);
-    if (pageMatch) {
+    if (pageMatch && pageMatch[1] && pageMatch[2]) {
       const current = parseInt(pageMatch[1], 10);
       const total = parseInt(pageMatch[2], 10);
       if (total > 0) {
@@ -88,8 +88,8 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
     if (typeof data.failure_reason === "string" && data.failure_reason.startsWith("[")) {
       try {
         logs = JSON.parse(data.failure_reason) as string[];
-      } catch {
-        // use default
+      } catch (parseError) {
+        console.error(JSON.stringify({ event: "job_logs_parse_failed", jobId: data.id, error: parseError instanceof Error ? parseError.message : String(parseError) }));
       }
     }
 
@@ -104,7 +104,8 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
       logs,
       createdAt: new Date(data.started_at).getTime(),
     };
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify({ event: "get_running_job_failed", error: error instanceof Error ? error.message : String(error) }));
     return null;
   }
 }
@@ -125,8 +126,8 @@ export async function forceReleaseZombieJobs(): Promise<void> {
         .from("content_versions")
         .update({ status: "failed", failure_reason: "任务已由运维管理员手动强制解锁" })
         .eq("status", "pending");
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error(JSON.stringify({ event: "force_release_zombie_jobs_failed", error: error instanceof Error ? error.message : String(error) }));
     }
   }
 }
@@ -167,8 +168,8 @@ export async function createPersistentJob(contentVersion: string): Promise<Persi
         status: "pending",
         failure_reason: JSON.stringify(initialLogs),
       });
-    } catch {
-      // 容错使用内存态
+    } catch (error) {
+      console.error(JSON.stringify({ event: "create_persistent_job_failed", contentVersion, error: error instanceof Error ? error.message : String(error) }));
     }
   }
 
@@ -199,7 +200,8 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
       if (data.failure_reason.startsWith("[")) {
         try {
           logs = JSON.parse(data.failure_reason) as string[];
-        } catch {
+        } catch (parseError) {
+          console.error(JSON.stringify({ event: "job_logs_parse_failed", jobId, error: parseError instanceof Error ? parseError.message : String(parseError) }));
           logs = [data.failure_reason];
         }
       } else {
@@ -224,7 +226,8 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
       ...(data.checksum ? { result: { checksum: data.checksum } } : {}),
       createdAt: new Date(data.started_at).getTime(),
     };
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify({ event: "get_persistent_job_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
     return fallbackMemoryJobs.get(jobId) ?? null;
   }
 }
@@ -245,8 +248,8 @@ export async function updateJobLogs(jobId: string, newLogs: string[]): Promise<v
         .from("content_versions")
         .update({ failure_reason: JSON.stringify(newLogs) })
         .eq("id", jobId);
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error(JSON.stringify({ event: "update_job_logs_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
     }
   }
 }
@@ -285,8 +288,8 @@ export async function finishPersistentJob(
           })
           .eq("id", jobId);
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error(JSON.stringify({ event: "finish_persistent_job_failed", jobId, resultStatus, error: error instanceof Error ? error.message : String(error) }));
     }
   }
 }

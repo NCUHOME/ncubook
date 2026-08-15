@@ -62,7 +62,10 @@ describe("answer evidence sessions & card boundary", () => {
     }))).toThrow(/unknown citation/i);
 
     const stale = groundedSession();
-    stale.citations[0] = { ...stale.citations[0], contentVersion: "content-2025-01" };
+    const firstCitation = stale.citations[0];
+    if (firstCitation) {
+      stale.citations[0] = { ...firstCitation, contentVersion: "content-2025-01" };
+    }
     expect(() => validateAnswerSession(stale)).toThrow(/content version/i);
   });
 

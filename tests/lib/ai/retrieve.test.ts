@@ -64,6 +64,23 @@ describe("current-version grounded retrieval", () => {
     expect(results.map((item) => item.id)).toEqual(["boundary"]);
   });
 
+  it("truncates candidates when accumulated exactText exceeds character budget", async () => {
+    const repo = repository([
+      source({ id: "first", lexicalScore: 0.9, exactText: "a".repeat(8000) }),
+      source({ id: "second", lexicalScore: 0.8, exactText: "b".repeat(5000) }),
+      source({ id: "third", lexicalScore: 0.7, exactText: "c".repeat(100) }),
+    ]);
+
+    const results = await retrieveGroundingSources({
+      question: "费用",
+      repository: repo,
+      maxTotalCharacters: 12000,
+    });
+
+    // first (8000) fits. second (8000+5000=13000 > 12000) is truncated/stopped.
+    expect(results.map((r) => r.id)).toEqual(["first"]);
+  });
+
   it("returns an empty list without calling providers for blank questions or empty retrieval", async () => {
     const repo = repository([]);
     const embedding = { embed: vi.fn(async () => [[0.1]]) };
