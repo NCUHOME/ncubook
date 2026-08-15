@@ -1,5 +1,5 @@
-import { createAskHandler, createMinuteRateLimiter, createProductionAnswerService, type AnswerMode, type AnswerService } from "@/lib/ai/ask";
-import { hasSupabaseConfig } from "@/lib/integrations/supabase";
+import { createAskHandler, createMinuteRateLimiter, createSupabaseRateLimiter, createProductionAnswerService, type AnswerMode, type AnswerService } from "@/lib/ai/ask";
+import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 let productionService: AnswerService | undefined;
 const mode = answerMode();
 const limit = positiveInteger(process.env.AI_RATE_LIMIT_PER_MINUTE, 10);
+const rateLimitLedger = getSupabaseAdmin();
 const handle = createAskHandler({
   mode,
-  allowRequest: createMinuteRateLimiter(limit),
+  allowRequest: rateLimitLedger ? createSupabaseRateLimiter(rateLimitLedger, limit) : createMinuteRateLimiter(limit),
   answer(input) {
     productionService ??= createProductionAnswerService();
     return productionService(input);

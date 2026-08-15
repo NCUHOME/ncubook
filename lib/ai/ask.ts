@@ -1,9 +1,11 @@
 // AI 问答引擎：/api/ask 路由 Handler 工厂与生产环境问答服务装配 (支持版本绑定的 Exact Match 内存会话缓存)
 import { createHash, randomUUID } from "node:crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { groundAnswer } from "@/lib/ai/ground";
 import { ProviderError, createOpenAICompatibleProvider } from "@/lib/ai/provider";
 import { createSupabaseRetrievalRepository, retrieveGroundingSources } from "@/lib/ai/retrieve";
 import { createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
+import type { Database } from "@/lib/database.types";
 import { assertServerOnly } from "@/lib/integrations/server-only";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
@@ -23,7 +25,7 @@ type TelemetryEvent = {
 type AskHandlerOptions = {
   mode: AnswerMode;
   answer: AnswerService;
-  allowRequest: (request: Request) => boolean;
+  allowRequest: (request: Request) => boolean | Promise<boolean>;
   recordTelemetry?: (event: TelemetryEvent) => void;
 };
 
@@ -40,7 +42,7 @@ export function createAskHandler({ mode, answer, allowRequest, recordTelemetry =
   return async function handle(request: Request): Promise<Response> {
     const requestId = randomUUID();
     const startedAt = performance.now();
-    if (!allowRequest(request)) return json({ error: "rate_limited", requestId }, 429);
+    if (!(await allowRequest(request))) return json({ error: "rate_limited", requestId }, 429);
 
     const input = await parseInput(request);
     if (!input) return json({ error: "invalid_question_or_context", requestId }, 400);
@@ -88,6 +90,25 @@ export function createMinuteRateLimiter(limit: number): (request: Request) => bo
     }
     current.count += 1;
     return current.count <= limit;
+  };
+}
+
+// 跨实例限流：以 Supabase 原子计数 RPC 为共享账本，多实例/多节点部署下限流阈值全局生效；仅存 IP 不可逆哈希
+export function createSupabaseRateLimiter(
+  client: SupabaseClient<Database>,
+  limit: number,
+): (request: Request) => Promise<boolean> {
+  return async (request) => {
+    const address = (request.headers.get("x-forwarded-for")?.split(",", 1)[0] ?? "unknown").trim();
+    const key = createHash("sha256").update(address).digest("hex");
+    const minute = Math.floor(Date.now() / 60_000);
+    const result = await client.rpc("consume_ask_rate_limit", { p_bucket_key: key, p_minute_window: minute });
+    if (result.error) {
+      // 计数账本不可用时放行（此时问答链路依赖的 Supabase 内容读取同样不可用，问答会走既有失败降级），但必须留下可观测日志
+      console.error(JSON.stringify({ event: "rate_limit_ledger_unavailable", error: result.error.message }));
+      return true;
+    }
+    return (typeof result.data === "number" ? result.data : 1) <= limit;
   };
 }
 

@@ -1,7 +1,7 @@
 // 组件：版本控制与一键恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
 "use client";
 
-import { History, RotateCcw, AlertTriangle, CheckCircle2, Clock, Info } from "lucide-react";
+import { History, RotateCcw, TriangleAlert, CheckCircle2, Clock, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { VersionRecord } from "@/lib/content/server";
 
@@ -94,7 +94,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
 
       {message && (
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-label">
-          <AlertTriangle className="size-icon-small text-muted flex-shrink-0" />
+          <TriangleAlert className="size-icon-small text-muted flex-shrink-0" />
           <span>{message}</span>
         </div>
       )}

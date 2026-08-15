@@ -1,8 +1,10 @@
 // 单测：测试 /api/ask 路由 Handler 的请求体校验、页面上下文解析、速率限制 (Rate Limit) 与错误响应格式
 import { describe, expect, it, vi } from "vitest";
 import { ACTIVE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
-import { createAskHandler, clearExactAnswerCache, type AnswerService } from "@/lib/ai/ask";
+import { createAskHandler, clearExactAnswerCache, createSupabaseRateLimiter, type AnswerService } from "@/lib/ai/ask";
 import { ProviderError } from "@/lib/ai/provider";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
 function request(body: unknown, ip = "192.0.2.10") {
   return new Request("http://localhost/api/ask", {
@@ -66,5 +68,30 @@ describe("production ask boundary", () => {
 
   it("supports clearing exact answer cache without throwing", () => {
     expect(() => clearExactAnswerCache()).not.toThrow();
+  });
+
+  it("enforces cross-instance rate limits via createSupabaseRateLimiter", async () => {
+    const mockRpc = vi.fn().mockResolvedValueOnce({ data: 5, error: null }).mockResolvedValueOnce({ data: 11, error: null });
+    const mockClient = { rpc: mockRpc } as unknown as SupabaseClient<Database>;
+    const limiter = createSupabaseRateLimiter(mockClient, 10);
+
+    const allowed = await limiter(request({ question: "测试1" }, "192.168.1.1"));
+    expect(allowed).toBe(true);
+    expect(mockRpc).toHaveBeenCalledWith("consume_ask_rate_limit", expect.objectContaining({ p_minute_window: expect.any(Number) }));
+
+    const rejected = await limiter(request({ question: "测试2" }, "192.168.1.1"));
+    expect(rejected).toBe(false);
+  });
+
+  it("fails open and logs warning when Supabase rate limit RPC encounters an error", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const mockRpc = vi.fn().mockResolvedValueOnce({ data: null, error: { message: "connection timeout" } });
+    const mockClient = { rpc: mockRpc } as unknown as SupabaseClient<Database>;
+    const limiter = createSupabaseRateLimiter(mockClient, 10);
+
+    const allowed = await limiter(request({ question: "测试" }));
+    expect(allowed).toBe(true);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("rate_limit_ledger_unavailable"));
+    consoleSpy.mockRestore();
   });
 });

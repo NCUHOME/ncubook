@@ -153,6 +153,21 @@ async function loadVersionFixture(contentVersion: string): Promise<PublishedFixt
     if (result.error) throw new Error(`Unable to read published content: ${result.error.message}`);
   }
 
+  const rowCounts = [pagesResult, blocksResult, assetsResult, searchResult].map((result) => result.data?.length ?? 0);
+  const rowLimits: Array<[string, number]> = [
+    ["published_pages", 1000],
+    ["published_blocks", 10000],
+    ["published_assets", 2000],
+    ["published_search_entries", 10000],
+  ];
+  rowLimits.forEach(([table, cap], index) => {
+    if (rowCounts[index] === cap) {
+      throw new Error(
+        `Published content version ${contentVersion} reached the ${table} row cap of ${cap}; refusing to serve a silently truncated snapshot`,
+      );
+    }
+  });
+
   const pages = (pagesResult.data ?? []).map(parsePageRow);
   const blocksByPageId: Record<string, Block[]> = {};
   for (const row of blocksResult.data ?? []) {

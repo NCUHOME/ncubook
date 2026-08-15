@@ -297,6 +297,27 @@ export interface Database {
           },
         ];
       };
+      rate_limit_buckets: {
+        Row: {
+          bucket_key: string;
+          minute_window: number;
+          request_count: number;
+          updated_at: string;
+        };
+        Insert: {
+          bucket_key: string;
+          minute_window: number;
+          request_count?: number;
+          updated_at?: string;
+        };
+        Update: {
+          bucket_key?: string;
+          minute_window?: number;
+          request_count?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -361,6 +382,13 @@ export interface Database {
       current_published_content_version: {
         Args: Record<PropertyKey, never>;
         Returns: string | null;
+      };
+      consume_ask_rate_limit: {
+        Args: {
+          p_bucket_key: string;
+          p_minute_window: number;
+        };
+        Returns: number;
       };
     };
     Enums: {

@@ -477,3 +477,48 @@ create policy current_pointer_is_public on published_content_pointer
 for select using (
   content_version = current_published_content_version()
 );
+
+-- 8. AI 问答限流计数桶 (跨实例共享；仅存 IP 不可逆哈希，禁止明文)
+create table if not exists rate_limit_buckets (
+  bucket_key text primary key,
+  minute_window bigint not null,
+  request_count integer not null default 1 check (request_count >= 1),
+  updated_at timestamptz not null default now()
+);
+
+alter table rate_limit_buckets enable row level security;
+
+-- 原子计数：窗口内自增、跨窗口归一，并顺带清理过期桶；返回当前窗口累计请求数
+create or replace function consume_ask_rate_limit(
+  p_bucket_key text,
+  p_minute_window bigint
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  new_count integer;
+begin
+  insert into rate_limit_buckets (bucket_key, minute_window, request_count, updated_at)
+  values (p_bucket_key, p_minute_window, 1, now())
+  on conflict (bucket_key) do update
+  set request_count = case
+        when rate_limit_buckets.minute_window = excluded.minute_window
+          then rate_limit_buckets.request_count + 1
+        else 1
+      end,
+      minute_window = excluded.minute_window,
+      updated_at = now()
+  returning request_count into new_count;
+
+  delete from rate_limit_buckets where minute_window < p_minute_window;
+
+  return new_count;
+end;
+$$;
+
+revoke all on function consume_ask_rate_limit(text, bigint) from public;
+revoke all on function consume_ask_rate_limit(text, bigint) from anon, authenticated;
+grant execute on function consume_ask_rate_limit(text, bigint) to service_role;
