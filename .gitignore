@@ -70,3 +70,6 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 .history/
 .idea/
+
+# 忽略原型文件
+原型图

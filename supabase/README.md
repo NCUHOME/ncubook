@@ -22,19 +22,7 @@ supabase/schema.sql
 
 ---
 
-## 3. 可选扩展：向量检索 (Optional Embedding)
-
-基线模式默认**不加载** `pgvector` 扩展与 HNSW 索引，以节省写入成本与云端资源。
-
-如需启用向量粗召回能力，请执行：
-
-```bash
-supabase/migrations/optional-embedding.sql
-```
-
----
-
-## 4. 类型契约与防漂移门禁
+## 3. 类型契约与防漂移门禁
 
 本项目维护 `lib/database.types.ts` 作为应用层 TypeScript 类型契约。
 CI 门禁测试 `tests/lib/database.schema-drift.test.ts` 会自动解析 `schema.sql` 与 `database.types.ts` 的表名、字段名及 RPC 函数签名并进行双向断言，防止类型漂移。

@@ -6,7 +6,6 @@
 -- 0. 扩展
 create extension if not exists pgcrypto;
 create extension if not exists pg_trgm;
--- 注意：vector 扩展不进入基线，见 supabase/migrations/optional-embedding.sql
 
 -- 1. 通用 updated_at 触发器
 create or replace function set_updated_at()
