@@ -1,4 +1,4 @@
-// Notion 发布引擎：Supabase 持久化 Job 存储与并发互斥锁 (支持 Serverless 多实例轮询、进度百分比、僵尸任务自动自愈与强解锁)
+// Notion 发布引擎：Supabase 持久化 Job 存储与并发互斥锁 (M-5 独立 sync_jobs 与 sync_job_logs 表存储)
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 export type PersistentSyncJob = {
@@ -73,36 +73,36 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
 
   try {
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { data, error } = await supabase
-      .from("content_versions")
-      .select("id, status, failure_reason, started_at")
-      .eq("status", "pending")
+    const { data: job, error } = await supabase
+      .from("sync_jobs")
+      .select("id, content_version, status, fail_reason, started_at")
+      .eq("status", "running")
       .gte("started_at", fifteenMinsAgo)
       .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error || !job) return null;
 
-    let logs: string[] = ["🚀 发现后台正在处理中的同步任务..."];
-    if (typeof data.failure_reason === "string" && data.failure_reason.startsWith("[")) {
-      try {
-        logs = JSON.parse(data.failure_reason) as string[];
-      } catch (parseError) {
-        console.error(JSON.stringify({ event: "job_logs_parse_failed", jobId: data.id, error: parseError instanceof Error ? parseError.message : String(parseError) }));
-      }
-    }
+    const { data: logsData } = await supabase
+      .from("sync_job_logs")
+      .select("event")
+      .eq("job_id", job.id)
+      .order("seq", { ascending: true });
+
+    const logs: string[] = (logsData ?? []).map((row) => row.event);
+    if (logs.length === 0) logs.push("🚀 发现后台正在处理中的同步任务...");
 
     const { progressPct, stage } = calculateProgressAndStage(logs, "running");
 
     return {
-      jobId: data.id,
-      contentVersion: data.id,
+      jobId: job.content_version || job.id,
+      contentVersion: job.content_version || job.id,
       status: "running",
       progressPct,
       stage,
       logs,
-      createdAt: new Date(data.started_at).getTime(),
+      createdAt: new Date(job.started_at).getTime(),
     };
   } catch (error) {
     console.error(JSON.stringify({ event: "get_running_job_failed", error: error instanceof Error ? error.message : String(error) }));
@@ -123,9 +123,9 @@ export async function forceReleaseZombieJobs(): Promise<void> {
   if (supabase) {
     try {
       await supabase
-        .from("content_versions")
-        .update({ status: "failed", failure_reason: "任务已由运维管理员手动强制解锁" })
-        .eq("status", "pending");
+        .from("sync_jobs")
+        .update({ status: "released", fail_reason: "任务已由运维管理员手动强制解锁", finished_at: new Date().toISOString() })
+        .eq("status", "running");
     } catch (error) {
       console.error(JSON.stringify({ event: "force_release_zombie_jobs_failed", error: error instanceof Error ? error.message : String(error) }));
     }
@@ -162,12 +162,26 @@ export async function createPersistentJob(contentVersion: string): Promise<Persi
   const supabase = getSupabaseAdmin();
   if (supabase) {
     try {
-      await supabase.from("content_versions").insert({
-        id: contentVersion,
-        source_root_id: process.env.NOTION_ROOT_PAGE_ID || "root",
-        status: "pending",
-        failure_reason: JSON.stringify(initialLogs),
-      });
+      const { data: jobRow } = await supabase
+        .from("sync_jobs")
+        .insert({
+          content_version: contentVersion,
+          command: "publish",
+          status: "running",
+        })
+        .select("id")
+        .single();
+
+      if (jobRow) {
+        await supabase.from("sync_job_logs").insert(
+          initialLogs.map((log, seq) => ({
+            job_id: jobRow.id,
+            seq,
+            level: "info" as const,
+            event: log,
+          })),
+        );
+      }
     } catch (error) {
       console.error(JSON.stringify({ event: "create_persistent_job_failed", contentVersion, error: error instanceof Error ? error.message : String(error) }));
     }
@@ -183,48 +197,50 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
   }
 
   try {
-    const { data, error } = await supabase
-      .from("content_versions")
-      .select("id, status, checksum, failure_reason, started_at")
-      .eq("id", jobId)
+    let { data: job } = await supabase
+      .from("sync_jobs")
+      .select("id, content_version, status, fail_reason, started_at")
+      .eq("content_version", jobId)
+      .order("started_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    if (error || !data) {
+    if (!job) {
+      const byIdResult = await supabase
+        .from("sync_jobs")
+        .select("id, content_version, status, fail_reason, started_at")
+        .eq("id", jobId)
+        .maybeSingle();
+      job = byIdResult.data;
+    }
+
+    if (!job) {
       return fallbackMemoryJobs.get(jobId) ?? null;
     }
 
-    let logs: string[] = [];
-    let failureReason: string | undefined;
+    const { data: logsData } = await supabase
+      .from("sync_job_logs")
+      .select("event")
+      .eq("job_id", job.id)
+      .order("seq", { ascending: true });
 
-    if (typeof data.failure_reason === "string") {
-      if (data.failure_reason.startsWith("[")) {
-        try {
-          logs = JSON.parse(data.failure_reason) as string[];
-        } catch (parseError) {
-          console.error(JSON.stringify({ event: "job_logs_parse_failed", jobId, error: parseError instanceof Error ? parseError.message : String(parseError) }));
-          logs = [data.failure_reason];
-        }
-      } else {
-        failureReason = data.failure_reason;
-        logs = [`❌ 同步中断: ${data.failure_reason}`];
-      }
-    }
+    const logs: string[] = (logsData ?? []).map((row) => row.event);
+    const failureReason = job.fail_reason ?? undefined;
 
     const jobStatus: "running" | "success" | "error" =
-      data.status === "published" ? "success" : data.status === "failed" ? "error" : "running";
+      job.status === "succeeded" ? "success" : job.status === "failed" || job.status === "released" ? "error" : "running";
 
     const { progressPct, stage } = calculateProgressAndStage(logs, jobStatus);
 
     return {
-      jobId: data.id,
-      contentVersion: data.id,
+      jobId: job.content_version || job.id,
+      contentVersion: job.content_version || job.id,
       status: jobStatus,
       progressPct,
       stage,
       logs,
       ...(failureReason ? { error: failureReason } : {}),
-      ...(data.checksum ? { result: { checksum: data.checksum } } : {}),
-      createdAt: new Date(data.started_at).getTime(),
+      createdAt: new Date(job.started_at).getTime(),
     };
   } catch (error) {
     console.error(JSON.stringify({ event: "get_persistent_job_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
@@ -244,10 +260,37 @@ export async function updateJobLogs(jobId: string, newLogs: string[]): Promise<v
   const supabase = getSupabaseAdmin();
   if (supabase) {
     try {
-      await supabase
-        .from("content_versions")
-        .update({ failure_reason: JSON.stringify(newLogs) })
-        .eq("id", jobId);
+      const { data: jobRow } = await supabase
+        .from("sync_jobs")
+        .select("id")
+        .eq("content_version", jobId)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (jobRow) {
+        const { count } = await supabase
+          .from("sync_job_logs")
+          .select("*", { count: "exact", head: true })
+          .eq("job_id", jobRow.id);
+
+        const currentSeq = count ?? 0;
+        const newEntries = newLogs.slice(currentSeq);
+        if (newEntries.length > 0) {
+          await supabase.from("sync_job_logs").insert(
+            newEntries.map((log, index) => ({
+              job_id: jobRow.id,
+              seq: currentSeq + index,
+              level: "info" as const,
+              event: log,
+            })),
+          );
+        }
+        await supabase
+          .from("sync_jobs")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", jobRow.id);
+      }
     } catch (error) {
       console.error(JSON.stringify({ event: "update_job_logs_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
     }
@@ -272,21 +315,24 @@ export async function finishPersistentJob(
   const supabase = getSupabaseAdmin();
   if (supabase) {
     try {
-      if (resultStatus === "error") {
+      const { data: jobRow } = await supabase
+        .from("sync_jobs")
+        .select("id")
+        .eq("content_version", jobId)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (jobRow) {
+        await updateJobLogs(jobId, finalLogs);
         await supabase
-          .from("content_versions")
+          .from("sync_jobs")
           .update({
-            status: "failed",
-            failure_reason: errorMessage || JSON.stringify(finalLogs),
+            status: resultStatus === "success" ? "succeeded" : "failed",
+            fail_reason: errorMessage || null,
+            finished_at: new Date().toISOString(),
           })
-          .eq("id", jobId);
-      } else {
-        await supabase
-          .from("content_versions")
-          .update({
-            failure_reason: JSON.stringify(finalLogs),
-          })
-          .eq("id", jobId);
+          .eq("id", jobRow.id);
       }
     } catch (error) {
       console.error(JSON.stringify({ event: "finish_persistent_job_failed", jobId, resultStatus, error: error instanceof Error ? error.message : String(error) }));

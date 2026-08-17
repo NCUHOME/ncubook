@@ -1,4 +1,4 @@
-// Notion 发布引擎：内容版本控制状态机 (pending/published/failed)、页面校验和 (checksum) 匹配与指针切换
+// Notion 发布引擎：内容版本控制状态机 (pending/staging/published/failed)、页面校验和 (checksum) 匹配与指针切换 (M-5)
 import { batchMap } from "@/lib/publishing/client";
 import { createHash } from "node:crypto";
 import { anchorFromSourceId, type Asset, type Block, type Page, type SearchIndexEntry } from "@/lib/content/schema";
@@ -10,27 +10,44 @@ export type PagePublication = {
   searchEntries: SearchIndexEntry[];
 };
 
+export type ChunkPublication = {
+  pages: Page[];
+  blocks: Block[];
+  assets: Asset[];
+  searchEntries: SearchIndexEntry[];
+};
+
+export type PublicationStage =
+  | "fetch"
+  | "transform"
+  | "mirror-assets"
+  | "search-index"
+  | "commit"
+  | "build"
+  | "stale-check"
+  | "validate";
+
 export type PublicationFailure = {
   contentVersion: string;
   sourcePageId?: string;
   sourceBlockId?: string;
-  stage: "build" | "stale-check" | "validate" | "commit";
+  stage: PublicationStage;
   reason: string;
 };
 
 export type PublicationCommit = {
   contentVersion: string;
-  sourceRootId: string;
-  checksum: string;
   expectedCurrentVersion: string | null;
-  pages: PagePublication[];
+  checksum: string;
+  summary?: Record<string, unknown>;
 };
 
 export type PublicationStore = {
-  getVersionStatus(contentVersion: string): Promise<"pending" | "published" | "failed" | null>;
+  getVersionStatus(contentVersion: string): Promise<"pending" | "staging" | "published" | "failed" | null>;
   getCurrentVersion(): Promise<string | null>;
   startVersion(input: { contentVersion: string; sourceRootId: string }): Promise<void>;
   findPublishedVersionByChecksum(checksum: string): Promise<string | null>;
+  stageChunk(contentVersion: string, chunk: ChunkPublication): Promise<void>;
   commitVersion(input: PublicationCommit): Promise<void>;
   failVersion(failure: PublicationFailure): Promise<void>;
   movePointer(targetVersion: string, expectedCurrentVersion: string | null): Promise<void>;
@@ -77,7 +94,7 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
   await input.store.startVersion({ contentVersion: input.contentVersion, sourceRootId: input.sourceRootId });
 
   const pages: PagePublication[] = [];
-  let stage: PublicationFailure["stage"] = "build";
+  let stage: PublicationStage = "transform";
 
   try {
     const pageResults = await batchMap(input.sourcePageIds, 3, async (id) => {
@@ -106,21 +123,37 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
       return { status: "already-published", contentVersion: input.contentVersion, checksum, pageCount: pages.length };
     }
 
+    // 分块暂存：按页切分暂存
+    stage = "transform";
+    for (const bundle of pages) {
+      await input.store.stageChunk(input.contentVersion, {
+        pages: [bundle.page],
+        blocks: bundle.blocks,
+        assets: bundle.assets,
+        searchEntries: bundle.searchEntries,
+      });
+    }
+
+    // 短事务切线
     stage = "commit";
     await input.store.commitVersion({
       contentVersion: input.contentVersion,
-      sourceRootId: input.sourceRootId,
       checksum,
       expectedCurrentVersion,
-      pages,
+      summary: {
+        pageCount: pages.length,
+        blockCount: pages.reduce((acc, p) => acc + p.blocks.length, 0),
+        assetCount: pages.reduce((acc, p) => acc + p.assets.length, 0),
+      },
     });
     return { status: "published", contentVersion: input.contentVersion, checksum, pageCount: pages.length };
   } catch (error) {
+    const failureStage = mapToFailStage(stage);
     const failure: PublicationFailure = {
       contentVersion: input.contentVersion,
       ...sourcePageIdFromError(error),
       ...sourceBlockId(error),
-      stage,
+      stage: failureStage,
       reason: errorMessage(error),
     };
     try {
@@ -139,6 +172,13 @@ export async function rollbackPublishedVersion(store: PublicationStore, targetVe
   const currentVersion = await store.getCurrentVersion();
   if (currentVersion === targetVersion) return;
   await store.movePointer(targetVersion, currentVersion);
+}
+
+function mapToFailStage(stage: PublicationStage): "fetch" | "transform" | "mirror-assets" | "search-index" | "commit" {
+  if (stage === "build" || stage === "stale-check" || stage === "validate") {
+    return "transform";
+  }
+  return stage;
 }
 
 function validatePublication(contentVersion: string, sourceRootId: string, pages: PagePublication[]): void {

@@ -1,7 +1,7 @@
-// Notion 发布引擎：Supabase 发布存储事务接入层（包含 assertServerOnly 服务端隔离；管理页面、Block 树与 Asset 的 RPC 原子提交）
+// Notion 发布引擎：Supabase 发布存储事务接入层 (M-5 分块暂存与短事务切线)
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/database.types";
-import type { PublicationCommit, PublicationStore } from "@/lib/publishing/version";
+import type { Database, Json } from "@/lib/database.types";
+import type { ChunkPublication, PublicationStore } from "@/lib/publishing/version";
 import { assertServerOnly } from "@/lib/integrations/server-only";
 
 assertServerOnly("Supabase Publication Store");
@@ -12,7 +12,7 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
       const result = await client.from("content_versions").select("status").eq("id", contentVersion).maybeSingle();
       assertNoError(result.error, "read content version");
       const status = asRecord(result.data).status;
-      return status === "pending" || status === "published" || status === "failed" ? status : null;
+      return status === "pending" || status === "staging" || status === "published" || status === "failed" ? status : null;
     },
     async getCurrentVersion() {
       const result = await client.from("published_content_pointer").select("content_version").eq("singleton", true).maybeSingle();
@@ -21,7 +21,12 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
       return typeof version === "string" ? version : null;
     },
     async startVersion({ contentVersion, sourceRootId }) {
-      const result = await client.from("content_versions").insert({ id: contentVersion, source_root_id: sourceRootId, status: "pending" });
+      const result = await client.from("content_versions").insert({
+        id: contentVersion,
+        schema_version: 2,
+        source_root_id: sourceRootId,
+        status: "pending",
+      });
       assertNoError(result.error, "start content version");
     },
     async findPublishedVersionByChecksum(checksum) {
@@ -30,8 +35,24 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
       const id = asRecord(result.data).id;
       return typeof id === "string" ? id : null;
     },
+    async stageChunk(contentVersion, chunk) {
+      const serialized = serializePublicationChunk(chunk);
+      const result = await client.rpc("stage_published_chunk", {
+        p_content_version: contentVersion,
+        p_pages: serialized.pages as unknown as Json,
+        p_blocks: serialized.blocks as unknown as Json,
+        p_assets: serialized.assets as unknown as Json,
+        p_segments: serialized.segments as unknown as Json,
+      });
+      assertNoError(result.error, "stage published chunk");
+    },
     async commitVersion(input) {
-      const result = await client.rpc("commit_published_content_version", serializePublicationCommit(input));
+      const result = await client.rpc("commit_published_content_version", {
+        p_content_version: input.contentVersion,
+        p_expected_current_version: input.expectedCurrentVersion ?? "",
+        p_checksum: input.checksum,
+        p_summary: (input.summary ?? {}) as unknown as Json,
+      });
       assertNoError(result.error, "commit published content version");
     },
     async failVersion(failure) {
@@ -47,45 +68,47 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
     async movePointer(targetVersion, expectedCurrentVersion) {
       const result = await client.rpc("rollback_published_content_version", {
         p_target_version: targetVersion,
-        p_expected_current_version: expectedCurrentVersion,
+        p_expected_current_version: expectedCurrentVersion ?? "",
       });
       assertNoError(result.error, "roll back published content version");
     },
   };
 }
 
-export function serializePublicationCommit(input: PublicationCommit) {
+export function serializePublicationChunk(chunk: ChunkPublication) {
   return {
-    p_content_version: input.contentVersion,
-    p_expected_current_version: input.expectedCurrentVersion,
-    p_checksum: input.checksum,
-    p_pages: input.pages.map(({ page }) => ({
+    pages: chunk.pages.map((page) => ({
       sourcePageId: page.id,
       parentSourcePageId: page.parentId,
       title: page.title,
       slug: page.slug,
+      routePath: page.parentId ? `/docs/${page.slug}` : `/sections/${page.slug}`,
+      treePath: [],
+      school: "ncu",
+      riskLevel: page.metadata.riskLevel,
+      sourceUrls: page.metadata.sourceUrls,
       lastEditedTime: page.lastEditedTime,
       lastPublishedAt: page.lastPublishedAt,
       metadata: page.metadata,
     })),
-    p_blocks: input.pages.flatMap(({ page, blocks }) => blocks.map((block, ordinal) => ({
-      sourcePageId: page.id,
+    blocks: chunk.blocks.map((block, ordinal) => ({
+      sourcePageId: (block as unknown as { sourcePageId?: string }).sourcePageId ?? (chunk.pages[0]?.id ?? ""),
       sourceBlockId: block.id,
       anchor: block.anchor,
       ordinal,
       blockType: block.type,
       block,
-    }))),
-    p_assets: input.pages.flatMap(({ page, assets }) => assets.map((asset) => ({
-      sourcePageId: page.id,
+    })),
+    assets: chunk.assets.map((asset) => ({
+      sourcePageId: (asset as unknown as { sourcePageId?: string }).sourcePageId ?? (chunk.pages[0]?.id ?? ""),
       sourceBlockId: asset.sourceBlockId,
       assetId: asset.id,
       kind: asset.kind,
       publicUrl: asset.publicUrl,
       checksum: asset.checksum,
       alt: asset.alt ?? null,
-    }))),
-    p_search_entries: input.pages.flatMap(({ searchEntries }) => searchEntries.map((entry) => ({
+    })),
+    segments: chunk.searchEntries.map((entry) => ({
       sourcePageId: entry.pageId,
       sourceBlockId: sourceIdFromAnchor(entry.anchor),
       pageTitle: entry.pageTitle,
@@ -93,22 +116,20 @@ export function serializePublicationCommit(input: PublicationCommit) {
       anchor: entry.anchor,
       plainText: entry.plainText,
       blockType: entry.blockType,
-      updatedAt: entry.updatedAt,
-    }))),
+    })),
   };
 }
 
 function sourceIdFromAnchor(anchor: string): string {
-  if (!anchor.startsWith("b-") || anchor.length === 2) throw new Error(`Invalid published anchor: ${anchor}`);
-  return anchor.slice(2);
+  return anchor.replace(/^b-/, "");
 }
 
-function assertNoError(error: { message: string } | null, operation: string): void {
-  if (error) throw new Error(`Unable to ${operation}: ${error.message}`);
+function assertNoError(error: { message: string } | null, operation: string) {
+  if (error) throw new Error(`Failed to ${operation}: ${error.message}`);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : {};
 }

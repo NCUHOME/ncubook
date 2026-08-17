@@ -1,4 +1,4 @@
-// 单测：测试发布版本控制状态机 (version)，验证版本号生成、校验和哈希比对以及当前活动版本指针切换
+// 单测：测试发布版本控制状态机 (version)，验证版本号生成、校验和哈希比对以及当前活动版本指针切换 (M-5)
 import { describe, expect, it, vi } from "vitest";
 import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/schema";
 import {
@@ -6,7 +6,6 @@ import {
   publishVersion,
   rollbackPublishedVersion,
   type PagePublication,
-  type PublicationCommit,
   type PublicationFailure,
   type PublicationStore,
 } from "@/lib/publishing/version";
@@ -39,11 +38,15 @@ function memoryStore(current: string | null = "v1") {
   const published = new Set(current ? [current] : []);
   let pointer = current;
   const commits: string[] = [];
+  const stagedChunks: Array<{ version: string; count: number }> = [];
   const store: PublicationStore = {
     getVersionStatus: vi.fn(async (id) => published.has(id) ? "published" : null),
     getCurrentVersion: vi.fn(async () => pointer),
     startVersion: vi.fn(async () => undefined),
     findPublishedVersionByChecksum: vi.fn(async () => null),
+    stageChunk: vi.fn(async (version, chunk) => {
+      stagedChunks.push({ version, count: chunk.pages.length });
+    }),
     commitVersion: vi.fn(async (input) => {
       if (pointer !== input.expectedCurrentVersion) throw new PointerConflictError(input.expectedCurrentVersion, pointer);
       commits.push(input.contentVersion);
@@ -57,7 +60,7 @@ function memoryStore(current: string | null = "v1") {
       pointer = target;
     }),
   };
-  return { store, failures, commits, current: () => pointer, published };
+  return { store, failures, commits, stagedChunks, current: () => pointer, published };
 }
 
 const baseInput = (store: PublicationStore) => ({
@@ -69,16 +72,17 @@ const baseInput = (store: PublicationStore) => ({
   readLastEditedTime: async (_id: string) => "2026-07-13T10:00:00.000Z",
 });
 
-describe("atomic content publication", () => {
-  it("promotes a complete validated version in one store commit", async () => {
+describe("atomic content publication with chunk staging (M-5)", () => {
+  it("promotes a complete validated version via staging and short transaction commit", async () => {
     const state = memoryStore();
 
     const result = await publishVersion(baseInput(state.store));
 
     expect(result.status).toBe("published");
     expect(state.commits).toEqual(["v2"]);
+    expect(state.stagedChunks.length).toBe(2);
     expect(state.current()).toBe("v2");
-    expect(state.store.commitVersion).toHaveBeenCalledWith(expect.objectContaining({ expectedCurrentVersion: "v1", pages: expect.arrayContaining([expect.objectContaining({ page: expect.objectContaining({ id: "article" }) })]) }));
+    expect(state.store.commitVersion).toHaveBeenCalledWith(expect.objectContaining({ expectedCurrentVersion: "v1", contentVersion: "v2" }));
   });
 
   it("records a page failure and leaves both an existing and empty pointer unchanged", async () => {
@@ -93,7 +97,7 @@ describe("atomic content publication", () => {
       await expect(publishVersion(input)).rejects.toThrow("unsupported block");
       expect(state.current()).toBe(initialPointer);
       expect(state.commits).toEqual([]);
-      expect(state.failures).toContainEqual(expect.objectContaining({ contentVersion: "v2", sourcePageId: "article", stage: "build", reason: "unsupported block" }));
+      expect(state.failures).toContainEqual(expect.objectContaining({ contentVersion: "v2", sourcePageId: "article", stage: "transform", reason: "unsupported block" }));
     }
   });
 
@@ -106,7 +110,7 @@ describe("atomic content publication", () => {
     };
 
     await expect(publishVersion(input)).rejects.toThrow("unsupported-media-type");
-    expect(state.failures[0]).toMatchObject({ sourcePageId: "article", sourceBlockId: "image-one", stage: "build" });
+    expect(state.failures[0]).toMatchObject({ sourcePageId: "article", sourceBlockId: "image-one", stage: "transform" });
     expect(state.current()).toBe("v1");
   });
 

@@ -260,6 +260,7 @@ function createDryRunStore(): PublicationStore {
     getCurrentVersion: async () => null,
     startVersion: async () => undefined,
     findPublishedVersionByChecksum: async () => null,
+    stageChunk: async () => undefined,
     commitVersion: async () => undefined,
     failVersion: async () => undefined,
     movePointer: async () => undefined,
