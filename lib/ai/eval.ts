@@ -336,3 +336,37 @@ export async function runEvaluationSuite(options: {
 
   return evaluateAnswerSessions(cases, sessions, latencies, thresholds);
 }
+
+export async function saveEvaluationRun(
+  mode: "fixture" | "shadow" | "production",
+  summary: Record<string, unknown>,
+): Promise<string | null> {
+  const { getSupabaseAdmin } = await import("@/lib/integrations/supabase");
+  const client = getSupabaseAdmin();
+  if (!client) return null;
+
+  try {
+    const { data, error } = await client
+      .from("evaluation_runs")
+      .insert({
+        mode,
+        summary: summary as unknown as import("@/lib/database.types").Json,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error(JSON.stringify({ event: "save_eval_run_error", error: error.message }));
+      return null;
+    }
+    return data?.id ?? null;
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        event: "save_eval_run_failed",
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
+    return null;
+  }
+}

@@ -280,19 +280,20 @@ export class SupabaseContentRepository implements ContentRepository {
 
   async getSectionForPage(pageId: string): Promise<Page | null> {
     return unstable_cache(
-      async () => {
+      async (): Promise<Page | null> => {
         let currentId: string | null = pageId;
         while (currentId) {
-          const { data: p } = await this.client
+          const lookupId: string = currentId;
+          const { data: pageRow, error } = await this.client
             .from("published_pages")
             .select("*")
             .eq("content_version", this.version)
-            .eq("source_page_id", currentId)
+            .eq("source_page_id", lookupId)
             .maybeSingle();
 
-          if (!p) return null;
-          if (!p.parent_source_page_id) return parsePageRow(p);
-          currentId = p.parent_source_page_id;
+          if (error || !pageRow) return null;
+          if (!pageRow.parent_source_page_id) return parsePageRow(pageRow);
+          currentId = pageRow.parent_source_page_id;
         }
         return null;
       },

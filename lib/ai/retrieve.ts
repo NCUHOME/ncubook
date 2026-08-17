@@ -1,4 +1,4 @@
-// AI 问答引擎：知识库 Block 混合检索算法（支持三元组模糊匹配、向量 Embedding 相似度与页面上下文 Boosting）
+// AI 问答引擎：知识库 Block 粗召回与打分融合算法 (M-6 接入 match_published_segments RPC)
 import type { EmbeddingModel } from "@/lib/ai/provider";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
@@ -17,7 +17,7 @@ export type RetrievalSource = {
   school: string;
   contentVersion: string;
   lexicalScore: number;
-  vectorScore: number;
+  vectorScore?: number;
   sourceUrls: string[];
 };
 
@@ -55,32 +55,38 @@ export async function retrieveGroundingSources({
   maxTotalCharacters = MAX_GROUNDING_CHARACTERS,
   allowedRiskLevels = ["normal", "needs-verification"],
 }: RetrieveInput): Promise<RetrievalSource[]> {
-  const normalizedQuestion = question.trim();
+  const normalizedQuestion = question.trim().slice(0, MAX_GROUNDING_CHARACTERS);
   if (!normalizedQuestion) return [];
   const [contentVersion, queryEmbedding] = await Promise.all([
     repository.getCurrentVersion(),
     embedding ? embedding.embed([normalizedQuestion]).then((res) => res[0]) : Promise.resolve(undefined),
   ]);
   if (!contentVersion) return [];
+
   const candidates = await repository.searchCurrentVersion({
     question: normalizedQuestion,
     ...(queryEmbedding ? { queryEmbedding } : {}),
     contentVersion,
     school: "ncu",
-    limit: Math.max(maxCandidates * 3, maxCandidates),
+    limit: Math.max(maxCandidates * 3, 24),
   });
   const allowed = new Set(allowedRiskLevels);
 
   const sorted = candidates
-    .filter((source) => source.contentVersion === contentVersion
-      && source.school === "ncu"
-      && allowed.has(source.riskLevel)
-      && (source.lexicalScore >= MINIMUM_LEXICAL_SCORE || Boolean(queryEmbedding && source.vectorScore > 0)))
+    .filter(
+      (source) =>
+        source.contentVersion === contentVersion &&
+        source.school === "ncu" &&
+        allowed.has(source.riskLevel) &&
+        (source.lexicalScore >= MINIMUM_LEXICAL_SCORE || Boolean(source.vectorScore && source.vectorScore > 0)),
+    )
     .map((source) => ({
       source,
-      score: source.lexicalScore * 1 + source.vectorScore * 2
-        + (pageContext?.pageId === source.pageId ? 2 : 0)
-        + (pageContext?.pageId === source.pageId && pageContext.anchor === source.anchor ? 3 : 0),
+      score:
+        source.lexicalScore * 1 +
+        (source.vectorScore ?? 0) * 2 +
+        (pageContext?.pageId === source.pageId ? 2 : 0) +
+        (pageContext?.pageId === source.pageId && pageContext.anchor === source.anchor ? 3 : 0),
     }))
     .sort((left, right) => right.score - left.score || left.source.id.localeCompare(right.source.id));
 
@@ -103,16 +109,18 @@ export async function retrieveGroundingSources({
 export function createSupabaseRetrievalRepository(client: SupabaseClient<Database>): RetrievalRepository {
   return {
     async getCurrentVersion() {
-      const result = await client.from("published_content_pointer").select("content_version").eq("singleton", true).maybeSingle();
+      const result = await client
+        .from("published_content_pointer")
+        .select("content_version")
+        .eq("singleton", true)
+        .maybeSingle();
       if (result.error) throw new Error(`Unable to read current content version: ${result.error.message}`);
       const version = result.data?.content_version;
       return typeof version === "string" ? version : null;
     },
-    async searchCurrentVersion({ question, queryEmbedding, limit }) {
-      if (queryEmbedding && queryEmbedding.length !== 1536) throw new Error("Query embedding must contain 1536 dimensions");
-      const result = await client.rpc("retrieve_published_sources", {
+    async searchCurrentVersion({ question, limit }) {
+      const result = await client.rpc("match_published_segments", {
         p_question: question,
-        p_query_embedding: queryEmbedding ?? null,
         p_limit: limit,
       });
       if (result.error) throw new Error(`Unable to retrieve grounding sources: ${result.error.message}`);
@@ -138,14 +146,13 @@ function parseSourceRow(value: unknown): RetrievalSource {
     school: requiredString(row.school, "Retrieval school"),
     contentVersion: requiredString(row.content_version, "Retrieval content version"),
     lexicalScore: finiteNumber(row.lexical_score),
-    vectorScore: finiteNumber(row.vector_score),
     sourceUrls: stringArray(row.source_urls),
   };
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : {};
 }
 

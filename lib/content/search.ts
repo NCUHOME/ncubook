@@ -85,7 +85,7 @@ export function groupSqlSearchSegments(
       pageId: string;
       pageTitle: string;
       sectionPath: string[];
-      route: string;
+      href: string;
       score: number;
       snippets: SearchSnippet[];
       totalMatches: number;
@@ -98,13 +98,13 @@ export function groupSqlSearchSegments(
     if (!group) {
       const firstSection = seg.section_path[0];
       const topSection = firstSection ? [firstSection] : ["综合指南"];
-      const route = pageRoutes[seg.source_page_id] || `/docs/${seg.source_page_id}`;
+      const href = pageRoutes[seg.source_page_id] || `/docs/${seg.source_page_id}`;
       const isTitleMatch = seg.page_title.toLocaleLowerCase("zh-CN").includes(needle);
       group = {
         pageId: seg.source_page_id,
         pageTitle: seg.page_title,
         sectionPath: topSection,
-        route,
+        href,
         score: Math.max(seg.ts_rank, seg.trgm_score),
         snippets: [],
         totalMatches: isTitleMatch ? 1 : 0,
