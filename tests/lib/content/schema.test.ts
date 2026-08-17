@@ -34,9 +34,9 @@ describe("content schema contracts and guards", () => {
     expect(isRiskLevel("normal")).toBe(true);
     expect(isRiskLevel("needs-verification")).toBe(true);
     expect(isRiskLevel("sensitive")).toBe(true);
-    expect(isRiskLevel("low")).toBe(true);
-    expect(isRiskLevel("medium")).toBe(true);
-    expect(isRiskLevel("high")).toBe(true);
+    expect(isRiskLevel("low")).toBe(false);
+    expect(isRiskLevel("medium")).toBe(false);
+    expect(isRiskLevel("high")).toBe(false);
     expect(isRiskLevel("critical")).toBe(false);
   });
 

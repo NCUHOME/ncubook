@@ -8,7 +8,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const repository = await loadPublishedRepository();
-  const routes = repository.getPageRoutes();
+  const routes = await repository.getPageRoutes();
 
   const entries: MetadataRoute.Sitemap = [
     {
@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const [, routePath] of Object.entries(routes)) {
     if (routePath.startsWith("/sections/")) {
       const slug = routePath.replace("/sections/", "");
-      const view = repository.getSectionView(slug);
+      const view = await repository.getSectionView(slug);
       entries.push({
         url: `${siteUrl}${routePath}`,
         lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),
@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     } else if (routePath.startsWith("/docs/")) {
       const slug = routePath.replace("/docs/", "");
-      const view = repository.getDocumentView(slug);
+      const view = await repository.getDocumentView(slug);
       entries.push({
         url: `${siteUrl}${routePath}`,
         lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),

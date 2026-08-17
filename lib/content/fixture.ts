@@ -1,8 +1,8 @@
-// 核心业务领域：Mock Fixtures 节点集合与静态 Fixture 假数据仓储策略实现 (S5 合并)
+// 核心业务领域：Mock Fixtures 节点集合与静态 Fixture 假数据仓储策略实现 (M-3)
 import type { Asset, Block, Page, PublishedFixture, RichText, SearchIndexEntry } from "@/lib/content/schema";
-import type { ContentRepository, DocumentView, PageTreeNode } from "@/lib/content/server";
+import type { ContentRepository, DocumentView, PageTreeNode, SectionView } from "@/lib/content/server";
 
-const contentVersion = "content-2026-07";
+export const fixtureContentVersion = "content-2026-07";
 const publishedAt = "2026-07-13T10:00:00.000Z";
 
 function text(plainText: string): RichText {
@@ -13,7 +13,7 @@ function page(input: Pick<Page, "id" | "parentId" | "title" | "slug"> & { topics
   return {
     id: input.id,
     schemaVersion: 1,
-    contentVersion,
+    contentVersion: fixtureContentVersion,
     parentId: input.parentId,
     title: input.title,
     slug: input.slug,
@@ -124,12 +124,12 @@ const richBlocks: Block[] = [
 
 export const searchIndexFixture: SearchIndexEntry[] = [
   {
-    id: `${contentVersion}-shuttle-intro`, schemaVersion: 1, contentVersion, pageId: "page-campus-shuttle", pageTitle: "校园环游车乘坐指南",
+    id: `${fixtureContentVersion}-shuttle-intro`, schemaVersion: 1, contentVersion: fixtureContentVersion, pageId: "page-campus-shuttle", pageTitle: "校园环游车乘坐指南",
     sectionPath: ["校园生活", "校园交通"], anchor: "b-shuttle-intro", plainText: "校园环游车连接前湖北院、南院与主要教学区域，适合校内较长距离通行。",
     blockType: "paragraph", updatedAt: publishedAt,
   },
   {
-    id: `${contentVersion}-fare`, schemaVersion: 1, contentVersion, pageId: "page-campus-shuttle", pageTitle: "校园环游车乘坐指南",
+    id: `${fixtureContentVersion}-fare`, schemaVersion: 1, contentVersion: fixtureContentVersion, pageId: "page-campus-shuttle", pageTitle: "校园环游车乘坐指南",
     sectionPath: ["校园生活", "校园交通", "路线与收费"], anchor: "b-fare", plainText: "单次收费 0.9 元，可使用支付宝洪城一卡通或扫描车载二维码付款。",
     blockType: "paragraph", updatedAt: publishedAt,
   },
@@ -147,8 +147,8 @@ export const publishedFixture: PublishedFixture = {
     "page-rich-content": richBlocks,
   },
   assets: [
-    { id: "asset-campus-map", sourceBlockId: "rich-image", contentVersion, kind: "image", publicUrl: "/images/campus-map.svg", checksum: "fixture-map", alt: "校园交通路线示意图" },
-    { id: "asset-guide-pdf", sourceBlockId: "rich-file", contentVersion, kind: "file", publicUrl: "/files/campus-life-guide.pdf", checksum: "fixture-guide" },
+    { id: "asset-campus-map", sourceBlockId: "rich-image", contentVersion: fixtureContentVersion, kind: "image", publicUrl: "/images/campus-map.svg", checksum: "fixture-map", alt: "校园交通路线示意图" },
+    { id: "asset-guide-pdf", sourceBlockId: "rich-file", contentVersion: fixtureContentVersion, kind: "file", publicUrl: "/files/campus-life-guide.pdf", checksum: "fixture-guide" },
   ],
   searchIndex: searchIndexFixture,
 };
@@ -159,6 +159,10 @@ export class FixtureContentRepository implements ContentRepository {
   constructor(fixture: PublishedFixture = publishedFixture) {
     this.fixture = fixture;
   }
+
+  getContentVersion = (): string => {
+    return fixtureContentVersion;
+  };
 
   resolvePageRoute = (pageId: string): string => {
     const page = this.fixture.pages.find((candidate) => candidate.id === pageId);
@@ -176,47 +180,55 @@ export class FixtureContentRepository implements ContentRepository {
         children: this.childrenOf(page.id),
       }));
 
-  getDocumentView = (slug: string): DocumentView | null => {
+  getDocument = async (slug: string): Promise<DocumentView | null> => {
     const page = this.fixture.pages.find((candidate) => candidate.slug === slug && candidate.status === "published");
     if (!page) return null;
     const blocks = this.fixture.blocksByPageId[page.id] ?? [];
     return { page, blocks, description: firstPlainText(blocks) };
   };
 
-  getSectionView = (slug: string): DocumentView | null => {
-    const view = this.getDocumentView(slug);
+  getDocumentView = async (slug: string): Promise<DocumentView | null> => {
+    return this.getDocument(slug);
+  };
+
+  getSection = async (slug: string): Promise<SectionView | null> => {
+    const view = await this.getDocument(slug);
     return view?.page.parentId === null ? view : null;
   };
 
-  getPublishedSections = (): Page[] => {
+  getSectionView = async (slug: string): Promise<SectionView | null> => {
+    return this.getSection(slug);
+  };
+
+  getPublishedSections = async (): Promise<Page[]> => {
     return this.fixture.pages.filter((page) => page.parentId === null && page.status === "published");
   };
 
-  getSectionTree = (sectionSlug: string): PageTreeNode[] => {
+  getSectionTree = async (sectionSlug: string): Promise<PageTreeNode[]> => {
     const section = this.fixture.pages.find((page) => page.slug === sectionSlug && page.parentId === null);
     return section ? this.childrenOf(section.id) : [];
   };
 
-  getSectionChildren = (sectionSlug: string): Page[] => {
+  getSectionChildren = async (sectionSlug: string): Promise<Page[]> => {
     const section = this.fixture.pages.find((page) => page.slug === sectionSlug && page.parentId === null);
     return section ? this.fixture.pages.filter((page) => page.parentId === section.id && page.status === "published") : [];
   };
 
-  getSectionForPage = (pageId: string): Page | null => {
+  getSectionForPage = async (pageId: string): Promise<Page | null> => {
     let page = this.fixture.pages.find((candidate) => candidate.id === pageId) ?? null;
     while (page?.parentId) page = this.fixture.pages.find((candidate) => candidate.id === page?.parentId) ?? null;
     return page?.parentId === null ? page : null;
   };
 
-  getAsset = (assetId: string): Asset | null => {
+  getAsset = async (assetId: string): Promise<Asset | null> => {
     return this.fixture.assets.find((asset) => asset.id === assetId) ?? null;
   };
 
-  getSearchIndex = (): SearchIndexEntry[] => {
+  getSearchIndex = async (): Promise<SearchIndexEntry[]> => {
     return [...this.fixture.searchIndex];
   };
 
-  getPageRoutes = (): Record<string, string> => {
+  getPageRoutes = async (): Promise<Record<string, string>> => {
     return Object.fromEntries(this.fixture.pages.map((page) => [page.id, this.resolvePageRoute(page.id)]));
   };
 }
@@ -233,7 +245,8 @@ export function createFixtureRepository(fixture?: PublishedFixture): ContentRepo
 }
 
 const defaultFixtureRepo = new FixtureContentRepository();
-export const getAsset = defaultFixtureRepo.getAsset;
+export const getAsset = (assetId: string): Asset | null =>
+  publishedFixture.assets.find((asset) => asset.id === assetId) ?? null;
 export const getDocumentView = defaultFixtureRepo.getDocumentView;
 export const getSectionChildren = defaultFixtureRepo.getSectionChildren;
 export const getSectionForPage = defaultFixtureRepo.getSectionForPage;

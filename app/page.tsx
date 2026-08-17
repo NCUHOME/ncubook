@@ -7,8 +7,8 @@ import { AppHeader } from "@/src/components/primitives/header";
 
 export default async function HomePage() {
   const repository = await loadPublishedRepository();
-  const sections = repository.getPublishedSections();
-  const resolveRoute = repository.resolvePageRoute;
+  const sections = await repository.getPublishedSections();
+  const routes = await repository.getPageRoutes();
 
   return (
     <>
@@ -37,7 +37,7 @@ export default async function HomePage() {
             {sections.slice(0, 6).map((section) => (
               <Link
                 key={section.id}
-                href={resolveRoute(section.id)}
+                href={routes[section.id] || repository.resolvePageRoute(section.id)}
                 className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-label odd:pr-s3 even:pl-s3"
               >
                 <span>{section.title}</span>

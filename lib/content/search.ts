@@ -28,6 +28,17 @@ export type SearchResult = {
   href: string;
 };
 
+export type SqlSearchSegment = {
+  source_page_id: string;
+  page_title: string;
+  section_path: string[];
+  anchor: string;
+  block_type: string;
+  plain_text: string;
+  ts_rank: number;
+  trgm_score: number;
+};
+
 /**
  * 标点清洗工具：剔除章节标题末尾的冒号、斜杠等悬挂标点
  */
@@ -60,7 +71,64 @@ export function extractSnippet(text: string, query: string, maxLength = 80): str
 }
 
 /**
- * 行业标准文档级聚合搜索算法
+ * 将 SQL RPC search_published_segments 返回的段落列表聚合成文章级结果
+ */
+export function groupSqlSearchSegments(
+  segments: SqlSearchSegment[],
+  pageRoutes: Record<string, string>,
+  query: string,
+): GroupedSearchResult[] {
+  const needle = query.trim().toLocaleLowerCase("zh-CN");
+  const pageMap = new Map<
+    string,
+    {
+      pageId: string;
+      pageTitle: string;
+      sectionPath: string[];
+      route: string;
+      score: number;
+      snippets: SearchSnippet[];
+      totalMatches: number;
+      isTitleMatch: boolean;
+    }
+  >();
+
+  for (const seg of segments) {
+    let group = pageMap.get(seg.source_page_id);
+    if (!group) {
+      const firstSection = seg.section_path[0];
+      const topSection = firstSection ? [firstSection] : ["综合指南"];
+      const route = pageRoutes[seg.source_page_id] || `/docs/${seg.source_page_id}`;
+      const isTitleMatch = seg.page_title.toLocaleLowerCase("zh-CN").includes(needle);
+      group = {
+        pageId: seg.source_page_id,
+        pageTitle: seg.page_title,
+        sectionPath: topSection,
+        route,
+        score: Math.max(seg.ts_rank, seg.trgm_score),
+        snippets: [],
+        totalMatches: isTitleMatch ? 1 : 0,
+        isTitleMatch,
+      };
+      pageMap.set(seg.source_page_id, group);
+    }
+
+    const isHeading = seg.block_type === "heading";
+    group.snippets.push({
+      anchor: seg.anchor,
+      headingPath: seg.section_path.slice(1).map(cleanHeadingPunctuation),
+      text: extractSnippet(seg.plain_text, needle),
+      isHeading,
+    });
+    group.totalMatches += 1;
+    group.score = Math.max(group.score, seg.ts_rank, seg.trgm_score);
+  }
+
+  return Array.from(pageMap.values()).sort((a, b) => b.score - a.score);
+}
+
+/**
+ * 行业标准文档级聚合搜索算法（用于客户端纯文本搜索或 Fixture 降级搜索）
  */
 export function searchGroupedEntries(
   query: string,

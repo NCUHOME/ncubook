@@ -24,7 +24,8 @@ export default async function AdminDashboardPage() {
 
   const repository = await loadPublishedRepository();
   const livePointer = await getLivePublishedContentPointer();
-  const currentVersion = livePointer ?? repository.getPublishedSections()[0]?.contentVersion ?? null;
+  const sections = await repository.getPublishedSections();
+  const currentVersion = livePointer ?? sections[0]?.contentVersion ?? null;
   const initialVersions = await fetchContentVersionsFromSupabase();
 
   return (

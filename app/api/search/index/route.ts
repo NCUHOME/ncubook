@@ -24,11 +24,11 @@ export async function GET(request: Request) {
       return NextResponse.json([], { status: 200 });
     }
 
-    const entries = repository.getSearchIndex();
-    const resolveRoute = repository.resolvePageRoute;
+    const entries = await repository.getSearchIndex();
+    const routes = await repository.getPageRoutes();
 
     const items: CompactSearchItem[] = entries.map((entry) => {
-      const baseRoute = resolveRoute(entry.pageId);
+      const baseRoute = routes[entry.pageId] || repository.resolvePageRoute(entry.pageId);
       return {
         pid: entry.pageId,
         t: entry.pageTitle,

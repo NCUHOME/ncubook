@@ -12,7 +12,7 @@ export const dynamicParams = true;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const repository = await loadPublishedRepository();
-  const view = repository.getSectionView(slug);
+  const view = await repository.getSectionView(slug);
   if (!view) return { title: "板块未找到 - 此间" };
 
   const title = `${view.page.title} - 校园指南 · 此间`;
@@ -33,13 +33,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function SectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const repository = await loadPublishedRepository();
-  const view = repository.getSectionView(slug);
+  const view = await repository.getSectionView(slug);
   if (!view) notFound();
 
-  const children = repository.getSectionChildren(slug);
-  const tree = repository.getSectionTree(slug);
-  const getAsset = repository.getAsset;
-  const resolveRoute = repository.resolvePageRoute;
+  const children = await repository.getSectionChildren(slug);
+  const tree = await repository.getSectionTree(slug);
+  const routes = await repository.getPageRoutes();
+  const assetMap = new Map((view.assets ?? []).map((a) => [a.id, a]));
+  const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
+  const resolveRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);
   const contentBlocks = view.blocks[0]?.type === "paragraph" ? view.blocks.slice(1) : view.blocks;
 
   return (
@@ -92,5 +94,6 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
 
 export async function generateStaticParams() {
   const repository = await loadPublishedRepository();
-  return repository.getPublishedSections().map((section) => ({ slug: section.slug }));
+  const sections = await repository.getPublishedSections();
+  return sections.map((section) => ({ slug: section.slug }));
 }

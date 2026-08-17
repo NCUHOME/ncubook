@@ -12,9 +12,9 @@ export const dynamicParams = true;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const repository = await loadPublishedRepository();
-  const view = repository.getDocumentView(slug);
+  const view = await repository.getDocumentView(slug);
   if (!view || view.page.parentId === null) return { title: "文档未找到 - 此间" };
-  const section = repository.getSectionForPage(view.page.id);
+  const section = await repository.getSectionForPage(view.page.id);
 
   const title = `${view.page.title} - ${section?.title ?? "校园知识"} · 此间`;
   const description = `南昌大学 AI 知识库 · ${view.page.title}`;
@@ -34,14 +34,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function DocumentPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const repository = await loadPublishedRepository();
-  const view = repository.getDocumentView(slug);
+  const view = await repository.getDocumentView(slug);
   if (!view || view.page.parentId === null) notFound();
-  const section = repository.getSectionForPage(view.page.id);
+  const section = await repository.getSectionForPage(view.page.id);
   if (!section) notFound();
 
-  const tree = repository.getSectionTree(section.slug);
-  const getAsset = repository.getAsset;
-  const resolvePageRoute = repository.resolvePageRoute;
+  const tree = await repository.getSectionTree(section.slug);
+  const routes = await repository.getPageRoutes();
+  const assetMap = new Map((view.assets ?? []).map((a) => [a.id, a]));
+  const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
+  const resolvePageRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);
 
   return (
     <>
@@ -76,7 +78,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
 
 export async function generateStaticParams() {
   const repository = await loadPublishedRepository();
-  const routes = repository.getPageRoutes();
+  const routes = await repository.getPageRoutes();
   return Object.values(routes)
     .filter((route) => route.startsWith("/docs/"))
     .map((route) => ({ slug: route.replace("/docs/", "") }));

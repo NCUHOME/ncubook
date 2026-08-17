@@ -7,8 +7,8 @@ import { getAsset, getDocumentView, resolvePageRoute } from "@/lib/content/fixtu
 import { ArticleRenderer } from "@/src/components/article/renderer";
 
 describe("article renderer", () => {
-  it("preserves rich blocks, assets and stable anchors", () => {
-    const view = getDocumentView("rich-content-guide");
+  it("preserves rich blocks, assets and stable anchors", async () => {
+    const view = await getDocumentView("rich-content-guide");
     render(<ArticleRenderer blocks={view?.blocks ?? []} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />);
 
     expect(screen.getByRole("heading", { name: "富内容示例" })).toHaveAttribute("id", "b-rich-heading");

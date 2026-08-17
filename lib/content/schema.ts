@@ -99,7 +99,8 @@ export type PublishedFixture = {
 
 export type TrustStatus = "official" | "student-verified" | "unverified" | "官方来源" | "同学经验已核实" | "待核实";
 export type ReviewStatus = "published" | "draft" | "deprecated";
-export type RiskLevel = "normal" | "needs-verification" | "sensitive" | "low" | "medium" | "high";
+export type RiskLevel = "normal" | "needs-verification" | "sensitive";
+export type ClaimStatus = "grounded" | "needs-verification" | "insufficient";
 
 export type InformationCard = {
   slug: string;
@@ -131,7 +132,7 @@ export function isReviewStatus(value: string): value is ReviewStatus {
 }
 
 export function isRiskLevel(value: string): value is RiskLevel {
-  return value === "normal" || value === "needs-verification" || value === "sensitive" || value === "low" || value === "medium" || value === "high";
+  return value === "normal" || value === "needs-verification" || value === "sensitive";
 }
 
 export function anchorFromSourceId(sourceId: string): string {
