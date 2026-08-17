@@ -1,4 +1,4 @@
-// Notion 发布引擎：Supabase 持久化 Job 存储与并发互斥锁 (M-5 独立 sync_jobs 与 sync_job_logs 表存储)
+// Notion 发布引擎：Supabase 持久化 Job 存储与并发互斥锁 (严格 Fail-Closed，无内存 Map 兜底)
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 
 export type PersistentSyncJob = {
@@ -12,9 +12,6 @@ export type PersistentSyncJob = {
   error?: string;
   createdAt: number;
 };
-
-// 内存兜底 Store (当未配置 Supabase 时备用)
-const fallbackMemoryJobs = new Map<string, PersistentSyncJob>();
 
 export function calculateProgressAndStage(
   logs: string[],
@@ -61,15 +58,7 @@ export function calculateProgressAndStage(
 
 export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> {
   const supabase = getSupabaseAdmin();
-  if (!supabase) {
-    const now = Date.now();
-    for (const job of fallbackMemoryJobs.values()) {
-      if (job.status === "running" && now - job.createdAt < 15 * 60 * 1000) {
-        return job;
-      }
-    }
-    return null;
-  }
+  if (!supabase) return null;
 
   try {
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
@@ -112,23 +101,16 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
 
 // 强制解锁死锁/僵尸挂起任务
 export async function forceReleaseZombieJobs(): Promise<void> {
-  for (const [, job] of fallbackMemoryJobs.entries()) {
-    if (job.status === "running") {
-      job.status = "error";
-      job.error = "任务已由运维管理员手动解除挂起锁";
-    }
-  }
-
   const supabase = getSupabaseAdmin();
-  if (supabase) {
-    try {
-      await supabase
-        .from("sync_jobs")
-        .update({ status: "released", fail_reason: "任务已由运维管理员手动强制解锁", finished_at: new Date().toISOString() })
-        .eq("status", "running");
-    } catch (error) {
-      console.error(JSON.stringify({ event: "force_release_zombie_jobs_failed", error: error instanceof Error ? error.message : String(error) }));
-    }
+  if (!supabase) throw new Error("Supabase publication storage is unavailable");
+
+  const { error } = await supabase
+    .from("sync_jobs")
+    .update({ status: "released", fail_reason: "任务已由运维管理员手动强制解锁", finished_at: new Date().toISOString() })
+    .eq("status", "running");
+
+  if (error) {
+    throw new Error(`Failed to release zombie jobs: ${error.message}`);
   }
 }
 
@@ -141,13 +123,43 @@ function formatLog(msg: string): string {
 }
 
 export async function createPersistentJob(contentVersion: string): Promise<PersistentSyncJob> {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Supabase publication storage is unavailable");
+
   const jobId = contentVersion;
   const initialLogs = [
     formatLog("🚀 同步任务已成功发起，正在准备拉取 Notion 最新文章..."),
     formatLog("正在建立与 Notion 校园知识库的高速连接..."),
   ];
 
-  const job: PersistentSyncJob = {
+  const { data: jobRow, error: jobError } = await supabase
+    .from("sync_jobs")
+    .insert({
+      content_version: contentVersion,
+      command: "publish",
+      status: "running",
+    })
+    .select("id")
+    .single();
+
+  if (jobError || !jobRow) {
+    throw new Error(`Failed to create sync job: ${jobError?.message ?? "unknown error"}`);
+  }
+
+  const { error: logsError } = await supabase.from("sync_job_logs").insert(
+    initialLogs.map((log, seq) => ({
+      job_id: jobRow.id,
+      seq,
+      level: "info" as const,
+      event: log,
+    })),
+  );
+
+  if (logsError) {
+    console.error(JSON.stringify({ event: "create_initial_job_logs_failed", contentVersion, error: logsError.message }));
+  }
+
+  return {
     jobId,
     contentVersion,
     status: "running",
@@ -156,45 +168,11 @@ export async function createPersistentJob(contentVersion: string): Promise<Persi
     logs: initialLogs,
     createdAt: Date.now(),
   };
-
-  fallbackMemoryJobs.set(jobId, job);
-
-  const supabase = getSupabaseAdmin();
-  if (supabase) {
-    try {
-      const { data: jobRow } = await supabase
-        .from("sync_jobs")
-        .insert({
-          content_version: contentVersion,
-          command: "publish",
-          status: "running",
-        })
-        .select("id")
-        .single();
-
-      if (jobRow) {
-        await supabase.from("sync_job_logs").insert(
-          initialLogs.map((log, seq) => ({
-            job_id: jobRow.id,
-            seq,
-            level: "info" as const,
-            event: log,
-          })),
-        );
-      }
-    } catch (error) {
-      console.error(JSON.stringify({ event: "create_persistent_job_failed", contentVersion, error: error instanceof Error ? error.message : String(error) }));
-    }
-  }
-
-  return job;
 }
 
 export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob | null> {
   const supabase = getSupabaseAdmin();
-  if (!supabase) {
-    return fallbackMemoryJobs.get(jobId) ?? null;
-  }
+  if (!supabase) return null;
 
   try {
     let { data: job } = await supabase
@@ -214,9 +192,7 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
       job = byIdResult.data;
     }
 
-    if (!job) {
-      return fallbackMemoryJobs.get(jobId) ?? null;
-    }
+    if (!job) return null;
 
     const { data: logsData } = await supabase
       .from("sync_job_logs")
@@ -244,57 +220,51 @@ export async function getPersistentJob(jobId: string): Promise<PersistentSyncJob
     };
   } catch (error) {
     console.error(JSON.stringify({ event: "get_persistent_job_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
-    return fallbackMemoryJobs.get(jobId) ?? null;
+    return null;
   }
 }
 
 export async function updateJobLogs(jobId: string, newLogs: string[]): Promise<void> {
-  const job = fallbackMemoryJobs.get(jobId);
-  if (job) {
-    job.logs = newLogs;
-    const { progressPct, stage } = calculateProgressAndStage(newLogs, job.status);
-    job.progressPct = progressPct;
-    job.stage = stage;
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Supabase publication storage is unavailable");
+
+  const { data: jobRow, error: findError } = await supabase
+    .from("sync_jobs")
+    .select("id")
+    .eq("content_version", jobId)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findError || !jobRow) {
+    throw new Error(`Cannot update logs for job ${jobId}: job not found`);
   }
 
-  const supabase = getSupabaseAdmin();
-  if (supabase) {
-    try {
-      const { data: jobRow } = await supabase
-        .from("sync_jobs")
-        .select("id")
-        .eq("content_version", jobId)
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+  const { count } = await supabase
+    .from("sync_job_logs")
+    .select("*", { count: "exact", head: true })
+    .eq("job_id", jobRow.id);
 
-      if (jobRow) {
-        const { count } = await supabase
-          .from("sync_job_logs")
-          .select("*", { count: "exact", head: true })
-          .eq("job_id", jobRow.id);
-
-        const currentSeq = count ?? 0;
-        const newEntries = newLogs.slice(currentSeq);
-        if (newEntries.length > 0) {
-          await supabase.from("sync_job_logs").insert(
-            newEntries.map((log, index) => ({
-              job_id: jobRow.id,
-              seq: currentSeq + index,
-              level: "info" as const,
-              event: log,
-            })),
-          );
-        }
-        await supabase
-          .from("sync_jobs")
-          .update({ updated_at: new Date().toISOString() })
-          .eq("id", jobRow.id);
-      }
-    } catch (error) {
-      console.error(JSON.stringify({ event: "update_job_logs_failed", jobId, error: error instanceof Error ? error.message : String(error) }));
+  const currentSeq = count ?? 0;
+  const newEntries = newLogs.slice(currentSeq);
+  if (newEntries.length > 0) {
+    const { error: insertError } = await supabase.from("sync_job_logs").insert(
+      newEntries.map((log, index) => ({
+        job_id: jobRow.id,
+        seq: currentSeq + index,
+        level: "info" as const,
+        event: log,
+      })),
+    );
+    if (insertError) {
+      console.error(JSON.stringify({ event: "insert_job_logs_failed", jobId, error: insertError.message }));
     }
   }
+
+  await supabase
+    .from("sync_jobs")
+    .update({ updated_at: new Date().toISOString() })
+    .eq("id", jobRow.id);
 }
 
 export async function finishPersistentJob(
@@ -303,39 +273,32 @@ export async function finishPersistentJob(
   finalLogs: string[],
   errorMessage?: string,
 ): Promise<void> {
-  const job = fallbackMemoryJobs.get(jobId);
-  if (job) {
-    job.status = resultStatus;
-    job.logs = finalLogs;
-    job.progressPct = resultStatus === "success" ? 100 : 0;
-    job.stage = resultStatus === "success" ? "已完成" : "已中断";
-    if (errorMessage) job.error = errorMessage;
+  const supabase = getSupabaseAdmin();
+  if (!supabase) throw new Error("Supabase publication storage is unavailable");
+
+  const { data: jobRow, error: findError } = await supabase
+    .from("sync_jobs")
+    .select("id")
+    .eq("content_version", jobId)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findError || !jobRow) {
+    throw new Error(`Cannot finish job ${jobId}: job not found`);
   }
 
-  const supabase = getSupabaseAdmin();
-  if (supabase) {
-    try {
-      const { data: jobRow } = await supabase
-        .from("sync_jobs")
-        .select("id")
-        .eq("content_version", jobId)
-        .order("started_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+  await updateJobLogs(jobId, finalLogs);
+  const { error: updateError } = await supabase
+    .from("sync_jobs")
+    .update({
+      status: resultStatus === "success" ? "succeeded" : "failed",
+      fail_reason: errorMessage || null,
+      finished_at: new Date().toISOString(),
+    })
+    .eq("id", jobRow.id);
 
-      if (jobRow) {
-        await updateJobLogs(jobId, finalLogs);
-        await supabase
-          .from("sync_jobs")
-          .update({
-            status: resultStatus === "success" ? "succeeded" : "failed",
-            fail_reason: errorMessage || null,
-            finished_at: new Date().toISOString(),
-          })
-          .eq("id", jobRow.id);
-      }
-    } catch (error) {
-      console.error(JSON.stringify({ event: "finish_persistent_job_failed", jobId, resultStatus, error: error instanceof Error ? error.message : String(error) }));
-    }
+  if (updateError) {
+    throw new Error(`Failed to update job status: ${updateError.message}`);
   }
 }

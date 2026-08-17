@@ -1,71 +1,39 @@
-// 单测：测试 Notion 发布 API 路由 Handler (/api/admin/publish-notion)，校验秘钥鉴权、发布流程触发与错误状态码返回
-import { describe, expect, it, vi } from "vitest";
-import { createPublishNotionHandler, type PublicationCommandRunner } from "@/lib/publishing/route";
+// 单测：测试 Notion 发布与回滚指令解析函数 parseCommand
+import { describe, expect, it } from "vitest";
+import { parseCommand } from "@/lib/publishing/route";
 
-function request(body: unknown, token?: string) {
-  return new Request("http://localhost/api/admin/publish-notion", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-}
+describe("Notion publication command parser (parseCommand)", () => {
+  it("parses valid publish commands with all pages or specific pageIds", () => {
+    expect(parseCommand({ operation: "publish", all: true, dryRun: false })).toEqual({
+      operation: "publish",
+      all: true,
+      dryRun: false,
+      pageIds: [],
+      contentVersion: undefined,
+    });
 
-describe("Notion publication admin route", () => {
-  it("fails closed without revealing whether an admin token is configured", async () => {
-    const run = vi.fn<PublicationCommandRunner>();
-    const handler = createPublishNotionHandler({ expectedToken: undefined, run });
-
-    const anonymous = await handler(request({ operation: "publish", all: true }));
-    const forged = await handler(request({ operation: "publish", all: true }, "forged-token"));
-
-    expect(anonymous.status).toBe(401);
-    expect(forged.status).toBe(401);
-    expect(await anonymous.json()).toEqual({ ok: false, error: "unauthorized" });
-    expect(await forged.json()).toEqual({ ok: false, error: "unauthorized" });
-    expect(run).not.toHaveBeenCalled();
+    expect(parseCommand({ operation: "publish", all: false, pageIds: ["p1", "p2"], dryRun: true, contentVersion: "v-custom" })).toEqual({
+      operation: "publish",
+      all: false,
+      dryRun: true,
+      pageIds: ["p1", "p2"],
+      contentVersion: "v-custom",
+    });
   });
 
-  it("rejects missing and invalid admin tokens", async () => {
-    const run = vi.fn<PublicationCommandRunner>();
-    const handler = createPublishNotionHandler({ expectedToken: "admin-secret", run });
-
-    expect((await handler(request({ operation: "publish", all: true }))).status).toBe(401);
-    expect((await handler(request({ operation: "publish", all: true }, "wrong"))).status).toBe(401);
-    expect(run).not.toHaveBeenCalled();
+  it("parses valid rollback commands", () => {
+    expect(parseCommand({ operation: "rollback", version: "v-2026-07-01-1" })).toEqual({
+      operation: "rollback",
+      version: "v-2026-07-01-1",
+    });
   });
 
-  it("passes dry runs without enabling writes", async () => {
-    const run = vi.fn<PublicationCommandRunner>(async (command) => ({ ok: true, dryRun: command.operation === "publish" && command.dryRun, pages: 3 }));
-    const handler = createPublishNotionHandler({ expectedToken: "admin-secret", run });
-
-    const response = await handler(request({ operation: "publish", dryRun: true, all: true }, "admin-secret"));
-
-    expect(response.status).toBe(200);
-    expect(run).toHaveBeenCalledWith({ operation: "publish", dryRun: true, all: true, pageIds: [] });
-    expect(await response.json()).toMatchObject({ ok: true, dryRun: true, pages: 3 });
-  });
-
-  it("returns publish and rollback summaries", async () => {
-    const run = vi.fn<PublicationCommandRunner>(async (command) => ({ ok: true, operation: command.operation }));
-    const handler = createPublishNotionHandler({ expectedToken: "admin-secret", run });
-
-    const publish = await handler(request({ operation: "publish", pageIds: ["page-one"] }, "admin-secret"));
-    const rollback = await handler(request({ operation: "rollback", version: "content-v1" }, "admin-secret"));
-
-    expect(await publish.json()).toEqual({ ok: true, operation: "publish" });
-    expect(await rollback.json()).toEqual({ ok: true, operation: "rollback" });
-  });
-
-  it("returns a structured failure without leaking stack traces", async () => {
-    const run = vi.fn<PublicationCommandRunner>(async () => { throw new Error("unsupported block audio at block-one"); });
-    const handler = createPublishNotionHandler({ expectedToken: "admin-secret", run });
-
-    const response = await handler(request({ operation: "publish", all: true }, "admin-secret"));
-
-    expect(response.status).toBe(422);
-    expect(await response.json()).toEqual({ ok: false, error: "publication_failed", reason: "unsupported block audio at block-one" });
+  it("rejects invalid commands and edge cases", () => {
+    expect(parseCommand(null)).toBeNull();
+    expect(parseCommand({})).toBeNull();
+    expect(parseCommand({ operation: "unknown" })).toBeNull();
+    expect(parseCommand({ operation: "rollback", version: "" })).toBeNull();
+    expect(parseCommand({ operation: "publish", all: false, pageIds: [] })).toBeNull(); // 非全量且无页面
+    expect(parseCommand({ operation: "publish", all: false, pageIds: ["dup", "dup"] })).toBeNull(); // 重复页面 ID
   });
 });

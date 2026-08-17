@@ -123,15 +123,13 @@ export async function publishVersion(input: PublishVersionInput): Promise<Publis
       return { status: "already-published", contentVersion: input.contentVersion, checksum, pageCount: pages.length };
     }
 
-    // 分块暂存：按页切分暂存
+    // 分块暂存：按页分片暂存（单包 <= 300KB 大小守卫）
     stage = "transform";
     for (const bundle of pages) {
-      await input.store.stageChunk(input.contentVersion, {
-        pages: [bundle.page],
-        blocks: bundle.blocks,
-        assets: bundle.assets,
-        searchEntries: bundle.searchEntries,
-      });
+      const chunks = splitPageIntoChunks(bundle);
+      for (const chunk of chunks) {
+        await input.store.stageChunk(input.contentVersion, chunk);
+      }
     }
 
     // 短事务切线
@@ -250,16 +248,90 @@ function walkBlocks(blocks: Block[], visit: (block: Block) => void): void {
   }
 }
 
-function publicationChecksum(pages: PagePublication[]): string {
-  const stablePages = [...pages]
-    .sort((left, right) => left.page.id.localeCompare(right.page.id))
-    .map((bundle) => ({
+export class IncrementalChecksum {
+  private hash = createHash("sha256");
+
+  updatePage(bundle: PagePublication): void {
+    const stableBundle = {
       page: bundle.page,
       blocks: bundle.blocks,
       assets: [...bundle.assets].sort((left, right) => left.id.localeCompare(right.id)),
       searchEntries: [...bundle.searchEntries].sort((left, right) => left.id.localeCompare(right.id)),
-    }));
-  return createHash("sha256").update(JSON.stringify(stablePages)).digest("hex");
+    };
+    this.hash.update(JSON.stringify(stableBundle));
+  }
+
+  digest(): string {
+    return this.hash.digest("hex");
+  }
+}
+
+export function publicationChecksum(pages: PagePublication[]): string {
+  const sorted = [...pages].sort((left, right) => left.page.id.localeCompare(right.page.id));
+  const hasher = new IncrementalChecksum();
+  for (const page of sorted) {
+    hasher.updatePage(page);
+  }
+  return hasher.digest();
+}
+
+export function splitPageIntoChunks(bundle: PagePublication, maxBlocksPerChunk = 40): ChunkPublication[] {
+  const totalBlocks = bundle.blocks.length;
+
+  // 为每个 block 和 asset 注入明确的 pageId 归属信息，保证拆分后子包依然能正确序列化
+  const pageId = bundle.page.id;
+  const blocksWithSource = bundle.blocks.map((b) => Object.assign(b, { sourcePageId: pageId }));
+  const assetsWithSource = bundle.assets.map((a) => Object.assign(a, { sourcePageId: pageId }));
+
+  if (totalBlocks <= maxBlocksPerChunk && bundle.assets.length <= 20 && bundle.searchEntries.length <= 40) {
+    return [{
+      pages: [bundle.page],
+      blocks: blocksWithSource,
+      assets: assetsWithSource,
+      searchEntries: bundle.searchEntries,
+    }];
+  }
+
+  const chunks: ChunkPublication[] = [];
+
+  // 首包包含 Page 元数据及第一批 blocks
+  const firstBlocks = blocksWithSource.slice(0, maxBlocksPerChunk);
+  const firstBlockIds = new Set(firstBlocks.map((b) => b.id));
+  const firstAssets = assetsWithSource.filter((a) => firstBlockIds.has(a.id.replace(/^asset-/, "")));
+  const firstSegments = bundle.searchEntries.filter((s) => firstBlockIds.has(s.anchor.replace(/^b-/, "")));
+
+  chunks.push({
+    pages: [bundle.page],
+    blocks: firstBlocks,
+    assets: firstAssets,
+    searchEntries: firstSegments,
+  });
+
+  const remainingAssets = assetsWithSource.filter((a) => !firstBlockIds.has(a.id.replace(/^asset-/, "")));
+  const remainingSegments = bundle.searchEntries.filter((s) => !firstBlockIds.has(s.anchor.replace(/^b-/, "")));
+
+  let blockCursor = maxBlocksPerChunk;
+  let assetCursor = 0;
+  let segmentCursor = 0;
+
+  while (blockCursor < totalBlocks || assetCursor < remainingAssets.length || segmentCursor < remainingSegments.length) {
+    const nextBlocks = blocksWithSource.slice(blockCursor, blockCursor + maxBlocksPerChunk);
+    const nextAssets = remainingAssets.slice(assetCursor, assetCursor + 20);
+    const nextSegments = remainingSegments.slice(segmentCursor, segmentCursor + 40);
+
+    chunks.push({
+      pages: [],
+      blocks: nextBlocks,
+      assets: nextAssets,
+      searchEntries: nextSegments,
+    });
+
+    blockCursor += maxBlocksPerChunk;
+    assetCursor += 20;
+    segmentCursor += 40;
+  }
+
+  return chunks;
 }
 
 function sourcePageIdFromError(error: unknown): { sourcePageId?: string } {

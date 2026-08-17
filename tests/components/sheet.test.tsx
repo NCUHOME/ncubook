@@ -3,7 +3,7 @@ import React from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ACTIVE_CONTENT_VERSION, type AnswerSession } from "@/lib/ai/session";
+import { FIXTURE_CONTENT_VERSION, type AnswerSession } from "@/lib/ai/session";
 import { AskProvider, type AnswerRequest } from "@/src/components/ask/provider";
 import { FloatingAskButton } from "@/src/components/ask/button";
 import { QuestionForm } from "@/src/components/ask/form";
@@ -18,7 +18,7 @@ const answer: AnswerSession = {
       pageId: "page-campus-shuttle",
       pageTitle: "校园环游车乘坐指南",
       anchor: "b-fare",
-      contentVersion: ACTIVE_CONTENT_VERSION,
+      contentVersion: FIXTURE_CONTENT_VERSION,
       excerpt: "单次收费 0.9 元。",
     },
     {
@@ -26,7 +26,7 @@ const answer: AnswerSession = {
       pageId: "page-campus-shuttle",
       pageTitle: "校园环游车乘坐指南",
       anchor: "b-fare",
-      contentVersion: ACTIVE_CONTENT_VERSION,
+      contentVersion: FIXTURE_CONTENT_VERSION,
       excerpt: "可使用支付宝洪城一卡通或扫描车载二维码付款。",
     },
   ],

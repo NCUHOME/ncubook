@@ -52,4 +52,31 @@ describe("Notion publication client", () => {
     await expect(client.retrievePage("page-1")).rejects.toThrow("Notion request failed with status 401");
     await expect(client.retrievePage("page-1")).rejects.not.toThrow(token);
   });
+
+  it("enforces maxNodes limit when expanding deep/large block trees", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      jsonResponse({
+        results: [
+          { id: "b1", has_children: true },
+          { id: "b2", has_children: true },
+          { id: "b3", has_children: false },
+        ],
+        has_more: false,
+      }),
+    );
+    const client = createNotionClient({ token: "secret", fetchImpl, maxNodes: 2 });
+
+    await expect(client.readBlockTree("root-page")).rejects.toThrow("Notion block tree exceeds maximum node limit of 2");
+  });
+
+  it("passes AbortSignal timeout to fetch requests", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ id: "p1" }));
+    const client = createNotionClient({ token: "secret", fetchImpl, timeoutMs: 3000 });
+
+    await client.retrievePage("p1");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
 });

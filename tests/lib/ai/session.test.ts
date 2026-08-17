@@ -1,11 +1,13 @@
 // 单测：测试问答会话 (AnswerSession) 数据结构校验、防篡改反序列化与历史记录格式化
 import { describe, expect, it } from "vitest";
 import {
-  ACTIVE_CONTENT_VERSION,
+  FIXTURE_CONTENT_VERSION,
   createAnswerFixture,
   validateAnswerSession,
   type AnswerSession,
 } from "@/lib/ai/session";
+
+const TEST_VERSION = "test-version-2026";
 
 function groundedSession(overrides: Partial<AnswerSession> = {}): AnswerSession {
   return {
@@ -19,7 +21,7 @@ function groundedSession(overrides: Partial<AnswerSession> = {}): AnswerSession 
         pageId: "page-campus-shuttle",
         pageTitle: "校园环游车乘坐指南",
         anchor: "b-fare",
-        contentVersion: ACTIVE_CONTENT_VERSION,
+        contentVersion: TEST_VERSION,
         excerpt: "单次收费 0.9 元。",
       },
       {
@@ -27,7 +29,7 @@ function groundedSession(overrides: Partial<AnswerSession> = {}): AnswerSession 
         pageId: "page-campus-shuttle",
         pageTitle: "校园环游车乘坐指南",
         anchor: "b-fare",
-        contentVersion: ACTIVE_CONTENT_VERSION,
+        contentVersion: TEST_VERSION,
         excerpt: "可使用支付宝洪城一卡通或扫描车载二维码付款。",
       },
     ],
@@ -46,37 +48,37 @@ describe("answer evidence sessions & card boundary", () => {
       claims: [{ id: "fare", text: "单次费用为 0.9 元。", citationIds: [], status: "grounded" }],
     });
 
-    expect(() => validateAnswerSession(session)).toThrow(/citation/i);
+    expect(() => validateAnswerSession(session, TEST_VERSION)).toThrow(/citation/i);
   });
 
   it("requires every factual claim in a multi-claim answer to cite the active content version", () => {
     const session = groundedSession();
 
-    expect(validateAnswerSession(session)).toEqual(session);
+    expect(validateAnswerSession(session, TEST_VERSION)).toEqual(session);
     expect(session.claims.every((claim) => claim.citationIds.length > 0)).toBe(true);
   });
 
   it("rejects unknown citations and stale published content", () => {
     expect(() => validateAnswerSession(groundedSession({
       claims: [{ id: "fare", text: "单次费用为 0.9 元。", citationIds: ["missing"], status: "grounded" }],
-    }))).toThrow(/unknown citation/i);
+    }), TEST_VERSION)).toThrow(/unknown citation/i);
 
     const stale = groundedSession();
     const firstCitation = stale.citations[0];
     if (firstCitation) {
-      stale.citations[0] = { ...firstCitation, contentVersion: "content-2025-01" };
+      stale.citations[0] = { ...firstCitation, contentVersion: "content-stale-old" };
     }
-    expect(() => validateAnswerSession(stale)).toThrow(/content version/i);
+    expect(() => validateAnswerSession(stale, TEST_VERSION)).toThrow(/inactive content version/i);
   });
 
   it("allows an empty insufficient answer but rejects factual claims in one", () => {
     const insufficient = createAnswerFixture("图书馆今天几点关门？");
-    expect(validateAnswerSession(insufficient)).toEqual(insufficient);
+    expect(validateAnswerSession(insufficient, FIXTURE_CONTENT_VERSION)).toEqual(insufficient);
     expect(insufficient).toMatchObject({ confidence: "insufficient", claims: [], citations: [] });
 
     expect(() => validateAnswerSession({
       ...insufficient,
       claims: [{ id: "hours", text: "图书馆 22:00 关门。", citationIds: [], status: "grounded" }],
-    })).toThrow(/insufficient/i);
+    }, FIXTURE_CONTENT_VERSION)).toThrow(/insufficient/i);
   });
 });

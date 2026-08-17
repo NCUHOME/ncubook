@@ -1,6 +1,6 @@
 // API 路由：关键词搜索 API 接口 (处理 GET/POST 请求，Node.js runtime，含 IP 分钟级 Rate Limit 限流防护与 JSON 错误捕获)
 import { NextRequest, NextResponse } from "next/server";
-import { createMinuteRateLimiter } from "@/lib/ai/ask";
+import { createMinuteRateLimiter, createSupabaseRateLimiter } from "@/lib/ai/ask";
 import { groupSqlSearchSegments, searchGroupedEntries } from "@/lib/content/search";
 import { loadPublishedRepository } from "@/lib/content/server";
 import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase";
@@ -8,10 +8,13 @@ import { getSupabaseAdmin, hasSupabaseConfig } from "@/lib/integrations/supabase
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const checkSearchRateLimit = createMinuteRateLimiter(60);
+const rateLimitClient = getSupabaseAdmin();
+const checkSearchRateLimit = rateLimitClient
+  ? createSupabaseRateLimiter(rateLimitClient, 60)
+  : createMinuteRateLimiter(60);
 
 export async function GET(request: NextRequest) {
-  if (!checkSearchRateLimit(request)) {
+  if (!(await checkSearchRateLimit(request))) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 

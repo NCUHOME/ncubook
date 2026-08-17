@@ -105,4 +105,27 @@ describe("admin evals API suite", () => {
     expect(data.ok).toBe(false);
     expect(data.error).toContain("提问内容");
   });
+
+  it("handles valid new case submission for POST /api/admin/evals/cases", async () => {
+    const validReq = new Request("http://localhost:3000/api/admin/evals/cases", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        cookie: `admin_session=${validToken}`,
+      },
+      body: JSON.stringify({
+        newCase: {
+          id: "case-test-mock-unit",
+          question: "测试题目？",
+          expectedAnswerable: true,
+          riskClass: "normal",
+        },
+      }),
+    });
+    const res = await postCase(validReq);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(data.savedCase.id).toBe("case-test-mock-unit");
+  });
 });

@@ -292,15 +292,103 @@ export function evaluateAnswerSessions(
 }
 
 // 统一评测执行套件 (供 CLI 与 API 路由共用)
+export async function fetchEvaluationCasesFromSupabase(): Promise<EvaluationCase[] | null> {
+  const { getSupabaseAdmin } = await import("@/lib/integrations/supabase");
+  const client = getSupabaseAdmin();
+  if (!client) return null;
+
+  try {
+    const { data, error } = await client
+      .from("evaluation_cases")
+      .select("id, question, expectations, enabled, sort_order")
+      .eq("enabled", true)
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true });
+
+    if (error || !data || data.length === 0) return null;
+
+    return data.map((row) => {
+      const exp = (row.expectations && typeof row.expectations === "object" ? row.expectations : {}) as Record<string, unknown>;
+      return {
+        id: row.id,
+        question: row.question,
+        category: typeof exp.category === "string" ? exp.category : undefined,
+        expectedAnswerable: typeof exp.expectedAnswerable === "boolean" ? exp.expectedAnswerable : true,
+        riskClass: (typeof exp.riskClass === "string" && ["normal", "sensitive", "adversarial"].includes(exp.riskClass))
+          ? (exp.riskClass as "normal" | "sensitive" | "adversarial")
+          : "normal",
+        mustInclude: Array.isArray(exp.mustInclude) ? exp.mustInclude.map(String) : undefined,
+        mustNotInclude: Array.isArray(exp.mustNotInclude) ? exp.mustNotInclude.map(String) : undefined,
+        expectedPageSlug: typeof exp.expectedPageSlug === "string" ? exp.expectedPageSlug : undefined,
+      };
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function saveEvaluationCaseToSupabase(evalCase: EvaluationCase): Promise<boolean> {
+  const { getSupabaseAdmin } = await import("@/lib/integrations/supabase");
+  const client = getSupabaseAdmin();
+  if (!client) return false;
+
+  try {
+    const expectations = {
+      category: evalCase.category ?? "通用",
+      expectedAnswerable: evalCase.expectedAnswerable,
+      riskClass: evalCase.riskClass,
+      mustInclude: evalCase.mustInclude ?? [],
+      mustNotInclude: evalCase.mustNotInclude ?? [],
+      expectedPageSlug: evalCase.expectedPageSlug ?? null,
+    };
+
+    const { error } = await client
+      .from("evaluation_cases")
+      .upsert({
+        id: evalCase.id,
+        question: evalCase.question,
+        expectations: expectations as unknown as import("@/lib/database.types").Json,
+        enabled: true,
+        updated_at: new Date().toISOString(),
+      });
+
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 export async function runEvaluationSuite(options: {
   isMock: boolean;
   endpoint?: string;
   onProgress?: (current: number, total: number, detail: CaseEvaluationDetail) => void;
 }): Promise<EvaluationReport> {
-  const filePath = join(process.cwd(), "evals/test.json");
-  const testConfig = JSON.parse(await readFile(filePath, "utf8")) as TestConfig;
-  const cases = testConfig.cases;
-  const thresholds = testConfig.thresholds;
+  let cases: EvaluationCase[] = [];
+  let thresholds: Thresholds = {
+    citationValidity: 1,
+    abstentionAccuracy: 1,
+    unsupportedSensitiveClaims: 0,
+    forbiddenHallucinations: 0,
+    factualityRate: 1,
+    p95LatencyMs: 5000,
+  };
+
+  const dbCases = await fetchEvaluationCasesFromSupabase();
+  try {
+    const filePath = join(process.cwd(), "evals/test.json");
+    const raw = await readFile(filePath, "utf8");
+    const testConfig = JSON.parse(raw) as TestConfig;
+    if (testConfig.thresholds) thresholds = testConfig.thresholds;
+    if (!dbCases || dbCases.length === 0) {
+      cases = testConfig.cases;
+    }
+  } catch {
+    // 读取本地文件失败时如果已有 dbCases 则继续，否则保持空用例
+  }
+
+  if (dbCases && dbCases.length > 0) {
+    cases = dbCases;
+  }
 
   const sessions = new Map<string, AnswerSession>();
   const latencies: number[] = [];

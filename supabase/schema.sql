@@ -165,7 +165,7 @@ create table if not exists evaluation_runs (
 );
 
 create table if not exists evaluation_cases (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   question text not null,
   page_context jsonb,
   expectations jsonb not null default '{}'::jsonb,
@@ -195,6 +195,8 @@ create index if not exists segments_fts_idx
   on published_search_segments using gin (search_vector);
 create index if not exists segments_plain_text_trgm_idx
   on published_search_segments using gin (plain_text gin_trgm_ops);
+create index if not exists segments_page_title_trgm_idx
+  on published_search_segments using gin (page_title gin_trgm_ops);
 create index if not exists segments_page_idx
   on published_search_segments (content_version, source_page_id);
 -- AI 粗召回过滤面

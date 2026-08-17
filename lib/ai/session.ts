@@ -1,5 +1,5 @@
 // 核心业务领域：AI 问答 Session 数据契约、反序列化校验、防篡改机制与测试 Fixtures
-export const ACTIVE_CONTENT_VERSION = "content-2026-07";
+export const FIXTURE_CONTENT_VERSION = "fixture-v1";
 
 export type Citation = {
   id: string;
@@ -29,7 +29,7 @@ export type AnswerSession = {
 
 export function validateAnswerSession(
   value: unknown,
-  activeContentVersion = ACTIVE_CONTENT_VERSION,
+  activeContentVersion?: string,
 ): AnswerSession {
   const source = requireRecord(value, "Answer session");
   const session: AnswerSession = {
@@ -51,7 +51,10 @@ export function validateAnswerSession(
   if (claimIds.size !== session.claims.length) throw new Error("Answer session contains duplicate claim ids");
   for (const citation of session.citations) {
     if (!citation.anchor.startsWith("b-")) throw new Error(`Invalid citation anchor: ${citation.anchor}`);
-    if (citation.contentVersion !== activeContentVersion) {
+    if (!citation.contentVersion || !citation.contentVersion.trim()) {
+      throw new Error(`Citation ${citation.id} is missing a content version`);
+    }
+    if (activeContentVersion && citation.contentVersion !== activeContentVersion) {
       throw new Error(`Citation ${citation.id} uses an inactive content version`);
     }
   }
@@ -333,7 +336,7 @@ function makeAnswer(
         pageId,
         pageTitle,
         anchor,
-        contentVersion: ACTIVE_CONTENT_VERSION,
+        contentVersion: FIXTURE_CONTENT_VERSION,
         excerpt: claims.join(" "),
       },
     ],

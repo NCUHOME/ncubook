@@ -1,6 +1,6 @@
 // 单测：测试 /api/ask 路由 Handler 的请求体校验、页面上下文解析、速率限制 (Rate Limit) 与错误响应格式
 import { describe, expect, it, vi } from "vitest";
-import { ACTIVE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
+import { FIXTURE_CONTENT_VERSION, createAnswerFixture, type AnswerSession } from "@/lib/ai/session";
 import { createAskHandler, clearExactAnswerCache, createSupabaseRateLimiter, type AnswerService } from "@/lib/ai/ask";
 import { ProviderError } from "@/lib/ai/provider";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -22,7 +22,7 @@ describe("production ask boundary", () => {
     const response = await createAskHandler({ mode: "production", answer, allowRequest: () => true })(request({ question: " 环游车怎么付费？ ", pageContext: { pageId: "page-campus-shuttle", anchor: "b-fare" } }));
     expect(response.status).toBe(200);
     expect(answer).toHaveBeenCalledWith({ question: "环游车怎么付费？", pageContext: { pageId: "page-campus-shuttle", anchor: "b-fare" } });
-    expect(await response.json()).toMatchObject({ confidence: "grounded", citations: expect.arrayContaining([expect.objectContaining({ anchor: "b-fare", contentVersion: ACTIVE_CONTENT_VERSION })]) });
+    expect(await response.json()).toMatchObject({ confidence: "grounded", citations: expect.arrayContaining([expect.objectContaining({ anchor: "b-fare", contentVersion: FIXTURE_CONTENT_VERSION })]) });
   });
 
   it("rejects empty questions and invalid contexts", async () => {

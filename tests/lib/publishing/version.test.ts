@@ -2,9 +2,12 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Asset, Block, Page, RichText, SearchIndexEntry } from "@/lib/content/schema";
 import {
+  IncrementalChecksum,
   PointerConflictError,
+  publicationChecksum,
   publishVersion,
   rollbackPublishedVersion,
+  splitPageIntoChunks,
   type PagePublication,
   type PublicationFailure,
   type PublicationStore,
@@ -243,5 +246,39 @@ describe("atomic content publication with chunk staging (M-5)", () => {
     expect(state.current()).toBe("v1");
     await expect(rollbackPublishedVersion(state.store, "draft-v3")).rejects.toThrow("not published");
     expect(state.current()).toBe("v1");
+  });
+
+  it("calculates incremental checksum deterministically across pages", () => {
+    const page1 = publication("page-1");
+    const page2 = publication("page-2");
+
+    const checksumA = publicationChecksum([page1, page2]);
+    const checksumB = publicationChecksum([page2, page1]); // 乱序输入校验一致性
+
+    expect(checksumA).toBe(checksumB);
+    expect(typeof checksumA).toBe("string");
+    expect(checksumA.length).toBe(64);
+  });
+
+  it("splits large pages into safe sub-chunks under 300KB/40 blocks threshold", () => {
+    const bigPage = publication("big-page");
+    // 生成 95 个 block
+    for (let i = 0; i < 95; i += 1) {
+      bigPage.blocks.push({
+        id: `block-${i}`,
+        anchor: `b-block-${i}`,
+        type: "paragraph",
+        richText: text(`正文段落第 ${i} 行`),
+      });
+    }
+
+    const chunks = splitPageIntoChunks(bigPage, 40);
+    expect(chunks.length).toBe(3); // 40 + 40 + 16 (含原第1个)
+    expect(chunks[0]?.pages.length).toBe(1);
+    expect(chunks[1]?.pages.length).toBe(0);
+    expect(chunks[2]?.pages.length).toBe(0);
+    expect(chunks[0]?.blocks.length).toBe(40);
+    expect(chunks[1]?.blocks.length).toBe(40);
+    expect(chunks[2]?.blocks.length).toBe(16);
   });
 });

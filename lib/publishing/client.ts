@@ -29,6 +29,8 @@ type CreateNotionClientOptions = {
   sleep?: (milliseconds: number) => Promise<void>;
   maxRetries?: number;
   maxDepth?: number;
+  timeoutMs?: number;
+  maxNodes?: number;
 };
 
 export function createNotionClient({
@@ -37,6 +39,8 @@ export function createNotionClient({
   sleep = wait,
   maxRetries = 4,
   maxDepth = 32,
+  timeoutMs = 15_000,
+  maxNodes = 5_000,
 }: CreateNotionClientOptions): NotionClient {
   if (!token.trim()) throw new Error("Notion token is required");
 
@@ -48,6 +52,7 @@ export function createNotionClient({
             authorization: `Bearer ${token}`,
             "notion-version": NOTION_API_VERSION,
           },
+          signal: AbortSignal.timeout(timeoutMs),
         });
 
         if (response.ok) {
@@ -99,9 +104,15 @@ export function createNotionClient({
     return results;
   }
 
+  let totalNodes = 0;
+
   async function expand(blockId: string, depth: number): Promise<NotionBlockNode[]> {
     if (depth > maxDepth) throw new Error(`Notion block tree exceeds maximum depth ${maxDepth}`);
     const blocks = await listBlockChildren(blockId);
+    totalNodes += blocks.length;
+    if (totalNodes > maxNodes) {
+      throw new Error(`Notion block tree exceeds maximum node limit of ${maxNodes}`);
+    }
     return batchMap(blocks, 3, async (block) => ({
       ...block,
       children: block.has_children === true ? await expand(block.id, depth + 1) : [],
@@ -114,6 +125,7 @@ export function createNotionClient({
     },
     listBlockChildren,
     readBlockTree(blockId) {
+      totalNodes = 0;
       return expand(blockId, 0);
     },
   };

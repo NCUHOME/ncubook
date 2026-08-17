@@ -45,7 +45,7 @@ describe("Notion publication pipeline runner", () => {
       (msg) => logs.push(msg),
     );
 
-    expect(result).toEqual({ ok: true, operation: "rollback", contentVersion: "v-2026-07-01-1" });
+    expect(result).toMatchObject({ ok: true, operation: "rollback", contentVersion: "v-2026-07-01-1" });
     expect(mocks.rollbackPublishedVersion).toHaveBeenCalled();
     expect(logs.some((log) => log.includes("v-2026-07-01-1"))).toBe(true);
   });

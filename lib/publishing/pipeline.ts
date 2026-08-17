@@ -1,6 +1,7 @@
 // Notion 发布引擎：Notion 节点筛选、完整发布与版本回滚指令的主调度管线 (Pipeline)
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { clearExactAnswerCache } from "@/lib/ai/ask";
 import { buildSearchIndex } from "@/lib/publishing/index";
 import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/assets";
 import { createNotionClient, batchMap, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
@@ -78,20 +79,24 @@ export async function runNotionPublicationCommand(
     onProgress?.(formatLog(`↺ 正在将线上网站切线恢复至历史版本: ${command.version}...`));
     const store = createSupabasePublicationStore(supabase);
     await rollbackPublishedVersion(store, command.version);
+    let cacheRevalidated = true;
     try {
       revalidateTag("published-content-pointer");
       revalidateTag("published-content");
       revalidatePath("/", "layout");
     } catch (revalidateError) {
+      cacheRevalidated = false;
+      const errorMsg = revalidateError instanceof Error ? revalidateError.message : String(revalidateError);
       console.error(JSON.stringify({
         event: "rollback_revalidate_failed",
         version: command.version,
-        error: revalidateError instanceof Error ? revalidateError.message : String(revalidateError),
+        error: errorMsg,
       }));
-      onProgress?.(formatLog(`⚠️ 页面缓存即刻刷新未完全生效，但底层切线已完成: ${command.version}`));
+      onProgress?.(formatLog(`⚠️ 页面缓存即刻刷新未完全生效 (${errorMsg})，但底层切线已完成: ${command.version}`));
     }
+    clearExactAnswerCache();
     onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
-    return { ok: true, operation: "rollback", contentVersion: command.version };
+    return { ok: true, operation: "rollback", contentVersion: command.version, cacheRevalidated };
   }
 
   onProgress?.(formatLog("🔍 [阶段 1/5] 正在连接 Notion 知识库，读取文章列表与目录..."));
@@ -171,14 +176,24 @@ export async function runNotionPublicationCommand(
   });
 
   onProgress?.(formatLog("💾 [阶段 5/5] 正在发布至线上网站并刷新前台页面..."));
+  let cacheRevalidated = true;
   if (!command.dryRun) {
     try {
       revalidateTag("published-content-pointer");
       revalidateTag("published-content");
       revalidatePath("/", "layout");
-    } catch {
-      // 在 CLI 直连模式下缺失 Next.js Request Context 时忽略 revalidateTag 错误
+    } catch (revalidateError) {
+      cacheRevalidated = false;
+      warningCount += 1;
+      const errorMsg = revalidateError instanceof Error ? revalidateError.message : String(revalidateError);
+      console.error(JSON.stringify({
+        event: "publish_revalidate_failed",
+        contentVersion,
+        error: errorMsg,
+      }));
+      onProgress?.(formatLog(`⚠️ 警告: 页面缓存即刻刷新未完全生效 (${errorMsg})`));
     }
+    clearExactAnswerCache();
   }
 
   onProgress?.(formatLog(`🎉 同步发版全量完成！共成功发布 ${result.pageCount ?? selected.length} 篇校园指南文章。`));
@@ -191,6 +206,7 @@ export async function runNotionPublicationCommand(
     pages: result.pageCount ?? selected.length,
     warnings: warningCount,
     status: result.status,
+    cacheRevalidated,
   };
 }
 
