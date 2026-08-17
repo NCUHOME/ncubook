@@ -7,8 +7,6 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
-  const repository = await loadPublishedRepository();
-  const routes = await repository.getPageRoutes();
 
   const entries: MetadataRoute.Sitemap = [
     {
@@ -25,26 +23,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  for (const [, routePath] of Object.entries(routes)) {
-    if (routePath.startsWith("/sections/")) {
-      const slug = routePath.replace("/sections/", "");
-      const view = await repository.getSectionView(slug);
-      entries.push({
-        url: `${siteUrl}${routePath}`,
-        lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),
-        changeFrequency: "daily",
-        priority: 0.8,
-      });
-    } else if (routePath.startsWith("/docs/")) {
-      const slug = routePath.replace("/docs/", "");
-      const view = await repository.getDocumentView(slug);
-      entries.push({
-        url: `${siteUrl}${routePath}`,
-        lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),
-        changeFrequency: "weekly",
-        priority: 0.7,
-      });
+  try {
+    const repository = await loadPublishedRepository();
+    const routes = await repository.getPageRoutes();
+
+    for (const [, routePath] of Object.entries(routes)) {
+      if (routePath.startsWith("/sections/")) {
+        const slug = routePath.replace("/sections/", "");
+        const view = await repository.getSectionView(slug);
+        entries.push({
+          url: `${siteUrl}${routePath}`,
+          lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),
+          changeFrequency: "daily",
+          priority: 0.8,
+        });
+      } else if (routePath.startsWith("/docs/")) {
+        const slug = routePath.replace("/docs/", "");
+        const view = await repository.getDocumentView(slug);
+        entries.push({
+          url: `${siteUrl}${routePath}`,
+          lastModified: view?.page.lastPublishedAt ? new Date(view.page.lastPublishedAt) : new Date(),
+          changeFrequency: "weekly",
+          priority: 0.7,
+        });
+      }
     }
+  } catch {
+    // 允许在初次构建或无发布版本时返回基础 sitemap
   }
 
   return entries;

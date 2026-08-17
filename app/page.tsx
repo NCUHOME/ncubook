@@ -6,9 +6,17 @@ import { QuestionForm } from "@/src/components/ask/form";
 import { AppHeader } from "@/src/components/primitives/header";
 
 export default async function HomePage() {
-  const repository = await loadPublishedRepository();
-  const sections = await repository.getPublishedSections();
-  const routes = await repository.getPageRoutes();
+  let sections: import("@/lib/content/schema").Page[] = [];
+  let routes: Record<string, string> = {};
+  let repository: import("@/lib/content/server").ContentRepository | null = null;
+
+  try {
+    repository = await loadPublishedRepository();
+    sections = await repository.getPublishedSections();
+    routes = await repository.getPageRoutes();
+  } catch {
+    // 允许在初次构建或尚未同步发版时安全渲染首页骨架与提问框
+  }
 
   return (
     <>
@@ -37,7 +45,7 @@ export default async function HomePage() {
             {sections.slice(0, 6).map((section) => (
               <Link
                 key={section.id}
-                href={routes[section.id] || repository.resolvePageRoute(section.id)}
+                href={routes[section.id] || (repository ? repository.resolvePageRoute(section.id) : `/sections/${section.slug}`)}
                 className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-label odd:pr-s3 even:pl-s3"
               >
                 <span>{section.title}</span>

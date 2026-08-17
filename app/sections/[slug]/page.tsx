@@ -93,7 +93,11 @@ export default async function SectionPage({ params }: { params: Promise<{ slug: 
 }
 
 export async function generateStaticParams() {
-  const repository = await loadPublishedRepository();
-  const sections = await repository.getPublishedSections();
-  return sections.map((section) => ({ slug: section.slug }));
+  try {
+    const repository = await loadPublishedRepository();
+    const sections = await repository.getPublishedSections();
+    return sections.map((section) => ({ slug: section.slug }));
+  } catch {
+    return [];
+  }
 }

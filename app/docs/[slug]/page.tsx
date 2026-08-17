@@ -77,11 +77,15 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
 }
 
 export async function generateStaticParams() {
-  const repository = await loadPublishedRepository();
-  const routes = await repository.getPageRoutes();
-  return Object.values(routes)
-    .filter((route) => route.startsWith("/docs/"))
-    .map((route) => ({ slug: route.replace("/docs/", "") }));
+  try {
+    const repository = await loadPublishedRepository();
+    const routes = await repository.getPageRoutes();
+    return Object.values(routes)
+      .filter((route) => route.startsWith("/docs/"))
+      .map((route) => ({ slug: route.replace("/docs/", "") }));
+  } catch {
+    return [];
+  }
 }
 
 function formatDate(value: string) {
