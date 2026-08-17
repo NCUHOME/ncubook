@@ -11,34 +11,52 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const repository = await loadPublishedRepository();
-  const view = await repository.getSectionView(slug);
-  if (!view) return { title: "板块未找到 - 此间" };
+  try {
+    const repository = await loadPublishedRepository();
+    const view = await repository.getSectionView(slug);
+    if (!view) return { title: "板块未找到 - 此间" };
 
-  const title = `${view.page.title} - 校园指南 · 此间`;
-  const description = `南昌大学 AI 知识导引 · ${view.page.title}板块`;
+    const title = `${view.page.title} - 校园指南 · 此间`;
+    const description = `南昌大学 AI 知识导引 · ${view.page.title}板块`;
 
-  return {
-    title,
-    description,
-    openGraph: {
+    return {
       title,
       description,
-      type: "website",
-      siteName: "此间",
-    },
-  };
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        siteName: "此间",
+      },
+    };
+  } catch {
+    return { title: "板块未找到 - 此间" };
+  }
 }
 
 export default async function SectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const repository = await loadPublishedRepository();
-  const view = await repository.getSectionView(slug);
-  if (!view) notFound();
+  let view: import("@/lib/content/server").SectionView | null = null;
+  let children: import("@/lib/content/schema").Page[] = [];
+  let tree: import("@/lib/content/server").PageTreeNode[] = [];
+  let routes: Record<string, string> = {};
+  let repository: import("@/lib/content/server").ContentRepository | null = null;
 
-  const children = await repository.getSectionChildren(slug);
-  const tree = await repository.getSectionTree(slug);
-  const routes = await repository.getPageRoutes();
+  try {
+    repository = await loadPublishedRepository();
+    view = await repository.getSectionView(slug);
+    if (!view) notFound();
+
+    children = await repository.getSectionChildren(slug);
+    tree = await repository.getSectionTree(slug);
+    routes = await repository.getPageRoutes();
+  } catch {
+    notFound();
+  }
+
+  if (!view || !repository) {
+    notFound();
+  }
   const assetMap = new Map((view.assets ?? []).map((a) => [a.id, a]));
   const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
   const resolveRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);

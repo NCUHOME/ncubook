@@ -11,36 +11,54 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const repository = await loadPublishedRepository();
-  const view = await repository.getDocumentView(slug);
-  if (!view || view.page.parentId === null) return { title: "文档未找到 - 此间" };
-  const section = await repository.getSectionForPage(view.page.id);
+  try {
+    const repository = await loadPublishedRepository();
+    const view = await repository.getDocumentView(slug);
+    if (!view || view.page.parentId === null) return { title: "文档未找到 - 此间" };
+    const section = await repository.getSectionForPage(view.page.id);
 
-  const title = `${view.page.title} - ${section?.title ?? "校园知识"} · 此间`;
-  const description = `南昌大学 AI 知识库 · ${view.page.title}`;
+    const title = `${view.page.title} - ${section?.title ?? "校园知识"} · 此间`;
+    const description = `南昌大学 AI 知识库 · ${view.page.title}`;
 
-  return {
-    title,
-    description,
-    openGraph: {
+    return {
       title,
       description,
-      type: "article",
-      siteName: "此间",
-    },
-  };
+      openGraph: {
+        title,
+        description,
+        type: "article",
+        siteName: "此间",
+      },
+    };
+  } catch {
+    return { title: "文档未找到 - 此间" };
+  }
 }
 
 export default async function DocumentPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const repository = await loadPublishedRepository();
-  const view = await repository.getDocumentView(slug);
-  if (!view || view.page.parentId === null) notFound();
-  const section = await repository.getSectionForPage(view.page.id);
-  if (!section) notFound();
+  let view: import("@/lib/content/server").DocumentView | null = null;
+  let section: import("@/lib/content/schema").Page | null = null;
+  let tree: import("@/lib/content/server").PageTreeNode[] = [];
+  let routes: Record<string, string> = {};
+  let repository: import("@/lib/content/server").ContentRepository | null = null;
 
-  const tree = await repository.getSectionTree(section.slug);
-  const routes = await repository.getPageRoutes();
+  try {
+    repository = await loadPublishedRepository();
+    view = await repository.getDocumentView(slug);
+    if (!view || view.page.parentId === null) notFound();
+    section = await repository.getSectionForPage(view.page.id);
+    if (!section) notFound();
+
+    tree = await repository.getSectionTree(section.slug);
+    routes = await repository.getPageRoutes();
+  } catch {
+    notFound();
+  }
+
+  if (!view || !section || !repository) {
+    notFound();
+  }
   const assetMap = new Map((view.assets ?? []).map((a) => [a.id, a]));
   const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
   const resolvePageRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);

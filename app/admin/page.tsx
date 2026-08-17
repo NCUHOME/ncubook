@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { fetchContentVersionsFromSupabase, getLivePublishedContentPointer, loadPublishedRepository } from "@/lib/content/server";
+import { fetchContentVersionsFromSupabase, getLivePublishedContentPointer } from "@/lib/content/server";
 import { getAdminSecret, verifyAdminSessionToken } from "@/lib/publishing/auth";
 import { LogoutButton } from "@/src/components/admin/logout-button";
 import { AdminTabs } from "@/src/components/admin/admin-tabs";
@@ -22,10 +22,7 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const repository = await loadPublishedRepository();
-  const livePointer = await getLivePublishedContentPointer();
-  const sections = await repository.getPublishedSections();
-  const currentVersion = livePointer ?? sections[0]?.contentVersion ?? null;
+  const currentVersion = await getLivePublishedContentPointer();
   const initialVersions = await fetchContentVersionsFromSupabase();
 
   return (

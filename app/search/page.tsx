@@ -32,9 +32,13 @@ export default async function SearchPage({
 
   let results: GroupedSearchResult[] = [];
   if (query.length > 0) {
-    const repository = await loadPublishedRepository();
-    const searchIndex = await repository.getSearchIndex();
-    results = searchGroupedEntries(query, searchIndex, repository.resolvePageRoute);
+    try {
+      const repository = await loadPublishedRepository();
+      const searchIndex = await repository.getSearchIndex();
+      results = searchGroupedEntries(query, searchIndex, repository.resolvePageRoute);
+    } catch {
+      results = [];
+    }
   }
 
   return (

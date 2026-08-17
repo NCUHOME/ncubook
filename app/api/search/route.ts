@@ -15,11 +15,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
+  const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  if (!query) {
+    return NextResponse.json({ query: "", results: [] });
+  }
+
   try {
-    const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
-    if (!query) {
-      return NextResponse.json({ query: "", results: [] });
-    }
 
     const repository = await loadPublishedRepository();
     const client = getSupabaseAdmin();
@@ -41,9 +42,8 @@ export async function GET(request: NextRequest) {
     const searchIndex = await repository.getSearchIndex();
     const results = searchGroupedEntries(query, searchIndex, repository.resolvePageRoute);
     return NextResponse.json({ query, results });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "search_internal_error";
-    return NextResponse.json({ error: "search_failed", message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ query, results: [] });
   }
 }
 
