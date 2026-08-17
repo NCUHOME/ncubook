@@ -1,5 +1,5 @@
 // Supabase 数据库 Database TypeScript 类型契约声明 (lib/database.types.ts)
-// 基于 supabase/schema.sql 生产 Schema 手动提取与强类型化
+// 基于 supabase/schema.sql 生产 Schema v2 强类型声明
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -11,37 +11,40 @@ export interface Database {
           id: string;
           schema_version: number;
           source_root_id: string;
-          status: "pending" | "published" | "failed";
-          notion_last_edited_time: string | null;
+          status: "pending" | "staging" | "published" | "failed";
           started_at: string;
           published_at: string | null;
+          failed_at: string | null;
+          fail_stage: "fetch" | "transform" | "mirror-assets" | "search-index" | "commit" | null;
+          fail_reason: string | null;
           checksum: string | null;
           summary: Json;
-          failure_reason: string | null;
         };
         Insert: {
           id: string;
           schema_version?: number;
           source_root_id: string;
-          status?: "pending" | "published" | "failed";
-          notion_last_edited_time?: string | null;
+          status?: "pending" | "staging" | "published" | "failed";
           started_at?: string;
           published_at?: string | null;
+          failed_at?: string | null;
+          fail_stage?: "fetch" | "transform" | "mirror-assets" | "search-index" | "commit" | null;
+          fail_reason?: string | null;
           checksum?: string | null;
           summary?: Json;
-          failure_reason?: string | null;
         };
         Update: {
           id?: string;
           schema_version?: number;
           source_root_id?: string;
-          status?: "pending" | "published" | "failed";
-          notion_last_edited_time?: string | null;
+          status?: "pending" | "staging" | "published" | "failed";
           started_at?: string;
           published_at?: string | null;
+          failed_at?: string | null;
+          fail_stage?: "fetch" | "transform" | "mirror-assets" | "search-index" | "commit" | null;
+          fail_reason?: string | null;
           checksum?: string | null;
           summary?: Json;
-          failure_reason?: string | null;
         };
         Relationships: [];
       };
@@ -53,31 +56,43 @@ export interface Database {
           parent_source_page_id: string | null;
           title: string;
           slug: string;
-          status: "published" | "failed";
+          route_path: string;
+          tree_path: Json;
+          school: string;
+          risk_level: "normal" | "needs-verification" | "sensitive";
+          source_urls: Json;
           last_edited_time: string;
           last_published_at: string;
           metadata: Json;
         };
         Insert: {
-          id?: number;
+          id?: never;
           content_version: string;
           source_page_id: string;
           parent_source_page_id?: string | null;
           title: string;
           slug: string;
-          status?: "published" | "failed";
+          route_path: string;
+          tree_path?: Json;
+          school?: string;
+          risk_level?: "normal" | "needs-verification" | "sensitive";
+          source_urls?: Json;
           last_edited_time: string;
           last_published_at: string;
-          metadata: Json;
+          metadata?: Json;
         };
         Update: {
-          id?: number;
+          id?: never;
           content_version?: string;
           source_page_id?: string;
           parent_source_page_id?: string | null;
           title?: string;
           slug?: string;
-          status?: "published" | "failed";
+          route_path?: string;
+          tree_path?: Json;
+          school?: string;
+          risk_level?: "normal" | "needs-verification" | "sensitive";
+          source_urls?: Json;
           last_edited_time?: string;
           last_published_at?: string;
           metadata?: Json;
@@ -86,6 +101,7 @@ export interface Database {
           {
             foreignKeyName: "published_pages_content_version_fkey";
             columns: ["content_version"];
+            isOneToOne: false;
             referencedRelation: "content_versions";
             referencedColumns: ["id"];
           },
@@ -103,7 +119,7 @@ export interface Database {
           block: Json;
         };
         Insert: {
-          id?: number;
+          id?: never;
           content_version: string;
           source_page_id: string;
           source_block_id: string;
@@ -113,7 +129,7 @@ export interface Database {
           block: Json;
         };
         Update: {
-          id?: number;
+          id?: never;
           content_version?: string;
           source_page_id?: string;
           source_block_id?: string;
@@ -126,6 +142,7 @@ export interface Database {
           {
             foreignKeyName: "published_blocks_content_version_source_page_id_fkey";
             columns: ["content_version", "source_page_id"];
+            isOneToOne: false;
             referencedRelation: "published_pages";
             referencedColumns: ["content_version", "source_page_id"];
           },
@@ -146,7 +163,7 @@ export interface Database {
           byte_size: number | null;
         };
         Insert: {
-          id?: number;
+          id?: never;
           content_version: string;
           source_page_id: string;
           source_block_id: string;
@@ -159,7 +176,7 @@ export interface Database {
           byte_size?: number | null;
         };
         Update: {
-          id?: number;
+          id?: never;
           content_version?: string;
           source_page_id?: string;
           source_block_id?: string;
@@ -175,12 +192,13 @@ export interface Database {
           {
             foreignKeyName: "published_assets_content_version_source_page_id_fkey";
             columns: ["content_version", "source_page_id"];
+            isOneToOne: false;
             referencedRelation: "published_pages";
             referencedColumns: ["content_version", "source_page_id"];
           },
         ];
       };
-      published_search_entries: {
+      published_search_segments: {
         Row: {
           id: number;
           content_version: string;
@@ -190,13 +208,11 @@ export interface Database {
           section_path: string[];
           anchor: string;
           plain_text: string;
-          block_type: string;
-          updated_at: string;
-          search_vector: unknown | null;
-          embedding: number[] | null;
+          block_type: "paragraph" | "heading" | "quote" | "callout" | "table" | "page-link";
+          search_vector: string;
         };
         Insert: {
-          id?: number;
+          id?: never;
           content_version: string;
           source_page_id: string;
           source_block_id: string;
@@ -204,13 +220,11 @@ export interface Database {
           section_path?: string[];
           anchor: string;
           plain_text: string;
-          block_type: string;
-          updated_at: string;
-          search_vector?: unknown | null;
-          embedding?: number[] | null;
+          block_type: "paragraph" | "heading" | "quote" | "callout" | "table" | "page-link";
+          search_vector?: never;
         };
         Update: {
-          id?: number;
+          id?: never;
           content_version?: string;
           source_page_id?: string;
           source_block_id?: string;
@@ -218,15 +232,14 @@ export interface Database {
           section_path?: string[];
           anchor?: string;
           plain_text?: string;
-          block_type?: string;
-          updated_at?: string;
-          search_vector?: unknown | null;
-          embedding?: number[] | null;
+          block_type?: "paragraph" | "heading" | "quote" | "callout" | "table" | "page-link";
+          search_vector?: never;
         };
         Relationships: [
           {
-            foreignKeyName: "published_search_entries_content_version_source_page_id_fkey";
+            foreignKeyName: "published_search_segments_content_version_source_page_id_fkey";
             columns: ["content_version", "source_page_id"];
+            isOneToOne: false;
             referencedRelation: "published_pages";
             referencedColumns: ["content_version", "source_page_id"];
           },
@@ -267,6 +280,7 @@ export interface Database {
           {
             foreignKeyName: "publication_failures_content_version_fkey";
             columns: ["content_version"];
+            isOneToOne: false;
             referencedRelation: "content_versions";
             referencedColumns: ["id"];
           },
@@ -292,10 +306,141 @@ export interface Database {
           {
             foreignKeyName: "published_content_pointer_content_version_fkey";
             columns: ["content_version"];
+            isOneToOne: false;
             referencedRelation: "content_versions";
             referencedColumns: ["id"];
           },
         ];
+      };
+      sync_jobs: {
+        Row: {
+          id: string;
+          content_version: string | null;
+          command: "publish" | "rollback";
+          status: "running" | "succeeded" | "failed" | "released";
+          started_at: string;
+          finished_at: string | null;
+          fail_reason: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content_version?: string | null;
+          command: "publish" | "rollback";
+          status?: "running" | "succeeded" | "failed" | "released";
+          started_at?: string;
+          finished_at?: string | null;
+          fail_reason?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          content_version?: string | null;
+          command?: "publish" | "rollback";
+          status?: "running" | "succeeded" | "failed" | "released";
+          started_at?: string;
+          finished_at?: string | null;
+          fail_reason?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sync_jobs_content_version_fkey";
+            columns: ["content_version"];
+            isOneToOne: false;
+            referencedRelation: "content_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sync_job_logs: {
+        Row: {
+          id: number;
+          job_id: string;
+          seq: number;
+          level: "info" | "warn" | "error";
+          event: string;
+          detail: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          job_id: string;
+          seq: number;
+          level?: "info" | "warn" | "error";
+          event: string;
+          detail?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          job_id?: string;
+          seq?: number;
+          level?: "info" | "warn" | "error";
+          event?: string;
+          detail?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sync_job_logs_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "sync_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evaluation_runs: {
+        Row: {
+          id: string;
+          mode: "fixture" | "shadow" | "production";
+          summary: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          mode: "fixture" | "shadow" | "production";
+          summary: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          mode?: "fixture" | "shadow" | "production";
+          summary?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      evaluation_cases: {
+        Row: {
+          id: string;
+          question: string;
+          page_context: Json | null;
+          expectations: Json;
+          enabled: boolean;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          question: string;
+          page_context?: Json | null;
+          expectations?: Json;
+          enabled?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          question?: string;
+          page_context?: Json | null;
+          expectations?: Json;
+          enabled?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       rate_limit_buckets: {
         Row: {
@@ -323,48 +468,68 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      commit_published_content_version: {
+      current_published_content_version: {
+        Args: Record<PropertyKey, never>;
+        Returns: string | null;
+      };
+      stage_published_chunk: {
         Args: {
           p_content_version: string;
-          p_expected_current_version: string | null;
-          p_checksum: string;
           p_pages: Json;
           p_blocks: Json;
           p_assets: Json;
-          p_search_entries: Json;
+          p_segments: Json;
+        };
+        Returns: void;
+      };
+      commit_published_content_version: {
+        Args: {
+          p_content_version: string;
+          p_expected_current_version: string;
+          p_checksum: string;
+          p_summary: Json;
         };
         Returns: void;
       };
       rollback_published_content_version: {
         Args: {
           p_target_version: string;
-          p_expected_current_version: string | null;
+          p_expected_current_version: string;
         };
         Returns: void;
       };
       fail_published_content_version: {
         Args: {
           p_content_version: string;
-          p_source_page_id: string | null;
-          p_source_block_id: string | null;
+          p_source_page_id?: string | null;
+          p_source_block_id?: string | null;
           p_stage: string;
           p_reason: string;
         };
         Returns: void;
       };
-      unreferenced_published_asset_urls: {
+      search_published_segments: {
         Args: {
-          p_retention?: string;
-        };
-        Returns: { public_url: string }[];
-      };
-      retrieve_published_sources: {
-        Args: {
-          p_question: string;
-          p_query_embedding?: number[] | null;
+          p_query: string;
           p_limit?: number;
         };
-        Returns: {
+        Returns: Array<{
+          source_page_id: string;
+          page_title: string;
+          section_path: string[];
+          anchor: string;
+          block_type: string;
+          plain_text: string;
+          ts_rank: number;
+          trgm_score: number;
+        }>;
+      };
+      match_published_segments: {
+        Args: {
+          p_question: string;
+          p_limit?: number;
+        };
+        Returns: Array<{
           source_id: string;
           page_id: string;
           page_title: string;
@@ -375,13 +540,8 @@ export interface Database {
           school: string;
           content_version: string;
           lexical_score: number;
-          vector_score: number;
           source_urls: Json;
-        }[];
-      };
-      current_published_content_version: {
-        Args: Record<PropertyKey, never>;
-        Returns: string | null;
+        }>;
       };
       consume_ask_rate_limit: {
         Args: {
