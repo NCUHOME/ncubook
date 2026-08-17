@@ -138,34 +138,48 @@ const readPublishedContentPointer = unstable_cache(
   { revalidate: false, tags: ["published-content-pointer"] },
 );
 
+// 单版本内容读取行数上限：达到上限视为快照被静默截断，直接 fail-fast（见 assertPublishedRowCountsBelowCap）
+export const PUBLISHED_ROW_LIMITS = {
+  published_pages: 1000,
+  published_blocks: 10000,
+  published_assets: 2000,
+  published_search_entries: 10000,
+} as const;
+
+export function assertPublishedRowCountsBelowCap(
+  contentVersion: string,
+  counts: Record<keyof typeof PUBLISHED_ROW_LIMITS, number>,
+): void {
+  for (const [table, cap] of Object.entries(PUBLISHED_ROW_LIMITS)) {
+    const count = counts[table as keyof typeof PUBLISHED_ROW_LIMITS];
+    if (count >= cap) {
+      throw new Error(
+        `Published content version ${contentVersion} reached the ${table} row cap of ${cap}; refusing to serve a silently truncated snapshot`,
+      );
+    }
+  }
+}
+
 async function loadVersionFixture(contentVersion: string): Promise<PublishedFixture> {
   const client = getSupabaseAdmin();
   if (!client) throw new Error("Published content storage is not configured");
 
   const [pagesResult, blocksResult, assetsResult, searchResult] = await Promise.all([
-    client.from("published_pages").select("*").eq("content_version", contentVersion).order("id").limit(1000),
-    client.from("published_blocks").select("*").eq("content_version", contentVersion).order("source_page_id").order("ordinal").limit(10000),
-    client.from("published_assets").select("*").eq("content_version", contentVersion).order("id").limit(2000),
-    client.from("published_search_entries").select("*").eq("content_version", contentVersion).order("id").limit(10000),
+    client.from("published_pages").select("*").eq("content_version", contentVersion).order("id").limit(PUBLISHED_ROW_LIMITS.published_pages),
+    client.from("published_blocks").select("*").eq("content_version", contentVersion).order("source_page_id").order("ordinal").limit(PUBLISHED_ROW_LIMITS.published_blocks),
+    client.from("published_assets").select("*").eq("content_version", contentVersion).order("id").limit(PUBLISHED_ROW_LIMITS.published_assets),
+    client.from("published_search_entries").select("*").eq("content_version", contentVersion).order("id").limit(PUBLISHED_ROW_LIMITS.published_search_entries),
   ]);
 
   for (const result of [pagesResult, blocksResult, assetsResult, searchResult]) {
     if (result.error) throw new Error(`Unable to read published content: ${result.error.message}`);
   }
 
-  const rowCounts = [pagesResult, blocksResult, assetsResult, searchResult].map((result) => result.data?.length ?? 0);
-  const rowLimits: Array<[string, number]> = [
-    ["published_pages", 1000],
-    ["published_blocks", 10000],
-    ["published_assets", 2000],
-    ["published_search_entries", 10000],
-  ];
-  rowLimits.forEach(([table, cap], index) => {
-    if (rowCounts[index] === cap) {
-      throw new Error(
-        `Published content version ${contentVersion} reached the ${table} row cap of ${cap}; refusing to serve a silently truncated snapshot`,
-      );
-    }
+  assertPublishedRowCountsBelowCap(contentVersion, {
+    published_pages: pagesResult.data?.length ?? 0,
+    published_blocks: blocksResult.data?.length ?? 0,
+    published_assets: assetsResult.data?.length ?? 0,
+    published_search_entries: searchResult.data?.length ?? 0,
   });
 
   const pages = (pagesResult.data ?? []).map(parsePageRow);
