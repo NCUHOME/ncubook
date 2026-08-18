@@ -160,7 +160,7 @@ function normalizeMediaType(value: string): string {
   return (primary ?? value).trim().toLowerCase();
 }
 
-function safePathPart(value: string): string {
+export function safePathPart(value: string): string {
   const safe = value.trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
   return safe || "unknown";
 }

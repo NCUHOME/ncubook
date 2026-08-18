@@ -1,9 +1,9 @@
-// 单元与组件渲染测试：Admin 容器与三大模块组件 (tests/components/admin-dashboard.test.tsx)
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { EvalDashboard } from "@/src/components/admin/eval-dashboard";
 import { QAPlayground } from "@/src/components/admin/qa-playground";
+import { VersionTimeline } from "@/src/components/admin/version-timeline";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -82,5 +82,19 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByPlaceholderText("输入你想测试或调试的南大校园问题...")).toBeDefined();
     expect(screen.getByText("执行测试")).toBeDefined();
     expect(screen.getByText("快捷预设:")).toBeDefined();
+  });
+
+  it("renders VersionTimeline with current and historical versions with delete and rollback actions", async () => {
+    const mockVersions = [
+      { version: "content-current-v2", createdAt: "2026-08-19T00:00:00Z", isCurrent: true, status: "published" as const },
+      { version: "content-history-v1", createdAt: "2026-08-18T00:00:00Z", isCurrent: false, status: "published" as const },
+    ];
+
+    render(<VersionTimeline currentVersion="content-current-v2" initialVersions={mockVersions} />);
+
+    expect(screen.getByText("当前线上在用版本")).toBeDefined();
+    expect(screen.getByText("历史版本节点")).toBeDefined();
+    expect(screen.getByText("一键恢复至此版本")).toBeDefined();
+    expect(screen.getByText("删除此版本")).toBeDefined();
   });
 });

@@ -28,11 +28,19 @@ describe("Notion publication command parser (parseCommand)", () => {
     });
   });
 
+  it("parses valid delete commands", () => {
+    expect(parseCommand({ operation: "delete", version: "v-2026-07-01-1" })).toEqual({
+      operation: "delete",
+      version: "v-2026-07-01-1",
+    });
+  });
+
   it("rejects invalid commands and edge cases", () => {
     expect(parseCommand(null)).toBeNull();
     expect(parseCommand({})).toBeNull();
     expect(parseCommand({ operation: "unknown" })).toBeNull();
     expect(parseCommand({ operation: "rollback", version: "" })).toBeNull();
+    expect(parseCommand({ operation: "delete", version: "" })).toBeNull();
     expect(parseCommand({ operation: "publish", all: false, pageIds: [] })).toBeNull(); // 非全量且无页面
     expect(parseCommand({ operation: "publish", all: false, pageIds: ["dup", "dup"] })).toBeNull(); // 重复页面 ID
   });

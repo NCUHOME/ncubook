@@ -1,7 +1,7 @@
-// Notion 发布引擎：Notion 远程发布与版本回滚指令解析与契约类型定义
 export type PublicationCommand =
   | { operation: "publish"; dryRun: boolean; all: boolean; pageIds: string[]; contentVersion?: string }
-  | { operation: "rollback"; version: string };
+  | { operation: "rollback"; version: string }
+  | { operation: "delete"; version: string };
 
 export type PublicationCommandRunner = (command: PublicationCommand) => Promise<Record<string, unknown>>;
 
@@ -10,6 +10,11 @@ export function parseCommand(value: unknown): PublicationCommand | null {
   if (value.operation === "rollback") {
     return typeof value.version === "string" && value.version.trim()
       ? { operation: "rollback", version: value.version.trim() }
+      : null;
+  }
+  if (value.operation === "delete") {
+    return typeof value.version === "string" && value.version.trim()
+      ? { operation: "delete", version: value.version.trim() }
       : null;
   }
   if (value.operation !== "publish") return null;

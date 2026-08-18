@@ -80,6 +80,17 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
+  // 网页历史版本彻底删除指令：立即清理关联数据库与 Storage 资源
+  if (command.operation === "delete") {
+    try {
+      const result = await runNotionPublicationCommand(command);
+      return Response.json({ ok: true, operation: "delete", version: command.version, result }, { status: 200 });
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      return Response.json({ ok: false, error: "delete_failed", reason: errorMsg }, { status: 400 });
+    }
+  }
+
   // 网页控制台默认使用 async 异步非阻塞模式，0.05 秒立刻返回，规避 EdgeOne 30s 限制
   const isAsync = payload?.async !== false;
 

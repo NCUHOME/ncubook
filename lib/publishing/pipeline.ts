@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { clearExactAnswerCache } from "@/lib/ai/ask";
 import { buildSearchIndex } from "@/lib/publishing/index";
-import { mirrorNotionAssets, type AssetStorage } from "@/lib/publishing/assets";
+import { mirrorNotionAssets, safePathPart, type AssetStorage } from "@/lib/publishing/assets";
 import { createNotionClient, batchMap, type NotionBlockNode, type NotionObject } from "@/lib/publishing/client";
 import { normalizeNotionBlocks } from "@/lib/publishing/blocks";
 import { normalizeNotionPage } from "@/lib/publishing/page";
@@ -97,6 +97,62 @@ export async function runNotionPublicationCommand(
     clearExactAnswerCache();
     onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
     return { ok: true, operation: "rollback", contentVersion: command.version, cacheRevalidated };
+  }
+
+  if (command.operation === "delete") {
+    if (!supabase) throw new Error("Supabase publication storage is not configured");
+    onProgress?.(formatLog(`🗑️ 正在校验并彻底删除历史版本: ${command.version}...`));
+
+    // 1. 安全校验：严禁删除当前线上在用版本
+    const { data: pointer } = await supabase
+      .from("published_content_pointer")
+      .select("content_version")
+      .eq("singleton", true)
+      .maybeSingle();
+
+    if (pointer?.content_version === command.version) {
+      throw new Error(`无法删除当前正在线上生效的版本 (${command.version})，请先恢复至其他历史版本后再行删除`);
+    }
+
+    // 2. 清理 Supabase Storage 中的物理文件对象
+    const bucketName = (process.env.PUBLISHED_ASSETS_BUCKET || "published_assets").trim();
+    const versionPrefix = safePathPart(command.version);
+
+    try {
+      const filePaths: string[] = [];
+      const listRecursive = async (prefix: string) => {
+        const { data: items } = await supabase.storage.from(bucketName).list(prefix, { limit: 1000 });
+        for (const item of items || []) {
+          if (!item.name) continue;
+          const itemPath = `${prefix}/${item.name}`;
+          if (item.id) {
+            filePaths.push(itemPath);
+          } else {
+            await listRecursive(itemPath);
+          }
+        }
+      };
+
+      await listRecursive(versionPrefix);
+      if (filePaths.length > 0) {
+        await supabase.storage.from(bucketName).remove(filePaths);
+      }
+    } catch (storageErr) {
+      console.warn(JSON.stringify({ event: "delete_storage_files_warning", version: command.version, error: String(storageErr) }));
+    }
+
+    // 3. 删除数据库 content_versions 表记录（带 pages/blocks/assets/segments/failures 级联彻底清空）
+    const { error: dbError } = await supabase
+      .from("content_versions")
+      .delete()
+      .eq("id", command.version);
+
+    if (dbError) {
+      throw new Error(`删除数据库版本记录失败: ${dbError.message}`);
+    }
+
+    onProgress?.(formatLog(`✅ 历史版本 ${command.version} 及其所有数据库与 Storage 资源已彻底删除！`));
+    return { ok: true, operation: "delete", contentVersion: command.version };
   }
 
   onProgress?.(formatLog("🔍 [阶段 1/5] 正在连接 Notion 知识库，读取文章列表与目录..."));

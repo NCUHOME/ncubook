@@ -1,7 +1,7 @@
 // 组件：版本控制与一键恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
 "use client";
 
-import { History, RotateCcw, TriangleAlert, CheckCircle2, Clock, Info } from "lucide-react";
+import { History, RotateCcw, TriangleAlert, CheckCircle2, Clock, Info, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { VersionRecord } from "@/lib/content/server";
 
@@ -14,6 +14,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
   const [activeCurrent, setActiveCurrent] = useState<string>(currentVersion ?? "未同步");
   const [versions, setVersions] = useState<VersionRecord[]>(initialVersions);
   const [loadingVersion, setLoadingVersion] = useState<string | null>(null);
+  const [deletingVersion, setDeletingVersion] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   // 加载最新真实版本列表
@@ -52,7 +53,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
   }));
 
   const handleRollback = async (targetVersion: string) => {
-    if (loadingVersion || targetVersion === activeCurrent) return;
+    if (loadingVersion || deletingVersion || targetVersion === activeCurrent) return;
     setLoadingVersion(targetVersion);
     setMessage(null);
 
@@ -63,10 +64,10 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         body: JSON.stringify({ operation: "rollback", version: targetVersion }),
       });
 
-      const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; reason?: string } | null;
 
       if (!response.ok || !data?.ok) {
-        throw new Error(data?.error ?? `HTTP ${response.status} 恢复失败`);
+        throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 恢复失败`);
       }
 
       setActiveCurrent(targetVersion);
@@ -80,6 +81,39 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
     }
   };
 
+  const handleDelete = async (targetVersion: string) => {
+    if (loadingVersion || deletingVersion || targetVersion === activeCurrent) return;
+    const confirmed = window.confirm(
+      `确定要彻底删除历史版本「${targetVersion}」吗？\n\n此操作将永久清理该版本的所有数据库记录与 Storage 资源且不可撤销。`
+    );
+    if (!confirmed) return;
+
+    setDeletingVersion(targetVersion);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/publish-notion", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ operation: "delete", version: targetVersion }),
+      });
+
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; reason?: string } | null;
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 删除失败`);
+      }
+
+      setMessage(`✅ 已成功彻底删除历史版本 ${targetVersion} 及其数据库与 Storage 资源！`);
+      refreshVersions();
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "删除失败";
+      setMessage(`❌ 删除异常: ${errorMsg}`);
+    } finally {
+      setDeletingVersion(null);
+    }
+  };
+
   return (
     <section className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
       <div className="border-b border-line pb-s4">
@@ -88,7 +122,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
           <h2 className="font-display text-title font-semibold">网站版本历史与恢复</h2>
         </div>
         <p className="mt-s1 text-caption leading-ui text-muted">
-          记录每次同步发版的历史快照。若线上发生误删或排版错误，可在历史版本旁一键恢复
+          记录每次同步发版的历史快照。若线上发生误删或排版错误，可在历史版本旁一键恢复或永久删除
         </p>
       </div>
 
@@ -112,7 +146,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-caption text-muted">
           <Info className="size-icon-small flex-shrink-0" />
           <span>
-            提示：当前数据库中已记录 1 次发版快照。每次点击「一键同步 Notion 文章」发版完成后，旧版本会自动保留在此列表中，供您随时一键恢复。
+            提示：当前数据库中已记录 1 次发版快照。每次点击「一键同步 Notion 文章」发版完成后，旧版本会自动保留在此列表中，供您随时一键恢复或删除。
           </span>
         </div>
       )}
@@ -121,6 +155,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         <div className="mt-s4 space-y-s3">
           {displayVersions.map((item) => {
             const formattedTime = formatDate(item.createdAt);
+            const isProcessing = loadingVersion === item.version || deletingVersion === item.version;
             return (
               <div
                 key={item.version}
@@ -157,15 +192,27 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
               </div>
 
               {!item.isCurrent && (
-                <button
-                  type="button"
-                  onClick={() => handleRollback(item.version)}
-                  disabled={loadingVersion === item.version}
-                  className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
-                >
-                  <RotateCcw className="size-icon-small" />
-                  {loadingVersion === item.version ? "正在恢复..." : "一键恢复至此版本"}
-                </button>
+                <div className="flex items-center gap-s2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => handleRollback(item.version)}
+                    disabled={isProcessing}
+                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
+                  >
+                    <RotateCcw className="size-icon-small" />
+                    {loadingVersion === item.version ? "正在恢复..." : "一键恢复至此版本"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item.version)}
+                    disabled={isProcessing}
+                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s2 text-label font-medium text-risk hover:bg-surface-subtle hover:text-risk disabled:opacity-50"
+                    title="永久删除此历史版本及关联的数据库与 Storage 资源"
+                  >
+                    <Trash2 className="size-icon-small" />
+                    {deletingVersion === item.version ? "正在删除..." : "删除此版本"}
+                  </button>
+                </div>
               )}
             </div>
           );
