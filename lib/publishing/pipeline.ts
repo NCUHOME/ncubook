@@ -132,9 +132,10 @@ export async function runNotionPublicationCommand(
   const store = command.dryRun
     ? createDryRunStore()
     : createConfiguredStore(supabase);
+  const bucketName = (process.env.PUBLISHED_ASSETS_BUCKET || "published_assets").trim();
   const storage = command.dryRun
     ? createDryRunAssetStorage()
-    : createSupabaseAssetStorage(requireSupabase(supabase), requiredEnvironment("PUBLISHED_ASSETS_BUCKET"));
+    : createSupabaseAssetStorage(requireSupabase(supabase), bucketName);
   let warningCount = 0;
   let builtPageCount = 0;
 
@@ -248,18 +249,46 @@ async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaTyp
 
 function createSupabaseAssetStorage(client: SupabaseClient, bucketName: string): AssetStorage {
   const bucket = client.storage.from(bucketName);
+  let bucketReady = false;
+
+  const ensureBucketExists = async () => {
+    if (bucketReady) return;
+    try {
+      const { data: buckets } = await client.storage.listBuckets();
+      const exists = buckets?.some((b) => b.name === bucketName);
+      if (!exists) {
+        await client.storage.createBucket(bucketName, { public: true });
+      }
+      bucketReady = true;
+    } catch {
+      // 忽略检查异常，直接尝试上传
+    }
+  };
+
   return {
     async upload({ path, bytes, mediaType }) {
+      await ensureBucketExists();
       for (let attempt = 0; attempt <= 3; attempt += 1) {
         const result = await bucket.upload(path, bytes, { contentType: mediaType, upsert: true });
         if (!result.error) {
           return bucket.getPublicUrl(path).data.publicUrl;
         }
+
+        // 如果报错 Bucket not found，尝试使用 service_role 自动创建 public bucket
+        if (result.error.message.toLowerCase().includes("not found")) {
+          try {
+            await client.storage.createBucket(bucketName, { public: true });
+            bucketReady = true;
+          } catch {
+            // 继续重试
+          }
+        }
+
         if (attempt < 3) {
           await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
           continue;
         }
-        throw new Error(`Unable to upload published asset: ${result.error.message}`);
+        throw new Error(`Unable to upload published asset: ${result.error.message} (bucket: ${bucketName})`);
       }
       throw new Error("Unable to upload published asset after retries");
     },

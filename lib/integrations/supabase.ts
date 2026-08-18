@@ -6,14 +6,16 @@ import { assertServerOnly } from "@/lib/integrations/server-only";
 assertServerOnly("Supabase Admin Client");
 
 export function hasSupabaseConfig(): boolean {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)?.trim();
+  return Boolean(url && key);
 }
 
 let supabaseAdminInstance: SupabaseClient<Database> | null = null;
 
 export function getSupabaseAdmin(): SupabaseClient<Database> | null {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)?.trim();
 
   if (!url || !key) {
     return null;
