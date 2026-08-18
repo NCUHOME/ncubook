@@ -235,7 +235,7 @@ const FALLBACK_PLACEHOLDER_PNG = new Uint8Array([
 ]);
 
 async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
-  for (let attempt = 0; attempt <= 3; attempt += 1) {
+  for (let attempt = 0; attempt <= 1; attempt += 1) {
     try {
       const response = await fetch(url, {
         headers: {
@@ -243,14 +243,18 @@ async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaTyp
           Accept: "image/*,application/pdf,*/*",
         },
         redirect: "follow",
-        signal: AbortSignal.timeout(30_000), // 30秒超时，保证大图片和附件在跨国网络下稳定下载
+        signal: AbortSignal.timeout(8000), // 8秒超时，快速探测避免 Serverless 函数执行超时
       });
+      if (response.status === 403 || response.status === 404 || response.status === 410) {
+        // 明确的客户端死链或权限失效错误，直接降级透明占位图，禁止无意义的多次重试浪费时间
+        return { bytes: FALLBACK_PLACEHOLDER_PNG, mediaType: "image/png" };
+      }
       if (!response.ok) throw new Error(`Unable to download Notion asset (${response.status})`);
       const mediaType = response.headers.get("content-type") ?? "application/octet-stream";
       return { bytes: new Uint8Array(await response.arrayBuffer()), mediaType };
     } catch (err) {
-      if (attempt < 3) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+      if (attempt < 1) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
         continue;
       }
       const errorMsg = err instanceof Error ? err.message : String(err);
