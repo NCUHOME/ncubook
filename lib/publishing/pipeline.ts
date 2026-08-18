@@ -226,10 +226,22 @@ function ancestorTitles(pageId: string | null, pages: Map<string, ReturnType<typ
   return titles;
 }
 
+// 1x1 像素透明 PNG 占位图二进制（用于当 Notion 中存在已失效的外链图片或死链时进行容错兜底，避免单个死链中断全站发版）
+const FALLBACK_PLACEHOLDER_PNG = new Uint8Array([
+  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0,
+  0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 11, 73, 68, 65, 84, 120, 156,
+  99, 96, 0, 0, 0, 2, 0, 1, 229, 39, 222, 252, 0, 0, 0, 0, 73, 69, 78, 68, 174,
+  66, 96, 130,
+]);
+
 async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
   for (let attempt = 0; attempt <= 3; attempt += 1) {
     try {
       const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Accept: "image/*,application/pdf,*/*",
+        },
         redirect: "follow",
         signal: AbortSignal.timeout(30_000), // 30秒超时，保证大图片和附件在跨国网络下稳定下载
       });
@@ -242,11 +254,12 @@ async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaTyp
         continue;
       }
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error(JSON.stringify({ event: "download_notion_asset_failed", url: url.slice(0, 80), error: errorMsg }));
-      throw err;
+      console.warn(JSON.stringify({ event: "download_notion_asset_failed_using_placeholder", url: url.slice(0, 100), error: errorMsg }));
+      // 容错降级：返回 1x1 占位图，确保全站发版顺利完成
+      return { bytes: FALLBACK_PLACEHOLDER_PNG, mediaType: "image/png" };
     }
   }
-  throw new Error("Unable to download Notion asset after retries");
+  return { bytes: FALLBACK_PLACEHOLDER_PNG, mediaType: "image/png" };
 }
 
 function createSupabaseAssetStorage(client: SupabaseClient, bucketName: string): AssetStorage {
