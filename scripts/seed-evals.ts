@@ -1,13 +1,16 @@
 // 评测题库种子脚本：将 evals/test.json 中的基准用例导入/Upsert 到 Supabase evaluation_cases 表
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { loadEnvConfig } from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Json } from "../lib/database.types";
 import type { TestConfig } from "../lib/ai/eval";
 
+loadEnvConfig(process.cwd());
+
 async function seedEvaluationCases() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
+  const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)?.trim();
 
   if (!supabaseUrl || !serviceRoleKey) {
     console.error("❌ 缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY 环境变量，无法执行种子导入。");

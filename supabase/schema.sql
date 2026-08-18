@@ -292,13 +292,16 @@ create or replace function commit_published_content_version(
 set search_path = public, pg_temp as $$
 declare
   locked_current text;
+  norm_expected text;
 begin
   select content_version into locked_current
   from published_content_pointer where singleton = true for update;
 
-  if locked_current is distinct from p_expected_current_version then
+  norm_expected := nullif(p_expected_current_version, '');
+
+  if locked_current is distinct from norm_expected then
     raise exception 'published pointer conflict: expected %, found %',
-      p_expected_current_version, locked_current using errcode = '40001';
+      coalesce(norm_expected, '<NULL>'), coalesce(locked_current, '<NULL>') using errcode = '40001';
   end if;
   if not exists (
     select 1 from content_versions where id = p_content_version and status = 'staging'
@@ -331,12 +334,16 @@ create or replace function rollback_published_content_version(
 set search_path = public, pg_temp as $$
 declare
   locked_current text;
+  norm_expected text;
 begin
   select content_version into locked_current
   from published_content_pointer where singleton = true for update;
-  if locked_current is distinct from p_expected_current_version then
+
+  norm_expected := nullif(p_expected_current_version, '');
+
+  if locked_current is distinct from norm_expected then
     raise exception 'published pointer conflict: expected %, found %',
-      p_expected_current_version, locked_current using errcode = '40001';
+      coalesce(norm_expected, '<NULL>'), coalesce(locked_current, '<NULL>') using errcode = '40001';
   end if;
   if not exists (
     select 1 from content_versions where id = p_target_version and status = 'published'

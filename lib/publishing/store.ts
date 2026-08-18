@@ -49,7 +49,7 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
     async commitVersion(input) {
       const result = await client.rpc("commit_published_content_version", {
         p_content_version: input.contentVersion,
-        p_expected_current_version: input.expectedCurrentVersion ?? "",
+        p_expected_current_version: input.expectedCurrentVersion ?? null,
         p_checksum: input.checksum,
         p_summary: (input.summary ?? {}) as unknown as Json,
       });
@@ -68,7 +68,7 @@ export function createSupabasePublicationStore(client: SupabaseClient<Database>)
     async movePointer(targetVersion, expectedCurrentVersion) {
       const result = await client.rpc("rollback_published_content_version", {
         p_target_version: targetVersion,
-        p_expected_current_version: expectedCurrentVersion ?? "",
+        p_expected_current_version: expectedCurrentVersion ?? null,
       });
       assertNoError(result.error, "roll back published content version");
     },

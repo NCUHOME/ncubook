@@ -485,7 +485,7 @@ export interface Database {
       commit_published_content_version: {
         Args: {
           p_content_version: string;
-          p_expected_current_version: string;
+          p_expected_current_version: string | null;
           p_checksum: string;
           p_summary: Json;
         };
@@ -494,7 +494,7 @@ export interface Database {
       rollback_published_content_version: {
         Args: {
           p_target_version: string;
-          p_expected_current_version: string;
+          p_expected_current_version: string | null;
         };
         Returns: void;
       };
