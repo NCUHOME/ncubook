@@ -324,6 +324,20 @@ begin
   values (true, p_content_version)
   on conflict (singleton) do update
   set content_version = excluded.content_version;
+
+  -- 自动保留最近 6 个已发布版本，自动级联删除超出 6 个的更早历史版本（带 pages/blocks/segments 级联清理）
+  delete from content_versions
+  where id in (
+    select id from content_versions
+    where status = 'published'
+    order by published_at desc nulls last, created_at desc
+    offset 6
+  );
+
+  -- 自动清理已失败或废弃的历史临时版本
+  delete from content_versions
+  where status in ('failed', 'pending', 'staging')
+    and id is distinct from p_content_version;
 end;
 $$;
 

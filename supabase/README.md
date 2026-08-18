@@ -5,6 +5,7 @@
 - **唯一事实源**：`supabase/schema.sql` 包含生产基线全套 DDL、RLS 行级安全策略与 RPC 存储过程；
 - **纯版本语义**：`content_versions` 仅记录版本生命周期与状态（`pending`, `staging`, `published`, `failed`）；任务互斥与日志独立落库在 `sync_jobs` / `sync_job_logs`；
 - **分块暂存 + 短事务切线**：长发布流程通过 `stage_published_chunk` 分块暂存，发布完成时通过 `commit_published_content_version` 瞬时切线，大幅降低行锁持有时间；
+- **自动留存 6 版本**：每次成功发布自动保留最近 6 个发布版本，超出 6 个的更早历史版本及失败记录自动级联清理，杜绝数据库空间膨胀；
 - **全文检索 SQL 化**：`published_search_segments` 结合 `tsvector`（简单分词全文检索）与 `pg_trgm`（三元组模糊匹配），替代 Node 内存线性扫描。
 
 ---
