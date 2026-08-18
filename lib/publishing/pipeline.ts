@@ -227,20 +227,22 @@ function ancestorTitles(pageId: string | null, pages: Map<string, ReturnType<typ
 }
 
 async function downloadAsset(url: string): Promise<{ bytes: Uint8Array; mediaType: string }> {
-  for (let attempt = 0; attempt <= 2; attempt += 1) {
+  for (let attempt = 0; attempt <= 3; attempt += 1) {
     try {
       const response = await fetch(url, {
         redirect: "follow",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(30_000), // 30秒超时，保证大图片和附件在跨国网络下稳定下载
       });
       if (!response.ok) throw new Error(`Unable to download Notion asset (${response.status})`);
       const mediaType = response.headers.get("content-type") ?? "application/octet-stream";
       return { bytes: new Uint8Array(await response.arrayBuffer()), mediaType };
     } catch (err) {
-      if (attempt < 2) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
         continue;
       }
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error(JSON.stringify({ event: "download_notion_asset_failed", url: url.slice(0, 80), error: errorMsg }));
       throw err;
     }
   }
