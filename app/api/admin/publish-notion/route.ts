@@ -83,60 +83,60 @@ export async function POST(request: Request): Promise<Response> {
   // 网页控制台默认使用 async 异步非阻塞模式，0.05 秒立刻返回，规避 EdgeOne 30s 限制
   const isAsync = payload?.async !== false;
 
-  // 互斥锁检查：是否有状态为 running / pending 的任务在跑
-  const activeJob = await findActiveRunningJob();
-  if (activeJob) {
-    return Response.json(
-      {
-        ok: true,
-        async: true,
-        jobId: activeJob.jobId,
-        status: "running",
-        progressPct: activeJob.progressPct,
-        stage: activeJob.stage,
-        logs: activeJob.logs,
-        reason: "已有发版任务在后台运行中，互斥锁已激活防重触发",
-      },
-      { status: 200 },
-    );
-  }
-
-  const contentVersion = `content-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17)}`;
-  const publishCommand: PublicationCommand = { ...command, contentVersion };
-  const job = await createPersistentJob(contentVersion);
-  const jobId = job.jobId;
-  const jobLogs = [...job.logs];
-
-  // 网页端默认使用 Next.js 15 官方 after() 上下文调度后台任务，0.05秒极速返回规避 EdgeOne 30s 网关超时
-  if (isAsync) {
-    after(async () => {
-      try {
-        await runNotionPublicationCommand(publishCommand, (logMsg) => {
-          jobLogs.push(logMsg);
-          updateJobLogs(jobId, jobLogs).catch(() => null);
-        });
-        await finishPersistentJob(jobId, "success", jobLogs);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        jobLogs.push(`❌ 同步中断: ${errorMsg}`);
-        await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
-      }
-    });
-
-    return Response.json(
-      {
-        ok: true,
-        async: true,
-        jobId,
-        status: "running",
-        logs: jobLogs,
-      },
-      { status: 200 },
-    );
-  }
-
-  // 同步阻塞模式 (供 CLI / CI/CD 快速脚本使用)
   try {
+    // 互斥锁检查：是否有状态为 running / pending 的任务在跑
+    const activeJob = await findActiveRunningJob();
+    if (activeJob) {
+      return Response.json(
+        {
+          ok: true,
+          async: true,
+          jobId: activeJob.jobId,
+          status: "running",
+          progressPct: activeJob.progressPct,
+          stage: activeJob.stage,
+          logs: activeJob.logs,
+          reason: "已有发版任务在后台运行中，互斥锁已激活防重触发",
+        },
+        { status: 200 },
+      );
+    }
+
+    const contentVersion = `content-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17)}`;
+    const publishCommand: PublicationCommand = { ...command, contentVersion };
+    const job = await createPersistentJob(contentVersion);
+    const jobId = job.jobId;
+    const jobLogs = [...job.logs];
+
+    // 网页端默认使用 Next.js 15 官方 after() 上下文调度后台任务，0.05秒极速返回规避 EdgeOne 30s 网关超时
+    if (isAsync) {
+      after(async () => {
+        try {
+          await runNotionPublicationCommand(publishCommand, (logMsg) => {
+            jobLogs.push(logMsg);
+            updateJobLogs(jobId, jobLogs).catch(() => null);
+          });
+          await finishPersistentJob(jobId, "success", jobLogs);
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          jobLogs.push(`❌ 同步中断: ${errorMsg}`);
+          await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
+        }
+      });
+
+      return Response.json(
+        {
+          ok: true,
+          async: true,
+          jobId,
+          status: "running",
+          logs: jobLogs,
+        },
+        { status: 200 },
+      );
+    }
+
+    // 同步阻塞模式 (供 CLI / CI/CD 快速脚本使用)
     const result = await runNotionPublicationCommand(publishCommand, (logMsg) => {
       jobLogs.push(logMsg);
     });
@@ -144,7 +144,7 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ ok: true, jobId, status: "success", result }, { status: 200 });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
-    return Response.json({ ok: false, jobId, status: "error", reason: errorMsg }, { status: 500 });
+    console.error(JSON.stringify({ event: "create_publish_job_failed", error: errorMsg }));
+    return Response.json({ ok: false, error: "trigger_failed", reason: errorMsg }, { status: 500 });
   }
 }

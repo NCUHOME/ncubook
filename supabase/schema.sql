@@ -135,7 +135,7 @@ create table if not exists published_content_pointer (
 -- 9. 同步任务与任务日志（取代 failure_reason 寄生存储）
 create table if not exists sync_jobs (
   id uuid primary key default gen_random_uuid(),
-  content_version text references content_versions(id) on delete set null,
+  content_version text,
   command text not null check (command in ('publish','rollback')),
   status text not null default 'running'
     check (status in ('running','succeeded','failed','released')),
