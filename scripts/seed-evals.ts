@@ -1,4 +1,13 @@
-// 评测题库种子脚本：将 evals/test.json 中的基准用例导入/Upsert 到 Supabase evaluation_cases 表
+// 评测题库种子同步脚本 (scripts/seed-evals.ts)
+//
+// 作用：
+//   将 evals/test.json 中的 36 个基准测试用例批量导入/Upsert 到 Supabase evaluation_cases 表中，
+//   供管理后台「评测大盘 (AdminEvalsPanel)」与 CI 质量基线评测使用。
+//
+// 命令行使用方式：
+//   npm run seed:evals
+//   或 npx tsx scripts/seed-evals.ts
+//
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { loadEnvConfig } from "@next/env";

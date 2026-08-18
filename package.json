@@ -11,6 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "publish": "npx tsx scripts/publish.ts",
+    "publish:all": "npx tsx scripts/publish.ts --all",
+    "publish:dry": "npx tsx scripts/publish.ts --dry-run --all",
+    "seed:evals": "npx tsx scripts/seed-evals.ts",
     "eval": "npx tsx scripts/eval.ts",
     "audit:routes": "npx tsx scripts/audit-routes.ts"
   },
