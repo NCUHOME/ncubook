@@ -150,10 +150,10 @@ export function QAPlayground() {
           <div>
             <div className="flex items-center gap-s2">
               <Sparkles className="size-icon" />
-              <h2 className="font-display text-title font-semibold">AI 问答沙盒与 RAG 白盒探针</h2>
+              <h2 className="font-display text-title font-semibold">问答测试沙盒</h2>
             </div>
             <p className="mt-s1 text-caption text-muted">
-              实时输入任意提问，透视底层向量检索得分、Prompt 上下文注入与结构化观点归因全链路
+              输入测试问题，检查知识检索排序、上下文注入与事实归因链路
             </p>
           </div>
 
@@ -196,7 +196,7 @@ export function QAPlayground() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleInspect()}
-              placeholder="输入你想测试或调试的南大校园问题..."
+              placeholder="输入需要测试的校园问题..."
               className="focus-ring w-full rounded-small border border-line bg-surface px-s4 py-s3 text-body text-ink placeholder:text-muted/60"
             />
           </div>
@@ -224,7 +224,7 @@ export function QAPlayground() {
               className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small bg-ink px-s5 py-s3 text-label font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {loading ? <RefreshCw className="size-icon animate-spin" /> : <Send className="size-icon" />}
-              <span>{loading ? "正在探针分析..." : "执行测试"}</span>
+              <span>{loading ? "正在分析..." : "测试问答"}</span>
             </button>
           </div>
         </div>

@@ -78,10 +78,10 @@ export function EvalDashboard({ initialReport = null }: EvalDashboardProps) {
         <div>
           <div className="flex items-center gap-s2">
             <Sparkles className="size-icon" />
-            <h2 className="font-display text-title font-semibold">AI 问答质量评测看板</h2>
+            <h2 className="font-display text-title font-semibold">AI 问答质量评测</h2>
           </div>
           <p className="mt-s1 text-caption leading-ui text-muted">
-            基于真实南大知识库 35+ 题黄金事实基准，量化出处归因率、拒答率、事实符合率与防幻觉能力
+            基于评测题库自动化打分，量化出处归因率、拒答率、事实符合率与防幻觉能力
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export function EvalDashboard({ initialReport = null }: EvalDashboardProps) {
             className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small bg-ink px-s5 py-s2 text-label font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? <RefreshCw className="size-icon animate-spin" /> : <Play className="size-icon" />}
-            {loading ? "正在运行评测..." : "运行全量评测"}
+            {loading ? "正在运行评测..." : "运行评测"}
           </button>
         </div>
       </div>

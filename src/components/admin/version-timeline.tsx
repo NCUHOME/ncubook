@@ -1,4 +1,4 @@
-// 组件：版本控制与一键恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
+// 组件：版本控制与历史恢复时间线 (VersionTimeline)，基于 Supabase 真实版本记录与指针控制
 "use client";
 
 import { History, RotateCcw, TriangleAlert, CheckCircle2, Clock, Info, Trash2 } from "lucide-react";
@@ -71,7 +71,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       }
 
       setActiveCurrent(targetVersion);
-      setMessage(`✅ 已成功将线上网站恢复至历史版本 ${targetVersion}！前端已同步更新。`);
+      setMessage(`✅ 已成功恢复至历史版本 ${targetVersion}，前端已同步更新。`);
       refreshVersions();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "恢复失败";
@@ -104,7 +104,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 删除失败`);
       }
 
-      setMessage(`✅ 已成功彻底删除历史版本 ${targetVersion} 及其数据库与 Storage 资源！`);
+      setMessage(`✅ 已彻底删除历史版本 ${targetVersion} 及其数据库与 Storage 资源！`);
       refreshVersions();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "删除失败";
@@ -119,10 +119,10 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       <div className="border-b border-line pb-s4">
         <div className="flex items-center gap-s2">
           <History className="size-icon" />
-          <h2 className="font-display text-title font-semibold">网站版本历史与恢复</h2>
+          <h2 className="font-display text-title font-semibold">版本历史与恢复</h2>
         </div>
         <p className="mt-s1 text-caption leading-ui text-muted">
-          记录每次同步发版的历史快照。若线上发生误删或排版错误，可在历史版本旁一键恢复或永久删除
+          记录每次同步发布的快照。若发生异常，可在此恢复或删除历史版本
         </p>
       </div>
 
@@ -137,7 +137,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       {displayVersions.length === 0 && (
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s4 text-caption text-muted">
           <Info className="size-icon-small flex-shrink-0" />
-          <span>当前数据库暂无已发布版本记录。点击上方「一键同步 Notion 文章」开始首次发版。</span>
+          <span>当前数据库暂无已发布版本记录。点击上方「同步 Notion 文章」开始首次发版。</span>
         </div>
       )}
 
@@ -146,7 +146,7 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         <div className="mt-s4 flex items-center gap-s2 rounded-small border border-line bg-surface-subtle p-s3 text-caption text-muted">
           <Info className="size-icon-small flex-shrink-0" />
           <span>
-            提示：当前数据库中已记录 1 次发版快照。每次点击「一键同步 Notion 文章」发版完成后，旧版本会自动保留在此列表中，供您随时一键恢复或删除。
+            提示：当前数据库中已记录 1 次发版快照。系统会自动保留最近 6 个版本，供随时恢复或手动清理。
           </span>
         </div>
       )}
@@ -165,20 +165,20 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
                     : "border-line bg-surface hover:bg-surface-subtle/50"
                 }`}
               >
-              <div className="flex flex-col gap-s1">
+              <div className="flex flex-col gap-s1 min-w-0 flex-1">
                 <div className="flex items-center gap-s2 flex-wrap">
                   <span className="font-mono text-body font-bold text-ink">
-                    {item.isCurrent ? "当前线上在用版本" : "历史版本节点"}
+                    {item.isCurrent ? "当前线上版本" : "历史版本"}
                   </span>
                   {item.isCurrent && (
                     <span className="flex items-center gap-s1 rounded-small bg-ink px-s2 py-s1 text-caption font-mono font-medium text-surface">
                       <CheckCircle2 className="size-icon-small text-surface" />
-                      正在线上生效
+                      线上生效中
                     </span>
                   )}
                   {!item.isCurrent && (
                     <span className="rounded-small border border-line bg-surface-subtle px-s2 py-s1 text-caption font-mono text-muted">
-                      可恢复历史备份
+                      可恢复备份
                     </span>
                   )}
                 </div>
@@ -192,21 +192,21 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
               </div>
 
               {!item.isCurrent && (
-                <div className="flex items-center gap-s2 flex-wrap">
+                <div className="flex items-center gap-s2 sm:flex-shrink-0 pt-s2 sm:pt-0 border-t border-line/40 sm:border-0">
                   <button
                     type="button"
                     onClick={() => handleRollback(item.version)}
                     disabled={isProcessing}
-                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s4 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50"
+                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s2 text-label font-medium hover:bg-surface-subtle disabled:opacity-50 transition-colors"
                   >
                     <RotateCcw className="size-icon-small" />
-                    {loadingVersion === item.version ? "正在恢复..." : "一键恢复至此版本"}
+                    {loadingVersion === item.version ? "正在恢复..." : "恢复此版本"}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(item.version)}
                     disabled={isProcessing}
-                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s2 text-label font-medium text-risk hover:bg-surface-subtle hover:text-risk disabled:opacity-50"
+                    className="focus-ring tap-target flex items-center justify-center gap-s1 rounded-small border border-line bg-surface px-s3 py-s2 text-label font-medium text-risk hover:bg-surface-subtle hover:text-risk disabled:opacity-50 transition-colors"
                     title="永久删除此历史版本及关联的数据库与 Storage 资源"
                   >
                     <Trash2 className="size-icon-small" />

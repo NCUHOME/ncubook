@@ -59,7 +59,7 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
           }`}
         >
           <BarChart3 className="size-icon-small" />
-          <span>AI 质量评测看板</span>
+          <span>AI 质量评测</span>
         </button>
 
         <button
@@ -72,7 +72,7 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
           }`}
         >
           <FlaskConical className="size-icon-small" />
-          <span>问答测试沙盒与探针</span>
+          <span>问答测试沙盒</span>
         </button>
       </nav>
 

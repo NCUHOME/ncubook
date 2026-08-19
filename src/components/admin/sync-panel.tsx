@@ -154,7 +154,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
       <div className="flex flex-col gap-s3 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-s4">
         <div>
           <div className="flex items-center gap-s2 flex-wrap">
-            <h2 className="font-display text-title font-semibold">Notion 文章一键更新控制台</h2>
+            <h2 className="font-display text-title font-semibold">Notion 文章更新</h2>
             <button
               type="button"
               onClick={handleCopyVersion}
@@ -166,7 +166,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
             </button>
           </div>
           <p className="mt-s1 text-caption leading-ui text-muted">
-            一键抓取 Notion 校园指南文章与图片，生成最新网页快照并刷新线上前端
+            拉取 Notion 校园指南文章与资源，生成最新发布快照并更新前端
           </p>
         </div>
 
@@ -181,7 +181,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
             />
             <span className="flex items-center gap-s1 font-medium">
               <TestTube className="size-icon-small" />
-              预检模式 (只检查不发布)
+              预检模式 (仅检查不发布)
             </span>
           </label>
 
@@ -192,7 +192,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
             className="focus-ring tap-target flex items-center justify-center gap-s2 rounded-small bg-ink px-s5 py-s2 text-label font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? <RefreshCw className="size-icon animate-spin" /> : <Play className="size-icon" />}
-            {loading ? "正在更新文章..." : dryRun ? "一键预检 Notion" : "一键同步 Notion 文章"}
+            {loading ? "正在同步文章..." : dryRun ? "预检 Notion" : "同步 Notion 文章"}
           </button>
         </div>
       </div>
@@ -218,7 +218,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
         <div className="flex items-center justify-between border-b border-line pb-s2 text-caption text-muted">
           <div className="flex items-center gap-s2 text-surface/80">
             <Terminal className="size-icon-small" />
-            <span>实时更新日志</span>
+            <span>实时同步日志</span>
             {logs.length > 0 && (
               <button
                 type="button"
@@ -263,7 +263,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
           ref={terminalRef}
           className="mt-s3 max-h-56 overflow-y-auto font-mono text-caption leading-relaxed text-surface/90 scroll-smooth"
         >
-          {logs.length === 0 ? "点击右上角「一键同步 Notion 文章」查看实时更新进度..." : logs.join("\n")}
+          {logs.length === 0 ? "点击右上角「同步 Notion 文章」查看实时进度..." : logs.join("\n")}
         </pre>
       </div>
     </section>

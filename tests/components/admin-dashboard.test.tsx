@@ -19,17 +19,17 @@ describe("admin dashboard component suite", () => {
 
     // 默认展示内容发布面板
     expect(screen.getByText("内容发布与版本")).toBeDefined();
-    expect(screen.getByText("AI 质量评测看板")).toBeDefined();
-    expect(screen.getByText("问答测试沙盒与探针")).toBeDefined();
-    expect(screen.getByText("Notion 文章一键更新控制台")).toBeDefined();
+    expect(screen.getByText("AI 质量评测")).toBeDefined();
+    expect(screen.getByText("问答测试沙盒")).toBeDefined();
+    expect(screen.getByText("Notion 文章更新")).toBeDefined();
 
     // 点击切换到 AI 评测看板
-    fireEvent.click(screen.getByText("AI 质量评测看板"));
-    expect(screen.getByText("运行全量评测")).toBeDefined();
+    fireEvent.click(screen.getByText("AI 质量评测"));
+    expect(screen.getByText("运行评测")).toBeDefined();
 
     // 点击切换到问答沙盒
-    fireEvent.click(screen.getByText("问答测试沙盒与探针"));
-    expect(screen.getByText("执行测试")).toBeDefined();
+    fireEvent.click(screen.getByText("问答测试沙盒"));
+    expect(screen.getByText("测试问答")).toBeDefined();
   });
 
   it("renders EvalDashboard with initial report and metric cards", () => {
@@ -79,8 +79,8 @@ describe("admin dashboard component suite", () => {
 
   it("renders QAPlayground with presets and inputs", () => {
     render(<QAPlayground />);
-    expect(screen.getByPlaceholderText("输入你想测试或调试的南大校园问题...")).toBeDefined();
-    expect(screen.getByText("执行测试")).toBeDefined();
+    expect(screen.getByPlaceholderText("输入需要测试的校园问题...")).toBeDefined();
+    expect(screen.getByText("测试问答")).toBeDefined();
     expect(screen.getByText("快捷预设:")).toBeDefined();
   });
 
@@ -92,9 +92,9 @@ describe("admin dashboard component suite", () => {
 
     render(<VersionTimeline currentVersion="content-current-v2" initialVersions={mockVersions} />);
 
-    expect(screen.getByText("当前线上在用版本")).toBeDefined();
-    expect(screen.getByText("历史版本节点")).toBeDefined();
-    expect(screen.getByText("一键恢复至此版本")).toBeDefined();
+    expect(screen.getByText("当前线上版本")).toBeDefined();
+    expect(screen.getByText("历史版本")).toBeDefined();
+    expect(screen.getByText("恢复此版本")).toBeDefined();
     expect(screen.getByText("删除此版本")).toBeDefined();
   });
 });

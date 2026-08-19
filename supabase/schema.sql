@@ -475,18 +475,30 @@ begin
 end;
 $$;
 
--- 21. 已发布版本不可变触发器
+-- 21. 已发布版本不可变触发器（禁止修改已发布内容，仅允许删除非当前指针的历史版本）
 create or replace function reject_published_version_mutation()
 returns trigger language plpgsql set search_path = public, pg_temp as $$
 declare
-  target_version text; target_status text;
+  target_version text; target_status text; current_ver text;
 begin
   if tg_table_name = 'content_versions' then target_version := old.id;
   else target_version := old.content_version; end if;
+
   select status into target_status from content_versions where id = target_version;
-  if target_status = 'published' then
+
+  if tg_op = 'UPDATE' and target_status = 'published' then
     raise exception 'Published content version % is immutable', target_version;
   end if;
+
+  if tg_op = 'DELETE' and target_status = 'published' then
+    select content_version into current_ver
+    from published_content_pointer where singleton = true;
+
+    if current_ver = target_version then
+      raise exception 'Cannot delete active online published content version %', target_version;
+    end if;
+  end if;
+
   return case when tg_op = 'DELETE' then old else new end;
 end;
 $$;

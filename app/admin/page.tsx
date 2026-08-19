@@ -9,8 +9,8 @@ import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { AppHeader } from "@/src/components/primitives/header";
 
 export const metadata: Metadata = {
-  title: "开发者运维控制台 - 此间",
-  description: "南昌大学 AI 知识库内容一键同步与版本控制后台",
+  title: "管理控制台 - 此间",
+  description: "南昌大学 AI 知识库内容同步与版本管理后台",
 };
 
 export default async function AdminDashboardPage() {
@@ -27,16 +27,16 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <AppHeader title="运维控制台" backHref="/" />
+      <AppHeader title="管理控制台" backHref="/" />
       <main className="mx-auto max-w-4xl px-s5 pb-s7 pt-s6 space-y-s6">
         <header className="flex items-center justify-between border-b border-line pb-s4">
           <div>
             <p className="text-caption leading-ui tracking-widest text-muted">此间 (NCU Book) · Developer Portal</p>
             <h1 className="mt-s2 font-display text-display leading-heading font-semibold">
-              开发者运维控制台
+              管理控制台
             </h1>
             <p className="mt-s2 text-caption leading-ui text-muted">
-              管理 Notion 文章一键更新与网站版本记录
+              校园指南知识库与 AI 管理系统
             </p>
           </div>
 
