@@ -51,3 +51,22 @@
 - 不要将 Notion 内容预处理为 Markdown 后再渲染；使用同步后的富块树和对应 renderer。
 - 文档页顶部提供返回、当前板块页面树和关键词搜索；右下提供带页面/章节上下文的 AI 入口。
 - 关键词搜索和 AI 问答是两个独立流程，不能共用一个会混入生成回答的结果页。
+
+## Git 提交规范 (git-commit-plugin 风格)
+
+所有 Git 提交信息（Commit Message）必须使用中文描述，且严格遵循 git-commit-plugin 的 emoji + type 前缀格式：
+格式：`<emoji> <type>: <中文改动简述>`
+
+- 🎉 init: 项目初始化
+- ✨ feat: 添加新特性
+- 🐞 fix: 修复bug
+- 📃 docs: 仅仅修改文档
+- 🌈 style: 仅仅修改了空格、格式缩进等
+- 🦄 refactor: 代码重构
+- 🎈 perf: 性能与体验优化
+- 🧪 test: 增加或修改测试用例
+- 🔧 build: 依赖相关内容
+- 🐎 ci: CI/CD 配置修改
+- 🐳 chore: 构建流程或辅助工具变动
+- ↩ revert: 回滚到上一个版本
+
