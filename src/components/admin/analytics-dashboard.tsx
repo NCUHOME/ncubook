@@ -77,10 +77,10 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
           type="button"
           onClick={fetchAnalytics}
           disabled={loading}
-          className="focus-ring tap-target flex items-center gap-s1 rounded-small border border-line px-s3 py-s2 text-caption font-medium hover:bg-surface-subtle transition-colors"
+          className="focus-ring tap-target flex items-center gap-s1 rounded-small border border-line px-s3 py-s2 text-caption font-medium hover:bg-surface-subtle transition-colors disabled:opacity-60"
         >
-          <RefreshCw className={`size-icon-small ${loading ? "animate-spin" : ""}`} />
-          <span>刷新数据</span>
+          <RefreshCw className={`size-icon-small ${loading ? "animate-spin text-brand" : ""}`} />
+          <span>{loading ? "正在刷新..." : "刷新数据"}</span>
         </button>
       </div>
 
@@ -318,11 +318,17 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
                     <div className="text-ink truncate">
                       {ev.eventName === "page_view" && (
                         <span>
-                          学生阅读了指南{" "}
-                          <strong className="font-semibold text-ink">
-                            《{ev.resolvedTitle || d.pageTitle || d.path || "首页"}》
-                          </strong>
-                          {ev.resolvedSection && <span className="text-muted"> ({ev.resolvedSection})</span>}
+                          {ev.resolvedTitle === "首页" || d.path === "/" || d.pageTitle === "首页" ? (
+                            <span>学生访问了 <strong className="font-semibold text-ink">🏠 首页</strong></span>
+                          ) : (
+                            <span>
+                              学生阅读了指南{" "}
+                              <strong className="font-semibold text-ink">
+                                《{ev.resolvedTitle || d.pageTitle || "校园指南"}》
+                              </strong>
+                              {ev.resolvedSection && <span className="text-muted"> ({ev.resolvedSection})</span>}
+                            </span>
+                          )}
                           {d.device && <span className="text-muted font-mono"> · {d.device}</span>}
                         </span>
                       )}

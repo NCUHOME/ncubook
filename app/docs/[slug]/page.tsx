@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { loadPublishedRepository, type PageTreeNode } from "@/lib/content/server";
 import { ArticleRenderer } from "@/src/components/article/renderer";
-import { ArticleProgressBar } from "@/src/components/article/progress-bar";
 import { ArticleFeedbackRow } from "@/src/components/article/feedback-row";
 import { DocumentAskEntry } from "@/src/components/ask/entry";
 import { AppHeader } from "@/src/components/primitives/header";
@@ -144,7 +143,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
         allSections={allSections}
         currentPageId={view.page.id}
       />
-      <ArticleProgressBar />
 
       <main className="px-s5 pb-s7 pt-s4">
         <article className="min-h-full">

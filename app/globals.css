@@ -14,12 +14,12 @@
   --border-mid: #dcdcdc;
   --action: #111111;
   --action-subtle: #f2f2f2;
-  --brand-blue: #1f9cf0;
+  --brand-blue: #66ccff;
   --brand-cyan: #66ccff;
-  --brand-blue-hover: #1681cc;
-  --brand-blue-subtle: rgba(31, 156, 240, 0.12);
-  --brand-blue-tint: #eaf4fe;
-  --info: #1f9cf0;
+  --brand-blue-hover: #4db8ff;
+  --brand-blue-subtle: rgba(102, 204, 255, 0.16);
+  --brand-blue-tint: #f0f9ff;
+  --info: #66ccff;
   --info-bg: #f7f9fb;
   --warning: #f59e0b;
   --danger: #dc2626;

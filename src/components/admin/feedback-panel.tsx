@@ -223,10 +223,10 @@ export function FeedbackPanel() {
             type="button"
             onClick={fetchFeedbacks}
             disabled={loading}
-            className="focus-ring tap-target flex items-center gap-s1 rounded-small bg-surface border border-line px-s3 py-s2 text-caption font-medium text-ink hover:bg-surface-subtle transition-colors"
+            className="focus-ring tap-target flex items-center gap-s1 rounded-small bg-surface border border-line px-s3 py-s2 text-caption font-medium text-ink hover:bg-surface-subtle transition-colors disabled:opacity-60"
           >
-            <RefreshCw className={`size-icon-small ${loading ? "animate-spin" : ""}`} />
-            <span>刷新</span>
+            <RefreshCw className={`size-icon-small ${loading ? "animate-spin text-brand" : ""}`} />
+            <span>{loading ? "正在刷新..." : "刷新"}</span>
           </button>
         </div>
       </div>

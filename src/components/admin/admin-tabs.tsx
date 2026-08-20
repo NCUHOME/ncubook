@@ -47,7 +47,9 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
   const handleTabChange = (tab: AdminTabKey) => {
     setActiveTab(tab);
     setVisitedTabs((prev) => new Set([...prev, tab]));
-    window.location.hash = tab;
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `#${tab}`);
+    }
   };
 
   const tabs: Array<{ key: AdminTabKey; label: string; icon: typeof BarChart3 }> = [

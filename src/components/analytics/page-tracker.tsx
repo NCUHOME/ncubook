@@ -21,10 +21,15 @@ export function PageTracker() {
     const device = isMobile ? "mobile" : isTablet ? "tablet" : "desktop";
 
     const slug = pathname.startsWith("/docs/") ? pathname.replace("/docs/", "") : undefined;
+    const rawTitle = typeof document !== "undefined" ? document.title : "";
+    const pageTitle = rawTitle
+      ? rawTitle.replace(/\s*-\s*校园指南\s*·\s*此间$/, "").replace(/\s*-\s*此间$/, "").trim()
+      : undefined;
 
     trackEvent("page_view", {
       path: pathname,
       slug,
+      pageTitle: pageTitle || (pathname === "/" ? "首页" : undefined),
       device,
       referrer: document.referrer || undefined,
     });

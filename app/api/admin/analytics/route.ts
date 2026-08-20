@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import type { AnalyticsSummary } from "@/lib/analytics/types";
-import { getArticleMetadataLookup } from "@/lib/content/metadata-resolver";
+import { getArticleMetadataLookup, resolveArticleMeta } from "@/lib/content/metadata-resolver";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,17 +78,17 @@ export async function GET(request: Request) {
         todaySessions.add(ev.session_id);
       }
       const rawSlug = (ev.event_data?.slug as string) || (ev.event_data?.path as string) || "首页";
-      const cleanKey = rawSlug.replace(/^\/docs\//, "").replace(/^\/sections\//, "");
-      const meta = articleLookup[rawSlug] || articleLookup[cleanKey];
+      const meta = resolveArticleMeta(articleLookup, rawSlug);
 
       const title = meta?.title || (ev.event_data?.pageTitle as string) || (rawSlug === "/" ? "首页" : rawSlug);
       const sectionTitle = meta?.sectionTitle;
       const routePath = meta?.routePath || (rawSlug.startsWith("/") ? rawSlug : `/docs/${rawSlug}`);
       const notionUrl = meta?.notionUrl;
+      const groupKey = meta?.slug || rawSlug.replace(/^\/docs\//, "").replace(/^\/sections\//, "");
 
       if (rawSlug && rawSlug !== "/") {
-        if (!articleViewCounts[cleanKey]) {
-          articleViewCounts[cleanKey] = {
+        if (!articleViewCounts[groupKey]) {
+          articleViewCounts[groupKey] = {
             title,
             sectionTitle,
             routePath,
@@ -96,7 +96,7 @@ export async function GET(request: Request) {
             count: 0,
           };
         }
-        articleViewCounts[cleanKey].count++;
+        articleViewCounts[groupKey].count++;
       }
     } else if (ev.event_name === "search_query") {
       totalSearches++;
@@ -156,14 +156,13 @@ export async function GET(request: Request) {
     zeroResultQueries,
     recentEvents: rawEvents.slice(0, 50).map((e, idx) => {
       const slug = (e.event_data?.slug as string) || (e.event_data?.path as string);
-      const cleanKey = slug ? slug.replace(/^\/docs\//, "").replace(/^\/sections\//, "") : "";
-      const meta = slug ? articleLookup[slug] || articleLookup[cleanKey] : undefined;
+      const meta = resolveArticleMeta(articleLookup, slug);
       return {
         id: e.id || idx + 1,
         eventName: e.event_name as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         eventData: e.event_data,
         createdAt: e.created_at,
-        resolvedTitle: meta?.title,
+        resolvedTitle: meta?.title || (e.event_data?.pageTitle as string) || (slug === "/" ? "首页" : undefined),
         resolvedSection: meta?.sectionTitle,
         routePath: meta?.routePath || (slug?.startsWith("/") ? slug : slug ? `/docs/${slug}` : undefined),
         notionUrl: meta?.notionUrl,

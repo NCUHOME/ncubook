@@ -12,6 +12,7 @@ export type AnalyticsEventName =
 export type PageViewPayload = {
   path: string;
   slug?: string;
+  pageTitle?: string;
   referrer?: string;
   device?: "mobile" | "tablet" | "desktop";
 };
