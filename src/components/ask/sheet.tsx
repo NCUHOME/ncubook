@@ -181,7 +181,7 @@ export function AskSheet({
 
             {session?.confidence === "insufficient" && (
               <div className="rounded-small border-l-3 border-line-mid bg-surface-subtle p-s3 text-body text-ink-body">
-                现有资料暂未收录该问题的确切规则，为保证真实性，暂不提供无据推测。您可以尝试换个关键词，或通过首页邮箱反馈。
+                抱歉，在当前的校园指南中暂未检索到确切依据。为保证真实可信，小家园不提供无据推测。建议换个提问方式，或通过首页邮箱反馈补充该词条。
               </div>
             )}
 

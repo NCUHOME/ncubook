@@ -33,6 +33,6 @@ describe("published page views (app/sections/[slug] & app/docs/[slug])", () => {
     expect(screen.getByText(/路线与收费/)).toBeVisible();
     expect(screen.getByRole("button", { name: "搜索手册" })).toBeVisible();
     expect(screen.getByRole("button", { name: "询问当前文档" })).toBeVisible();
-    expect(screen.getByText(/本篇指南是否对你有帮助/)).toBeVisible();
+    expect(screen.getByText(/这篇指南对你有帮助吗/)).toBeVisible();
   });
 });

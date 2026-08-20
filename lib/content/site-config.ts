@@ -58,11 +58,11 @@ export type AllSiteConfigs = {
 };
 
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
-  placeholder: "搜索手册（如：出行、绩点、报修...）",
-  chips: ["校内出行", "防诈指南", "保卫电话", "GPA 绩点", "通识选课", "转专业"],
+  placeholder: "搜索校园指南（如：选课、绩点、校车、报修...）",
+  chips: ["校车出行", "防诈指南", "保卫处电话", "GPA 绩点", "通识选课", "转专业"],
   emptyHint: "输入关键词实时检索校园指南文章与具体段落...",
   noResultTitle: "未找到相关篇目或段落",
-  noResultSub: "试试换个关键词，或向右下角小家园直接提问",
+  noResultSub: "未匹配到相关段落，建议换个关键词，或点击右下角小家园直接提问",
 };
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
@@ -73,7 +73,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
     "保卫处电话是多少？",
   ],
   assistantSubtitle: "南大家园官方 AI 知识库助手",
-  inputPlaceholder: "输入你的问题或继续追问...",
+  inputPlaceholder: "向小家园提问关于南大的任何事（如：转专业条件、体测标准...）",
 };
 
 export const DEFAULT_HOME_HERO_CONFIG: HomeHeroConfig = {
@@ -84,7 +84,7 @@ export const DEFAULT_HOME_HERO_CONFIG: HomeHeroConfig = {
 export const DEFAULT_HOME_NOTICE_CONFIG: HomeNoticeConfig = {
   title: "公告",
   date: "2026 年 8 月",
-  desc: "目前手册还在持续更新中……",
+  desc: "南大家园《此间》校园知识库持续更新中，涵盖学业、生活、出行等各类指南；遇到问题可直接向小家园 AI 提问～",
   links: [
     { text: "新生必看", slug: "xinsheng" },
     { text: "关于我们", slug: "why" },
@@ -94,7 +94,7 @@ export const DEFAULT_HOME_NOTICE_CONFIG: HomeNoticeConfig = {
 export const DEFAULT_HOME_CONTRIBUTE_CONFIG: HomeContributeConfig = {
   email: "book@nchuhome.club",
   qq_group: "930991836",
-  desc: "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～",
+  desc: "发现内容有错漏，或想分享你的校园经验？欢迎通过下方邮箱或 QQ 群加入我们～",
 };
 
 export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
@@ -105,8 +105,8 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
 };
 
 export const DEFAULT_ARTICLE_FEEDBACK_CONFIG: ArticleFeedbackConfig = {
-  prompt: "本篇指南是否对你有帮助？",
-  thankMsg: "感谢您的点赞支持！",
+  prompt: "这篇指南对你有帮助吗？",
+  thankMsg: "感谢您的反馈与支持！",
   feishuUrl: "https://ncuos.feishu.cn/share/base/form/shrcnxQo4K5x4u40X8i4n78L4gb",
 };
 

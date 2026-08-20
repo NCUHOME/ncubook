@@ -8,15 +8,15 @@ export default function NotFound() {
     <StatusPage
       icon={<FileQuestion className="h-s6 w-s6" />}
       iconClassName="text-muted"
-      title="页面未找到"
-      description="您访问的页面可能已被迁移、重命名，或暂时不可用。"
+      title="篇目未找到"
+      description="您访问的指南篇目可能已被迁移、重命名或归档，建议从首页或搜索重新探索。"
       actions={
         <Link
           href="/"
           className="tap-target inline-flex items-center justify-center gap-s2 rounded-round bg-action px-s6 text-label font-medium text-canvas focus-ring active:opacity-90"
         >
           <ArrowLeft className="h-s4 w-s4" />
-          返回首页提问
+          返回手册首页
         </Link>
       }
     />
