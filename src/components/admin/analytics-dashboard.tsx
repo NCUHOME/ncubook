@@ -15,6 +15,8 @@ import {
   Clock,
   Sparkles,
   ExternalLink,
+  Eye,
+  CheckCircle2,
 } from "lucide-react";
 import type { AnalyticsSummary } from "@/lib/analytics/types";
 
@@ -289,28 +291,33 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
                 <div key={ev.id} className="py-s2.5 flex items-center justify-between gap-s4 hover:bg-surface-subtle px-s2 rounded-small transition-colors">
                   <div className="flex items-center gap-s2 truncate min-w-0">
                     {ev.eventName === "page_view" && (
-                      <span className="rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
-                        📱 浏览
+                      <span className="inline-flex items-center gap-s1 rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        <Eye className="size-icon-small" />
+                        <span>浏览</span>
                       </span>
                     )}
                     {ev.eventName === "search_query" && (
-                      <span className="rounded-pill bg-brand text-surface px-s2 py-s1 text-caption font-bold shrink-0">
-                        🔍 搜索
+                      <span className="inline-flex items-center gap-s1 rounded-pill bg-brand text-surface px-s2 py-s1 text-caption font-bold shrink-0">
+                        <Search className="size-icon-small" />
+                        <span>搜索</span>
                       </span>
                     )}
                     {ev.eventName === "ai_ask_submitted" && (
-                      <span className="rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-brand shrink-0">
-                        🤖 AI 提问
+                      <span className="inline-flex items-center gap-s1 rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        <Bot className="size-icon-small" />
+                        <span>AI 提问</span>
                       </span>
                     )}
                     {ev.eventName === "contact_copied" && (
-                      <span className="rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
-                        📋 复制
+                      <span className="inline-flex items-center gap-s1 rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        <Copy className="size-icon-small" />
+                        <span>复制</span>
                       </span>
                     )}
                     {ev.eventName === "article_read_complete" && (
-                      <span className="rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-ink shrink-0">
-                        ✅ 读完
+                      <span className="inline-flex items-center gap-s1 rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-ink shrink-0">
+                        <CheckCircle2 className="size-icon-small" />
+                        <span>读完</span>
                       </span>
                     )}
 
@@ -319,7 +326,7 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
                       {ev.eventName === "page_view" && (
                         <span>
                           {ev.resolvedTitle === "首页" || d.path === "/" || d.pageTitle === "首页" ? (
-                            <span>学生访问了 <strong className="font-semibold text-ink">🏠 首页</strong></span>
+                            <span>学生访问了 <strong className="font-semibold text-ink">首页</strong></span>
                           ) : (
                             <span>
                               学生阅读了指南{" "}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { EvalDashboard } from "@/src/components/admin/eval-dashboard";
 import { QAPlayground } from "@/src/components/admin/qa-playground";
@@ -85,7 +85,9 @@ describe("admin dashboard component suite", () => {
   });
 
   it("renders AdminTabs and switches between panels smoothly with Keep-Alive", async () => {
-    render(<AdminTabs currentVersion="content-test-v1" />);
+    await act(async () => {
+      render(<AdminTabs currentVersion="content-test-v1" />);
+    });
 
     // 包含 5 个核心 Tab 栏
     expect(screen.getByText("数据洞察与埋点")).toBeDefined();
@@ -95,20 +97,26 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("AI 评测与沙盒")).toBeDefined();
 
     // 点击切换到内容发布面板
-    fireEvent.click(screen.getByText("内容发布与版本"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("内容发布与版本"));
+    });
     expect(screen.getByText("Notion 文章更新")).toBeDefined();
 
     // 点击切换到 AI 评测与沙盒
-    fireEvent.click(screen.getByText("AI 评测与沙盒"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("AI 评测与沙盒"));
+    });
     expect(screen.getByText("35 项黄金基准评测看板")).toBeDefined();
     expect(screen.getByText("AI 问答调试沙盒")).toBeDefined();
 
     // 点击切换到用户反馈监控
-    fireEvent.click(screen.getByText("用户反馈监控"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("用户反馈监控"));
+    });
     expect(screen.getByText("用户反馈与好评监控工单")).toBeDefined();
   });
 
-  it("renders AnalyticsDashboard with metrics, readable titles and events", () => {
+  it("renders AnalyticsDashboard with metrics, readable titles and events", async () => {
     const mockSummary = {
       todayPv: 120,
       todayUv: 45,
@@ -139,7 +147,9 @@ describe("admin dashboard component suite", () => {
       ],
     };
 
-    render(<AnalyticsDashboard initialSummary={mockSummary} />);
+    await act(async () => {
+      render(<AnalyticsDashboard initialSummary={mockSummary} />);
+    });
     expect(screen.getByText("全站数据洞察与埋点大盘")).toBeDefined();
     expect(screen.getByText("今日访问 (PV / UV)")).toBeDefined();
     expect(screen.getByText("搜索使用总量")).toBeDefined();
@@ -149,8 +159,10 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("最近实时学生行为流水")).toBeDefined();
   });
 
-  it("renders FeedbackPanel with status filter tabs and Linear style workflow", () => {
-    render(<FeedbackPanel />);
+  it("renders FeedbackPanel with status filter tabs and Linear style workflow", async () => {
+    await act(async () => {
+      render(<FeedbackPanel />);
+    });
     expect(screen.getByText("用户反馈与好评监控工单")).toBeDefined();
     expect(screen.getAllByText(/待处理/).length).toBeGreaterThan(0);
     expect(screen.getByText(/全部反馈/)).toBeDefined();
@@ -158,8 +170,10 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("明细流水")).toBeDefined();
   });
 
-  it("renders SiteConfigPanel and switches between 5 configuration sub-tabs", () => {
-    render(<SiteConfigPanel />);
+  it("renders SiteConfigPanel and switches between 5 configuration sub-tabs", async () => {
+    await act(async () => {
+      render(<SiteConfigPanel />);
+    });
     expect(screen.getByText("全站公共信息配置中心")).toBeDefined();
     expect(screen.getByText("搜索与推荐配置")).toBeDefined();
     expect(screen.getByText("AI 助手与预设问题")).toBeDefined();
@@ -171,20 +185,28 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("热门推荐标签 (Chips)")).toBeDefined();
 
     // 切换到 AI 助手
-    fireEvent.click(screen.getByText("AI 助手与预设问题"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("AI 助手与预设问题"));
+    });
     expect(screen.getByText("推荐快捷提问列表 (Suggested Questions)")).toBeDefined();
 
     // 切换到 首页标语与公告栏
-    fireEvent.click(screen.getByText("首页标语与公告栏"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("首页标语与公告栏"));
+    });
     expect(screen.getByText("首页主标语与人文名言 (home_hero)")).toBeDefined();
     expect(screen.getByText(/什么是「导读快捷链接」？/)).toBeDefined();
 
     // 切换到 完善手册与渠道声明
-    fireEvent.click(screen.getByText("完善手册与渠道声明"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("完善手册与渠道声明"));
+    });
     expect(screen.getByText("完善手册联系渠道 (home_contribute)")).toBeDefined();
 
     // 切换到 目录二级分类前称
-    fireEvent.click(screen.getByText("目录二级分类前称"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("目录二级分类前称"));
+    });
     expect(screen.getByText("篇目二级分类与蓝色小标映射 (article_groups)")).toBeDefined();
   });
 

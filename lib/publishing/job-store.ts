@@ -80,7 +80,7 @@ export async function findActiveRunningJob(): Promise<PersistentSyncJob | null> 
       .order("seq", { ascending: true });
 
     const logs: string[] = (logsData ?? []).map((row) => row.event);
-    if (logs.length === 0) logs.push("🚀 发现后台正在处理中的同步任务...");
+    if (logs.length === 0) logs.push("发现后台正在处理中的同步任务...");
 
     const { progressPct, stage } = calculateProgressAndStage(logs, "running");
 
@@ -128,7 +128,7 @@ export async function createPersistentJob(contentVersion: string): Promise<Persi
 
   const jobId = contentVersion;
   const initialLogs = [
-    formatLog("🚀 同步任务已成功发起，正在准备拉取 Notion 最新文章..."),
+    formatLog("同步任务已成功发起，正在准备拉取 Notion 最新文章..."),
     formatLog("正在建立与 Notion 校园知识库的高速连接..."),
   ];
 

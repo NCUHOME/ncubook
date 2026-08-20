@@ -47,12 +47,12 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ forceUnlock: true }),
       });
-      appendLocalLog("🔓 挂起任务锁已强制解除，您可以重新开始同步。");
+      appendLocalLog("[解锁] 挂起任务锁已强制解除，您可以重新开始同步。");
       setStatus("idle");
       setLoading(false);
       setProgressPct(0);
     } catch {
-      appendLocalLog("❌ 强制解锁请求失败，请检查网络");
+      appendLocalLog("[错误] 强制解锁请求失败，请检查网络");
     }
   };
 
@@ -141,7 +141,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "未知同步异常";
-      appendLocalLog(`❌ 同步中断: ${errorMsg}`);
+      appendLocalLog(`[错误] 同步中断: ${errorMsg}`);
       setStatus("error");
       setProgressPct(0);
     } finally {
@@ -249,7 +249,7 @@ export function SyncPanel({ currentVersion = "未同步" }: SyncPanelProps) {
             )}
             {status === "success" && (
               <span className="flex items-center gap-s1 text-caption text-surface font-semibold">
-                <CheckCircle2 className="size-icon-small text-surface" /> 🎉 同步完成
+                <CheckCircle2 className="size-icon-small text-surface" /> 同步完成
               </span>
             )}
             {status === "error" && (

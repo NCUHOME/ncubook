@@ -118,7 +118,8 @@ export function EvalDashboard({ initialReport = null }: EvalDashboardProps) {
 
       {/* 2. 四维核心指标卡片 */}
       {report && (
-        <div className="grid grid-cols-2 gap-s3 sm:grid-cols-4">
+        <>
+          <div className="grid grid-cols-2 gap-s3 sm:grid-cols-4">
           <MetricCard
             title="出处归因合规率"
             value={`${Math.round(report.metrics.citationValidity * 100)}%`}
@@ -148,9 +149,8 @@ export function EvalDashboard({ initialReport = null }: EvalDashboardProps) {
             subtext={`总用例: ${report.metrics.passCount}/${report.metrics.totalCount} 通过`}
           />
         </div>
-      )}
 
-      {/* 3. 评测用例列表与分类筛选 */}
+        {/* 3. 评测用例列表与分类筛选 */}
       <div className="rounded-medium border border-line bg-surface p-s5 shadow-subtle">
         <div className="flex flex-col gap-s3 border-b border-line pb-s4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-s2">
@@ -314,6 +314,16 @@ export function EvalDashboard({ initialReport = null }: EvalDashboardProps) {
           </div>
         )}
       </div>
+      </>
+    )}
+
+      {!report && !loading && (
+        <div className="rounded-medium border border-dashed border-line bg-surface-subtle p-s6 text-center text-muted space-y-s2">
+          <FileText className="size-icon mx-auto text-muted" />
+          <p className="text-body font-medium text-ink">暂未运行评测基准</p>
+          <p className="text-caption text-muted">点击右上角「运行评测」即可基于黄金题库对模型能力进行打分与质检</p>
+        </div>
+      )}
     </section>
   );
 }

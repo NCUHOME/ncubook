@@ -22,7 +22,7 @@ async function seedEvaluationCases() {
   const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY)?.trim();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error("❌ 缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY 环境变量，无法执行种子导入。");
+    console.error("[ERROR] 缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY 环境变量，无法执行种子导入。");
     process.exit(1);
   }
 
@@ -31,11 +31,11 @@ async function seedEvaluationCases() {
   });
 
   const filePath = join(process.cwd(), "evals/test.json");
-  console.log(`📖 正在读取评测题库文件: ${filePath}...`);
+  console.log(`[INFO] 正在读取评测题库文件: ${filePath}...`);
   const raw = await readFile(filePath, "utf8");
   const config = JSON.parse(raw) as TestConfig;
 
-  console.log(`📊 发现 ${config.cases.length} 个评测基准用例，正在批量同步至 Supabase evaluation_cases 表...`);
+  console.log(`[INFO] 发现 ${config.cases.length} 个评测基准用例，正在批量同步至 Supabase evaluation_cases 表...`);
 
   let successCount = 0;
   for (let i = 0; i < config.cases.length; i++) {
@@ -61,16 +61,16 @@ async function seedEvaluationCases() {
     });
 
     if (error) {
-      console.error(`❌ 用例 ${c.id} 导入失败: ${error.message}`);
+      console.error(`[ERROR] 用例 ${c.id} 导入失败: ${error.message}`);
     } else {
       successCount += 1;
     }
   }
 
-  console.log(`✅ 评测题库种子同步完成！成功导入/更新: ${successCount}/${config.cases.length} 个用例。`);
+  console.log(`[OK] 评测题库种子同步完成！成功导入/更新: ${successCount}/${config.cases.length} 个用例。`);
 }
 
 seedEvaluationCases().catch((err) => {
-  console.error("❌ 种子脚本执行异常:", err);
+  console.error("[ERROR] 种子脚本执行异常:", err);
   process.exit(1);
 });

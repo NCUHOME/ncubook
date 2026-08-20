@@ -504,15 +504,15 @@ export function FeedbackPanel() {
                               <span className="text-caption text-muted">
                                 状态：
                                 {item.status === "resolved"
-                                  ? "🟢 已解决"
+                                  ? "已解决"
                                   : item.status === "archived"
-                                  ? "📁 已归档"
-                                  : "🔴 待处理"}
+                                  ? "已归档"
+                                  : "待处理"}
                               </span>
                             </div>
                             {item.comment ? (
                               <p className="text-body text-ink bg-surface border border-line p-s2 rounded-small">
-                                💬 学生留言：{item.comment}
+                                学生留言：{item.comment}
                               </p>
                             ) : (
                               <p className="text-caption text-muted italic">（未填写文字留言）</p>
@@ -583,7 +583,7 @@ export function FeedbackPanel() {
                     </div>
                     {item.comment && (
                       <p className="text-body text-ink-sub bg-surface-subtle border border-line p-s2 rounded-small">
-                        💬 {item.comment}
+                        {item.comment}
                       </p>
                     )}
                   </div>

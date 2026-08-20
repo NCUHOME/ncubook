@@ -92,16 +92,16 @@ export async function runNotionPublicationCommand(
         version: command.version,
         error: errorMsg,
       }));
-      onProgress?.(formatLog(`⚠️ 页面缓存即刻刷新未完全生效 (${errorMsg})，但底层切线已完成: ${command.version}`));
+      onProgress?.(formatLog(`[提示] 页面缓存即刻刷新未完全生效 (${errorMsg})，但底层切线已完成: ${command.version}`));
     }
     clearExactAnswerCache();
-    onProgress?.(formatLog(`✅ 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
+    onProgress?.(formatLog(`[完成] 切线恢复成功！线上网站已即刻切换至版本: ${command.version}`));
     return { ok: true, operation: "rollback", contentVersion: command.version, cacheRevalidated };
   }
 
   if (command.operation === "delete") {
     if (!supabase) throw new Error("Supabase publication storage is not configured");
-    onProgress?.(formatLog(`🗑️ 正在校验并彻底删除历史版本: ${command.version}...`));
+    onProgress?.(formatLog(`[处理] 正在校验并彻底删除历史版本: ${command.version}...`));
 
     // 1. 安全校验：严禁删除当前线上在用版本
     const { data: pointer } = await supabase
@@ -151,24 +151,24 @@ export async function runNotionPublicationCommand(
       throw new Error(`删除数据库版本记录失败: ${dbError.message}`);
     }
 
-    onProgress?.(formatLog(`✅ 历史版本 ${command.version} 及其所有数据库与 Storage 资源已彻底删除！`));
+    onProgress?.(formatLog(`[完成] 历史版本 ${command.version} 及其所有数据库与 Storage 资源已彻底删除！`));
     return { ok: true, operation: "delete", contentVersion: command.version };
   }
 
-  onProgress?.(formatLog("🔍 [阶段 1/5] 正在连接 Notion 知识库，读取文章列表与目录..."));
+  onProgress?.(formatLog("[阶段 1/5] 正在连接 Notion 知识库，读取文章列表与目录..."));
   const token = requiredEnvironment("NOTION_TOKEN");
   const rootPageId = requiredEnvironment("NOTION_ROOT_PAGE_ID");
   const notion = createNotionClient({ token });
   const rootTree = await notion.readBlockTree(rootPageId);
   const selected = selectNotionPageNodes(rootTree, command.all, command.pageIds);
   if (selected.length === 0) throw new Error("No publishable pages were found below the configured Notion root");
-  onProgress?.(formatLog(`🌳 [阶段 2/5] 成功找到 ${selected.length} 篇待更新的校园指南文章`));
+  onProgress?.(formatLog(`[阶段 2/5] 成功找到 ${selected.length} 篇待更新的校园指南文章`));
 
   const rawPages = new Map<string, NotionObject>();
   await batchMap(selected, 3, async (item) => {
     rawPages.set(item.node.id, await notion.retrievePage(item.node.id));
   });
-  onProgress?.(formatLog(`📄 [阶段 3/5] 已完成 ${selected.length} 篇文章的修改时间与基础格式校验`));
+  onProgress?.(formatLog(`[阶段 3/5] 已完成 ${selected.length} 篇文章的修改时间与基础格式校验`));
 
   const contentVersion = (command.operation === "publish" && command.contentVersion)
     ? command.contentVersion
@@ -195,7 +195,7 @@ export async function runNotionPublicationCommand(
   let warningCount = 0;
   let builtPageCount = 0;
 
-  onProgress?.(formatLog("🖼️ [阶段 4/5] 正在同步文章图片、优化排版样式并建立全文搜索..."));
+  onProgress?.(formatLog("[阶段 4/5] 正在同步文章图片、优化排版样式并建立全文搜索..."));
   const result = await publishVersion({
     contentVersion,
     sourceRootId: rootPageId,
@@ -217,7 +217,7 @@ export async function runNotionPublicationCommand(
       warningCount += mirrored.warnings.length;
       builtPageCount += 1;
       if (builtPageCount % 5 === 0 || builtPageCount === selected.length) {
-        onProgress?.(formatLog(`⏳ 已完成 ${builtPageCount}/${selected.length} 篇文章的格式转换与图片下载...`));
+        onProgress?.(formatLog(`[进度] 已完成 ${builtPageCount}/${selected.length} 篇文章的格式转换与图片下载...`));
       }
       return {
         page,
@@ -232,7 +232,7 @@ export async function runNotionPublicationCommand(
     },
   });
 
-  onProgress?.(formatLog("💾 [阶段 5/5] 正在发布至线上网站并刷新前台页面..."));
+  onProgress?.(formatLog("[阶段 5/5] 正在发布至线上网站并刷新前台页面..."));
   let cacheRevalidated = true;
   if (!command.dryRun) {
     try {
@@ -248,12 +248,12 @@ export async function runNotionPublicationCommand(
         contentVersion,
         error: errorMsg,
       }));
-      onProgress?.(formatLog(`⚠️ 警告: 页面缓存即刻刷新未完全生效 (${errorMsg})`));
+      onProgress?.(formatLog(`[警告] 页面缓存即刻刷新未完全生效 (${errorMsg})`));
     }
     clearExactAnswerCache();
   }
 
-  onProgress?.(formatLog(`🎉 同步发版全量完成！共成功发布 ${result.pageCount ?? selected.length} 篇校园指南文章。`));
+  onProgress?.(formatLog(`[完成] 同步发版全量完成！共成功发布 ${result.pageCount ?? selected.length} 篇校园指南文章。`));
 
   return {
     ok: true,

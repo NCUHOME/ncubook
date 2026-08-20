@@ -118,16 +118,16 @@ export async function runAudit() {
       if (!isPass) failures += 1;
 
       console.log(
-        `| \`${route.path}\` (${route.name}) | ${result.statusCode} | ${result.ttfbMs}ms | ${result.totalMs}ms | ${(result.contentLength / 1024).toFixed(2)} KB | ${result.hasViewport ? "✅" : "❌"} | ${result.hasTitle ? "✅" : "❌"} |`
+        `| \`${route.path}\` (${route.name}) | ${result.statusCode} | ${result.ttfbMs}ms | ${result.totalMs}ms | ${(result.contentLength / 1024).toFixed(2)} KB | ${result.hasViewport ? "PASS" : "FAIL"} | ${result.hasTitle ? "PASS" : "FAIL"} |`
       );
 
       if (result.statusCode === 404 && route.path.startsWith("/docs/")) {
-        console.warn(`  ⚠️ 提示：若当前连接了 Supabase 线上数据库，请通过 '--doc-slug <slug>' 指定已发布的真实文档 slug。`);
+        console.warn(`  [提示] 若当前连接了 Supabase 线上数据库，请通过 '--doc-slug <slug>' 指定已发布的真实文档 slug。`);
       }
     } catch (err: unknown) {
       failures += 1;
       const message = err instanceof Error ? err.message : String(err);
-      console.log(`| \`${route.path}\` | 失败 | - | - | - | - | ❌ (${message}) |`);
+      console.log(`| \`${route.path}\` | 失败 | - | - | - | - | FAIL (${message}) |`);
     }
   }
 

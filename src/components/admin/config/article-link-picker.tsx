@@ -95,7 +95,7 @@ export function ArticleLinkPicker({
       <div className="rounded-small border border-brand bg-brand-tint p-s3 text-caption text-ink space-y-s1">
         <div className="flex items-center gap-s1 font-semibold text-brand">
           <Info className="size-icon-small" />
-          <span>💡 什么是「导读快捷链接」？</span>
+          <span>什么是「导读快捷链接」？</span>
         </div>
         <p className="text-muted leading-body">
           导读链接会展示在学生端首页顶部【公告卡片】正文下方（例如：<em>“请先查阅 [新生必看] · [关于我们]”</em>）。

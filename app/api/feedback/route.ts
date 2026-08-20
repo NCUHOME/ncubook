@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           msg_type: "text",
           content: {
-            text: `📝 [此间指南反馈] ${targetType === "article" ? "文章" : "AI问答"} [${targetId}] - ${isHelpful ? "👍 有帮助" : "👎 没帮助"}${body.comment ? `\n💬 建议：${body.comment}` : ""}`,
+            text: `[此间指南反馈] ${targetType === "article" ? "文章" : "AI问答"} [${targetId}] - ${isHelpful ? "有帮助" : "没帮助"}${body.comment ? `\n建议：${body.comment}` : ""}`,
           },
         }),
       }).catch((err) => console.error("Feishu webhook notify error:", err));

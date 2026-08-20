@@ -71,11 +71,11 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
       }
 
       setActiveCurrent(targetVersion);
-      setMessage(`✅ 已成功恢复至历史版本 ${targetVersion}，前端已同步更新。`);
+      setMessage(`已成功恢复至历史版本 ${targetVersion}，前端已同步更新。`);
       refreshVersions();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "恢复失败";
-      setMessage(`❌ 恢复异常: ${errorMsg}`);
+      setMessage(`恢复异常: ${errorMsg}`);
     } finally {
       setLoadingVersion(null);
     }
@@ -104,11 +104,11 @@ export function VersionTimeline({ currentVersion = "未同步", initialVersions 
         throw new Error(data?.reason ?? data?.error ?? `HTTP ${response.status} 删除失败`);
       }
 
-      setMessage(`✅ 已彻底删除历史版本 ${targetVersion} 及其数据库与 Storage 资源！`);
+      setMessage(`已彻底删除历史版本 ${targetVersion} 及其数据库与 Storage 资源。`);
       refreshVersions();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "删除失败";
-      setMessage(`❌ 删除异常: ${errorMsg}`);
+      setMessage(`删除异常: ${errorMsg}`);
     } finally {
       setDeletingVersion(null);
     }

@@ -130,7 +130,7 @@ export async function POST(request: Request): Promise<Response> {
           await finishPersistentJob(jobId, "success", jobLogs);
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : String(err);
-          jobLogs.push(`❌ 同步中断: ${errorMsg}`);
+          jobLogs.push(`[错误] 同步中断: ${errorMsg}`);
           await finishPersistentJob(jobId, "error", jobLogs, errorMsg);
         }
       });

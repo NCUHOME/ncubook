@@ -38,13 +38,13 @@ async function main() {
   let result: unknown;
 
   if (isDirect) {
-    process.stdout.write("🚀 [CLI Direct Pipeline] 正在直连 Notion 与 Supabase 执行全量同步发版...\n");
+    process.stdout.write("[INFO] [CLI Direct Pipeline] 正在直连 Notion 与 Supabase 执行全量同步发版...\n");
     try {
       result = await runNotionPublicationCommand(command);
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      process.stderr.write(`❌ [Direct Publish Failure] ${reason}\n`);
+      process.stderr.write(`[ERROR] [Direct Publish Failure] ${reason}\n`);
       process.exitCode = 1;
     }
   } else {

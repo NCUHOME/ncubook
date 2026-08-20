@@ -50,7 +50,7 @@ async function cli() {
     metrics.factualityRate < thresholds.factualityRate ||
     metrics.p95LatencyMs > thresholds.p95LatencyMs
   ) {
-    process.stderr.write("❌ Grounded answer evaluation thresholds failed!\n");
+    process.stderr.write("[ERROR] Grounded answer evaluation thresholds failed!\n");
     process.exit(1);
   }
 }

@@ -134,9 +134,9 @@ export function QAPlayground() {
         throw new Error(data?.error ?? "保存失败");
       }
 
-      setFlywheelMessage("🎉 已成功将该问题沉淀为黄金 Eval 评测用例！");
+      setFlywheelMessage("已成功将该问题沉淀为黄金 Eval 评测用例！");
     } catch (err) {
-      setFlywheelMessage(err instanceof Error ? `❌ ${err.message}` : "❌ 保存失败");
+      setFlywheelMessage(err instanceof Error ? `保存失败: ${err.message}` : "保存失败");
     } finally {
       setSavingFlywheel(false);
     }
