@@ -15,13 +15,21 @@ export async function POST(request: Request) {
       metadata?: Record<string, unknown>;
     };
 
-    const targetType = body.targetType;
-    const targetId = body.targetId?.trim();
-    const isHelpful = Boolean(body.isHelpful);
-
-    if (!targetType || !["article", "answer"].includes(targetType) || !targetId) {
+    const rawTargetType = body.targetType;
+    const rawTargetId = (body.targetId ?? "").trim();
+    if (!rawTargetType || !["article", "answer"].includes(rawTargetType) || !rawTargetId) {
       return NextResponse.json({ ok: false, error: "invalid_parameters" }, { status: 400 });
     }
+
+    const targetType = rawTargetType as "article" | "answer";
+    const targetId = rawTargetId.slice(0, 128);
+    const isHelpful = Boolean(body.isHelpful);
+    const comment = typeof body.comment === "string" && body.comment.trim() ? body.comment.trim().slice(0, 1000) : null;
+
+    const safeMeta =
+      typeof body.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata)
+        ? body.metadata
+        : {};
 
     const supabase = getSupabaseAdmin();
     if (supabase) {
@@ -29,9 +37,9 @@ export async function POST(request: Request) {
         target_type: targetType,
         target_id: targetId,
         is_helpful: isHelpful,
-        comment: body.comment?.trim() || null,
+        comment,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        metadata: (body.metadata || {}) as any,
+        metadata: safeMeta as any,
       });
     }
 

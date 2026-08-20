@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       endpoint?: string;
     };
 
-    const isMock = body.isMock ?? true;
+    const isMock = body.isMock === true;
     const origin = new URL(request.url).origin;
     const endpoint = body.endpoint ?? `${origin}/api/ask`;
 

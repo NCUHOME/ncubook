@@ -74,6 +74,8 @@ export type StoredAnalyticsEvent = {
 export type AnalyticsSummary = {
   todayPv: number;
   todayUv: number;
+  totalPv?: number;
+  totalUv?: number;
   totalSearches: number;
   zeroResultSearches: number;
   totalAiAsks: number;

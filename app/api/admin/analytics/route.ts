@@ -144,9 +144,14 @@ export async function GET(request: Request) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 15);
 
+  const totalPv = rawEvents.filter((e) => e.event_name === "page_view").length;
+  const totalUv = new Set(rawEvents.map((e) => e.session_id)).size;
+
   const summary: AnalyticsSummary = {
-    todayPv: Math.max(todayPv, rawEvents.filter((e) => e.event_name === "page_view").length),
-    todayUv: Math.max(todaySessions.size, new Set(rawEvents.map((e) => e.session_id)).size),
+    todayPv,
+    todayUv: todaySessions.size,
+    totalPv,
+    totalUv,
     totalSearches,
     zeroResultSearches,
     totalAiAsks,

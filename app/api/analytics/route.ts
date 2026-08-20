@@ -6,24 +6,48 @@ import type { AnalyticsEventName } from "@/lib/analytics/types";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const VALID_EVENT_NAMES = new Set<AnalyticsEventName>([
+  "page_view",
+  "article_read_complete",
+  "search_query",
+  "search_result_click",
+  "ai_ask_submitted",
+  "contact_copied",
+  "feishu_feedback_click",
+]);
+
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
+    const body = (await request.json().catch(() => ({}))) as {
       session_id?: string;
       sessionId?: string;
-      event_name?: AnalyticsEventName;
-      eventName?: AnalyticsEventName;
+      event_name?: string;
+      eventName?: string;
       event_data?: Record<string, unknown>;
       eventData?: Record<string, unknown>;
     };
 
-    const eventName = body.event_name || body.eventName;
-    const sessionId = body.session_id || body.sessionId || "anonymous";
-    const eventData = body.event_data || body.eventData || {};
-
-    if (!eventName) {
-      return NextResponse.json({ ok: false, error: "missing_event_name" }, { status: 400 });
+    const rawEventName = (body.event_name || body.eventName || "").trim();
+    if (!rawEventName || !VALID_EVENT_NAMES.has(rawEventName as AnalyticsEventName)) {
+      return NextResponse.json({ ok: false, error: "invalid_event_name" }, { status: 400 });
     }
+    const eventName = rawEventName as AnalyticsEventName;
+
+    const rawSessionId = String(body.session_id || body.sessionId || "anonymous").trim();
+    const sessionId = rawSessionId.slice(0, 64).replace(/[^\w-]/g, "");
+
+    const rawData = (typeof body.event_data === "object" && body.event_data !== null && !Array.isArray(body.event_data))
+      ? body.event_data
+      : (typeof body.eventData === "object" && body.eventData !== null && !Array.isArray(body.eventData))
+        ? body.eventData
+        : {};
+
+    // 限制单次埋点 Payload 最大体积与键值长度
+    const safeDataString = JSON.stringify(rawData);
+    if (safeDataString.length > 4096) {
+      return NextResponse.json({ ok: false, error: "payload_too_large" }, { status: 400 });
+    }
+    const eventData = JSON.parse(safeDataString) as Record<string, unknown>;
 
     const supabase = getSupabaseAdmin();
     if (supabase) {
