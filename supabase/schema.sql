@@ -518,6 +518,33 @@ drop trigger if exists published_search_segments_immutable on published_search_s
 create trigger published_search_segments_immutable before update or delete on published_search_segments
   for each row execute function reject_published_version_mutation();
 
+-- 21.1 网站全局配置表（首页公告栏、联系方式、Hero 标语等）
+create table if not exists site_configs (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+-- 初始化默认配置数据
+insert into site_configs (key, value) values
+('home_notice', '{"title": "公告", "date": "2026 年 8 月", "desc": "目前手册还在持续更新中……", "links": [{"text": "新生必看", "slug": "xinsheng"}, {"text": "关于我们", "slug": "why"}]}'::jsonb),
+('home_contribute', '{"email": "book@nchuhome.club", "qq_group": "930991836", "desc": "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～"}'::jsonb),
+('home_hero', '{"title": "校园里的事<br>在此问明白", "quote": "是什么曾经拯救过你，就用它来更好地拯救这个世界"}'::jsonb)
+on conflict (key) do nothing;
+
+-- 21.2 用户反馈记录表（文章有帮助/没帮助反馈、AI 问答好评/差评与建议）
+create table if not exists user_feedbacks (
+  id uuid primary key default gen_random_uuid(),
+  target_type text not null check (target_type in ('article', 'answer')),
+  target_id text not null,
+  is_helpful boolean not null,
+  comment text,
+  metadata jsonb default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_user_feedbacks_target on user_feedbacks(target_type, target_id);
+create index if not exists idx_user_feedbacks_created_at on user_feedbacks(created_at desc);
+
 -- 22. RLS（产品红线：anon 只读当前指针版本）
 alter table content_versions enable row level security;
 alter table published_pages enable row level security;
@@ -531,6 +558,8 @@ alter table sync_job_logs enable row level security;
 alter table evaluation_runs enable row level security;
 alter table evaluation_cases enable row level security;
 alter table rate_limit_buckets enable row level security;
+alter table site_configs enable row level security;
+alter table user_feedbacks enable row level security;
 
 drop policy if exists current_pages_are_public on published_pages;
 create policy current_pages_are_public on published_pages
@@ -550,6 +579,14 @@ create policy current_pointer_is_public on published_content_pointer
 drop policy if exists current_version_is_public on content_versions;
 create policy current_version_is_public on content_versions
   for select using (status = 'published' and id = current_published_content_version());
+
+drop policy if exists site_configs_are_public on site_configs;
+create policy site_configs_are_public on site_configs
+  for select using (true);
+
+drop policy if exists feedbacks_insert_public on user_feedbacks;
+create policy feedbacks_insert_public on user_feedbacks
+  for insert with check (true);
 
 -- 23. RPC 执行权限：管理级全部 revoke，仅 service_role
 revoke all on function stage_published_chunk(text, jsonb, jsonb, jsonb, jsonb) from public, anon, authenticated;

@@ -463,6 +463,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_configs: {
+        Row: {
+          key: string;
+          value: Json;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_feedbacks: {
+        Row: {
+          id: string;
+          target_type: "article" | "answer";
+          target_id: string;
+          is_helpful: boolean;
+          comment: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          target_type: "article" | "answer";
+          target_id: string;
+          is_helpful: boolean;
+          comment?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          target_type?: "article" | "answer";
+          target_id?: string;
+          is_helpful?: boolean;
+          comment?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

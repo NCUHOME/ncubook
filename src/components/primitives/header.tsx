@@ -1,51 +1,102 @@
-// 组件：全站吸顶 Header 导航栏原语 (AppHeader)，包含返回按钮、PageTreeDrawer 板块抽屉触发按钮、标题与搜索页入口
+// 组件：全站吸顶 Header 导航栏原语 (AppHeader)，支持首页与文档阅读器双模式
 "use client";
 
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { PageTreeNode } from "@/lib/content/server";
+import { useSearch } from "@/src/components/search/search-provider";
+import type { SectionSummary } from "@/src/components/primitives/drawer";
 
 const PageTreeDrawer = dynamic(
   () => import("@/src/components/primitives/drawer").then((mod) => mod.PageTreeDrawer),
-  { ssr: false }
+  { ssr: false },
 );
 
 type AppHeaderProps = {
   title?: string;
   backHref?: string;
+  breadcrumb?: string;
   sectionTitle?: string;
   sectionTree?: PageTreeNode[];
+  allSections?: SectionSummary[];
   currentPageId?: string;
+  variant?: "home" | "doc";
   hideSearchAction?: boolean;
 };
 
 export function AppHeader({
   title = "此间",
   backHref,
+  breadcrumb,
   sectionTitle,
   sectionTree,
+  allSections,
   currentPageId,
+  variant = backHref ? "doc" : "home",
   hideSearchAction = false,
 }: AppHeaderProps) {
+  const { openSearch } = useSearch();
+
   return (
-    <header className="sticky top-0 z-header flex min-h-tap items-center justify-between border-b border-line bg-surface px-s5 py-s3">
-      <div className="flex items-center gap-s2">
-        {backHref ? (
-          <Link href={backHref} className="focus-ring tap-target grid place-items-center rounded-round border border-line" aria-label="返回">
+    <header className="sticky top-0 z-header flex min-h-tap items-center justify-between border-b border-line bg-surface/95 px-s4 py-s2 backdrop-blur-md">
+      {variant === "home" ? (
+        <>
+          {/* 首页模式：左侧品牌标题，右侧目录与搜索 */}
+          <Link href="/" className="text-body-large font-semibold text-ink tracking-tight hover:opacity-80">
+            {title}
+          </Link>
+
+          <div className="flex items-center gap-s1">
+            <PageTreeDrawer allSections={allSections} />
+            {!hideSearchAction ? (
+              <button
+                type="button"
+                onClick={() => openSearch()}
+                className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+                aria-label="全屏搜索"
+              >
+                <Search className="size-icon" strokeWidth={1.9} />
+              </button>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* 阅读器模式：左返回、中进度与大标题、右抽屉与搜索 */}
+          <Link
+            href={backHref || "/"}
+            className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+            aria-label="返回首页"
+          >
             <ArrowLeft className="size-icon" strokeWidth={1.9} />
           </Link>
-        ) : null}
-        {sectionTree && sectionTitle ? (
-          <PageTreeDrawer sectionTitle={sectionTitle} currentPageId={currentPageId} nodes={sectionTree} />
-        ) : null}
-        <strong className="truncate text-title leading-ui font-semibold">{title}</strong>
-      </div>
-      {!hideSearchAction ? (
-        <Link href="/search" className="focus-ring tap-target grid place-items-center rounded-round border border-line" aria-label="搜索文档">
-          <Search className="size-icon" strokeWidth={1.9} />
-        </Link>
-      ) : null}
+
+          <div className="flex-1 min-w-0 px-s2 text-center">
+            {breadcrumb && <div className="text-caption text-muted truncate">{breadcrumb}</div>}
+            <strong className="block text-label font-semibold text-ink truncate">{title}</strong>
+          </div>
+
+          <div className="flex items-center gap-s1">
+            <PageTreeDrawer
+              sectionTitle={sectionTitle}
+              currentPageId={currentPageId}
+              nodes={sectionTree}
+              allSections={allSections}
+            />
+            {!hideSearchAction ? (
+              <button
+                type="button"
+                onClick={() => openSearch()}
+                className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+                aria-label="搜索手册"
+              >
+                <Search className="size-icon" strokeWidth={1.9} />
+              </button>
+            ) : null}
+          </div>
+        </>
+      )}
     </header>
   );
 }

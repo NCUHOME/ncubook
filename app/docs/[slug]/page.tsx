@@ -1,8 +1,12 @@
 // 校园知识文档阅读页路由：静态 SSG/ISR 生成 (/docs/[slug])，配置 1小时增量刷新，直连领域渲染组件
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { loadPublishedRepository } from "@/lib/content/server";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { loadPublishedRepository, type PageTreeNode } from "@/lib/content/server";
 import { ArticleRenderer } from "@/src/components/article/renderer";
+import { ArticleProgressBar } from "@/src/components/article/progress-bar";
+import { ArticleFeedbackRow } from "@/src/components/article/feedback-row";
 import { DocumentAskEntry } from "@/src/components/ask/entry";
 import { AppHeader } from "@/src/components/primitives/header";
 
@@ -39,7 +43,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   let view: import("@/lib/content/server").DocumentView | null = null;
   let section: import("@/lib/content/schema").Page | null = null;
-  let tree: import("@/lib/content/server").PageTreeNode[] = [];
+  let tree: PageTreeNode[] = [];
   let routes: Record<string, string> = {};
   let repository: import("@/lib/content/server").ContentRepository | null = null;
 
@@ -63,29 +67,69 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
   const resolvePageRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);
 
+  // 计算当前文章在板块篇目树中的位置与下一篇
+  const flattenedNodes: PageTreeNode[] = [];
+  const flatten = (nodes: PageTreeNode[]) => {
+    for (const n of nodes) {
+      flattenedNodes.push(n);
+      if (n.children && n.children.length > 0) flatten(n.children);
+    }
+  };
+  flatten(tree);
+
+  const currentIdx = flattenedNodes.findIndex((n) => n.id === view?.page.id);
+  const totalCount = flattenedNodes.length > 0 ? flattenedNodes.length : 1;
+  const nextNode = currentIdx >= 0 && currentIdx + 1 < flattenedNodes.length ? flattenedNodes[currentIdx + 1] : null;
+
+  const breadcrumb = `${section.title} · ${currentIdx >= 0 ? currentIdx + 1 : 1} / ${totalCount}`;
+
   return (
     <>
       <AppHeader
+        variant="doc"
         title={view.page.title}
-        backHref={resolvePageRoute(section.id)}
+        breadcrumb={breadcrumb}
+        backHref="/"
         sectionTitle={section.title}
         sectionTree={tree}
         currentPageId={view.page.id}
       />
-      <main className="px-s5 pb-s7 pt-s6">
-        <article>
-          <p className="text-caption leading-ui text-muted">
-            {section.title}　/　{view.page.title}
-          </p>
-          <h1 className="mt-s4 font-display text-display leading-heading font-semibold">{view.page.title}</h1>
-          <p className="mt-s3 border-b border-line pb-s5 text-caption leading-ui text-muted">
-            更新于 {formatDate(view.page.lastPublishedAt)}
-          </p>
-          <div className="pt-s5">
+      <ArticleProgressBar />
+
+      <main className="px-s5 pb-s7 pt-s4">
+        <article className="min-h-full">
+          <h1 className="text-heading font-semibold text-ink leading-heading">{view.page.title}</h1>
+          <div className="mt-s2 pb-s4 border-b border-line text-caption text-muted">
+            {section.title} · 更新于 {formatDate(view.page.lastPublishedAt)}
+          </div>
+
+          <div className="pt-s4 space-y-s4">
             <ArticleRenderer blocks={view.blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
           </div>
+
+          {/* 下一篇推荐卡片 */}
+          {nextNode && (
+            <Link
+              href={nextNode.href}
+              className="focus-ring mt-s7 flex items-center justify-between rounded-medium border border-line-mid p-s4 hover:border-brand hover:bg-brand-tint transition-all group"
+            >
+              <div>
+                <span className="text-caption text-muted">
+                  下一篇 · {currentIdx + 2} / {totalCount}
+                </span>
+                <div className="text-body font-semibold text-ink group-hover:text-brand transition-colors mt-s1">
+                  {nextNode.title}
+                </div>
+              </div>
+              <ChevronRight className="size-icon text-brand group-hover:translate-x-1 transition-transform" />
+            </Link>
+          )}
+
+          {/* 本文反馈 */}
+          <ArticleFeedbackRow slug={view.page.slug} pageTitle={view.page.title} />
         </article>
       </main>
+
       <DocumentAskEntry
         pageId={view.page.id}
         initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor}
@@ -98,14 +142,15 @@ export async function generateStaticParams() {
   try {
     const repository = await loadPublishedRepository();
     const routes = await repository.getPageRoutes();
-    return Object.values(routes)
-      .filter((route) => route.startsWith("/docs/"))
-      .map((route) => ({ slug: route.replace("/docs/", "") }));
+    return Object.keys(routes).map((slug) => ({ slug }));
   } catch {
     return [];
   }
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Shanghai" }).format(new Date(value));
+function formatDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return "2026 年 8 月";
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return "2026 年 8 月";
+  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
 }

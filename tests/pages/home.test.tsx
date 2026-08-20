@@ -1,30 +1,37 @@
-// 单测：真实集成测试学生端首页 (app/page.tsx) 标语首屏、主提问框入口与顶层校园板块列表的真实服务端渲染
+// 单测：真实集成测试学生端首页 (app/page.tsx) 标语首屏、胶囊复合搜索、公告栏、目录网格与完善手册渲染
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import HomePage from "@/app/page";
 import { AskProvider } from "@/src/components/ask/provider";
+import { SearchProvider } from "@/src/components/search/search-provider";
 
-describe("question-first homepage (app/page.tsx)", () => {
-  it("renders the real production home page with question entry and section navigation", async () => {
+describe("homepage (app/page.tsx)", () => {
+  it("renders the real production home page with hero, search, notice and section directory", async () => {
     const pageJsx = await HomePage();
-    render(<AskProvider>{pageJsx}</AskProvider>);
+    render(
+      <SearchProvider>
+        <AskProvider>{pageJsx}</AskProvider>
+      </SearchProvider>,
+    );
 
-    // 验证核心品牌标语
+    // 验证核心品牌标语与人文引言
     expect(screen.getByRole("heading", { name: /校园里的事/ })).toBeVisible();
-    expect(screen.getByText(/查规则、找地点、了解经验/)).toBeVisible();
+    expect(screen.getByText(/是什么曾经拯救过你/)).toBeVisible();
 
-    // 验证主提问框入口
-    expect(screen.getByLabelText("问题")).toBeVisible();
-    expect(screen.getByRole("button", { name: "提交问题" })).toBeVisible();
+    // 验证胶囊复合搜索栏（左搜词条、右问小家园）
+    expect(screen.getByLabelText("搜索手册词条")).toBeVisible();
+    expect(screen.getByLabelText("向此间知识库直接提问")).toBeVisible();
 
-    // 验证校园板块导航卡片
-    expect(screen.getByRole("heading", { name: "浏览校园内容" })).toBeVisible();
-    const sectionLinks = screen.getAllByRole("link", { name: /入学报到|校园生活|学习考试|办事服务/ });
-    expect(sectionLinks.length).toBeGreaterThanOrEqual(4);
-    expect(sectionLinks[0]).toHaveAttribute("href", expect.stringMatching(/^\/sections\//));
+    // 验证公告栏
+    expect(screen.getByText("公告")).toBeVisible();
 
-    // 验证不包含干扰式非必要组件
-    expect(screen.queryByText("最近更新")).not.toBeInTheDocument();
+    // 验证板块目录网格
+    expect(screen.getByRole("heading", { name: "目录" })).toBeVisible();
+
+    // 验证完善手册与页脚
+    expect(screen.getByRole("heading", { name: "完善手册" })).toBeVisible();
+    expect(screen.getByText("致谢")).toBeVisible();
+    expect(screen.getByText("声明")).toBeVisible();
   });
 });

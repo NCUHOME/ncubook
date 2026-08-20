@@ -1,60 +1,192 @@
-// 首页路由：提问优先架构下的学生端首页 RSC (直接加载已发布知识库仓储，结合 AppHeader、QuestionForm 与校园板块导航)
-import { ChevronRight } from "lucide-react";
+// 首页路由：南大家园核心模块风格首页 RSC（结合 Hero 引言、胶囊复合搜索栏、公告卡、双列动态目录、贡献与页脚）
 import Link from "next/link";
 import { loadPublishedRepository } from "@/lib/content/server";
-import { QuestionForm } from "@/src/components/ask/form";
+import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 import { AppHeader } from "@/src/components/primitives/header";
+import { CompositeSearch } from "@/src/components/ask/composite-search";
+import { ContributeCard } from "@/src/components/home/contribute-card";
+import { FloatingAskButton } from "@/src/components/ask/button";
+import type { SectionSummary } from "@/src/components/primitives/drawer";
+
+type SiteConfigNotice = {
+  title?: string;
+  date?: string;
+  desc?: string;
+  links?: Array<{ text: string; slug: string }>;
+};
+
+type SiteConfigContribute = {
+  email?: string;
+  qq_group?: string;
+  desc?: string;
+};
+
+type SiteConfigHero = {
+  title?: string;
+  quote?: string;
+};
 
 export default async function HomePage() {
   let sections: import("@/lib/content/schema").Page[] = [];
   let routes: Record<string, string> = {};
-  let repository: import("@/lib/content/server").ContentRepository | null = null;
+  let allSections: SectionSummary[] = [];
+  let totalArticlesCount = 0;
+
+  // 默认配置回退值
+  let noticeConfig: SiteConfigNotice = {
+    title: "公告",
+    date: "2026 年 8 月",
+    desc: "目前手册还在持续更新中……",
+    links: [
+      { text: "新生必看", slug: "xinsheng" },
+      { text: "关于我们", slug: "why" },
+    ],
+  };
+  let contributeConfig: SiteConfigContribute = {
+    email: "book@nchuhome.club",
+    qq_group: "930991836",
+    desc: "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～",
+  };
+  let heroConfig: SiteConfigHero = {
+    title: "校园里的事<br>在此问明白",
+    quote: "是什么曾经拯救过你，就用它来更好地拯救这个世界",
+  };
 
   try {
-    repository = await loadPublishedRepository();
+    const repository = await loadPublishedRepository();
     sections = await repository.getPublishedSections();
     routes = await repository.getPageRoutes();
+
+    // 组装全部板块与各板块篇目树
+    allSections = await Promise.all(
+      sections.map(async (sec) => {
+        const tree = await repository.getSectionTree(sec.slug);
+        const children = await repository.getSectionChildren(sec.slug);
+        const count = children.length > 0 ? children.length : 1;
+        totalArticlesCount += count;
+        return {
+          id: sec.id,
+          title: sec.title,
+          slug: sec.slug,
+          count,
+          tree,
+        };
+      }),
+    );
   } catch {
-    // 允许在初次构建或尚未同步发版时安全渲染首页骨架与提问框
+    // 允许在初次构建或尚未同步发版时安全降级
+  }
+
+  // 读取 site_configs 表
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    try {
+      const { data } = await supabase.from("site_configs").select("key, value");
+      if (data) {
+        for (const item of data) {
+          if (item.key === "home_notice" && item.value) noticeConfig = item.value as SiteConfigNotice;
+          if (item.key === "home_contribute" && item.value) contributeConfig = item.value as SiteConfigContribute;
+          if (item.key === "home_hero" && item.value) heroConfig = item.value as SiteConfigHero;
+        }
+      }
+    } catch {
+      // 容错降级
+    }
   }
 
   return (
     <>
-      <AppHeader />
-      <main className="px-s5 pb-s7 pt-s7">
-        <section>
-          <p className="text-caption leading-ui tracking-widest text-muted">南昌大学 · 校园知识</p>
-          <h1 className="mt-s4 font-display text-display leading-heading font-semibold">
-            校园里的事，<br />在此问明白。
-          </h1>
-          <p className="mt-s4 max-w-prose font-body text-body leading-body text-muted">
-            查规则、找地点、了解经验。答案保留出处，也保留原文的完整表达。
-          </p>
-          <div className="mt-s7">
-            <QuestionForm />
-          </div>
+      <AppHeader variant="home" allSections={allSections} />
+
+      <main className="px-s5 pb-s7 pt-s5 space-y-s6">
+        {/* 1. 主标语与人文引言 */}
+        <section className="space-y-s3" aria-label="欢迎标语">
+          <h1
+            className="text-display font-semibold text-ink leading-heading"
+            dangerouslySetInnerHTML={{ __html: heroConfig.title || "校园里的事<br>在此问明白" }}
+          />
+          <blockquote className="border-l-[1.5px] border-ink pl-s3 py-0.5">
+            <p className="text-body leading-body text-ink-sub">{heroConfig.quote}</p>
+          </blockquote>
         </section>
-        <section className="mt-s7" aria-labelledby="home-sections-title">
-          <div className="flex items-center justify-between border-b border-line pb-s3">
-            <h2 id="home-sections-title" className="text-title leading-heading font-semibold">
-              浏览校园内容
+
+        {/* 2. 胶囊复合搜索栏（左搜词条、右问小家园） */}
+        <section aria-label="搜索与提问">
+          <CompositeSearch />
+        </section>
+
+        {/* 3. 手册公告栏 */}
+        {noticeConfig && (
+          <section aria-label="手册公告">
+            <div className="rounded-r-small border-l-[3px] border-brand bg-surface-subtle p-s4 space-y-s2">
+              <div className="flex items-baseline justify-between">
+                <span className="text-body font-semibold text-ink">{noticeConfig.title || "公告"}</span>
+                {noticeConfig.date && <span className="text-caption text-muted">{noticeConfig.date}</span>}
+              </div>
+              {noticeConfig.desc && <p className="text-body leading-body text-ink-body">{noticeConfig.desc}</p>}
+              {noticeConfig.links && noticeConfig.links.length > 0 && (
+                <ul className="list-disc pl-s4 text-body leading-body text-ink-body space-y-s1">
+                  {noticeConfig.links.map((link, idx) => (
+                    <li key={idx}>
+                      请先查阅{" "}
+                      <Link href={routes[link.slug] || `/docs/${link.slug}`} className="text-brand font-medium hover:underline">
+                        {link.text}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* 4. 动态板块目录网格 */}
+        <section aria-labelledby="home-dir-title">
+          <div className="flex items-baseline justify-between pb-s2">
+            <h2 id="home-dir-title" className="text-title font-semibold text-ink">
+              目录
             </h2>
-            <span className="text-caption text-muted">查看目录</span>
+            <span className="text-caption text-muted">
+              {allSections.length} 个板块{totalArticlesCount > 0 ? ` · ${totalArticlesCount} 篇` : ""}
+            </span>
           </div>
-          <div className="grid grid-cols-2">
-            {sections.slice(0, 6).map((section) => (
+
+          <div className="grid grid-cols-2 gap-x-s6 border-t-[1.5px] border-ink divide-y divide-line">
+            {allSections.map((sec) => (
               <Link
-                key={section.id}
-                href={routes[section.id] || (repository ? repository.resolvePageRoute(section.id) : `/sections/${section.slug}`)}
-                className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 text-label odd:pr-s3 even:pl-s3"
+                key={sec.id}
+                href={routes[sec.id] || (sec.tree?.[0]?.href ?? `/sections/${sec.slug}`)}
+                className="focus-ring flex min-h-tap items-baseline justify-between py-s3 text-ink hover:text-brand transition-colors group"
               >
-                <span>{section.title}</span>
-                <ChevronRight className="size-icon-small text-muted" strokeWidth={1.9} />
+                <span className="text-body-large font-semibold group-hover:text-brand transition-colors">
+                  {sec.title}
+                </span>
+                {sec.count ? <span className="text-caption text-muted">{sec.count}</span> : null}
               </Link>
             ))}
           </div>
         </section>
+
+        {/* 5. 完善手册联系区域 */}
+        <ContributeCard
+          email={contributeConfig.email}
+          qqGroup={contributeConfig.qq_group}
+          desc={contributeConfig.desc}
+        />
+
+        {/* 6. 页脚致谢与声明 */}
+        <footer className="border-t border-line pt-s4 pb-s7 text-caption text-muted space-y-s2">
+          <div className="grid grid-cols-[auto_1fr] gap-x-s4 gap-y-s2 leading-body">
+            <span className="font-semibold text-ink-sub">致谢</span>
+            <span>感谢所有参与编写与完善本手册的同学。</span>
+            <span className="font-semibold text-ink-sub">声明</span>
+            <span>自发组织、非盈利社区，并非任何官方机构，内容仅供交流学习；若认为内容侵犯您的合法权益，请通过上方邮箱联系我们。</span>
+          </div>
+        </footer>
       </main>
+
+      {/* 固定在右下角的 50px 小家园 AI 悬浮入口 */}
+      <FloatingAskButton />
     </>
   );
 }

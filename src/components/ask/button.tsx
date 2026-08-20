@@ -1,10 +1,28 @@
-// 组件：移动端右下角 AI 问答浮动按钮 (FAB)，点击调起当前页面上下文的 AskSheet 弹层
+// 组件：移动端右下角 50px 纯圆形固定小家园吉祥物 AI 问答浮动按钮 (FAB)
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { HollamaMascot } from "@/src/components/primitives/hollama-mascot";
 import { useAsk, type PageContext } from "@/src/components/ask/provider";
 
-export function FloatingAskButton({ pageContext }: { pageContext: PageContext }) {
+export function FloatingAskButton({
+  pageContext,
+  label = "询问当前文档",
+}: {
+  pageContext?: PageContext;
+  label?: string;
+}) {
   const { openAsk } = useAsk();
-  return <button type="button" onClick={() => openAsk({ pageContext })} className="safe-area-fab focus-ring tap-target fixed z-floating-action grid place-items-center rounded-round bg-action text-surface shadow-floating" aria-label="询问当前文档"><Sparkles className="size-icon-large" strokeWidth={1.9} /></button>;
+
+  return (
+    <button
+      type="button"
+      onClick={() => openAsk({ pageContext })}
+      className="safe-area-fab focus-ring fixed z-floating-action grid place-items-center rounded-round border border-line bg-surface shadow-fab transition-transform active:scale-90"
+      style={{ width: 50, height: 50 }}
+      aria-label={label}
+      title={label}
+    >
+      <HollamaMascot size={34} />
+    </button>
+  );
 }

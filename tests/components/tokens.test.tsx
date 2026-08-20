@@ -56,6 +56,8 @@ function collectTsx(root: string): string[] {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const path = resolve(root, entry.name);
     if (entry.isDirectory()) return collectTsx(path);
+    // 官方品牌矢量资产组件（Hollama SVG）内置固定色值，属于合法矢量图例，不计入应用层样式硬编码检查
+    if (entry.name === "hollama-mascot.tsx") return [];
     return entry.isFile() && entry.name.endsWith(".tsx") ? [path] : [];
   });
 }
