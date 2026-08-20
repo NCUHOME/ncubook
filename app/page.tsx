@@ -52,9 +52,45 @@ export default async function HomePage() {
     quote: "是什么曾经拯救过你，就用它来更好地拯救这个世界",
   };
 
+  let contributorHref: string | null = null;
+  let contributorNames: string | null = null;
+
   try {
     const repository = await loadPublishedRepository();
     const rawSections = await repository.getPublishedSections();
+
+    // 提取 Notion 贡献者页面与名单信息融入底部致谢
+    const contributorSection = rawSections.find((s) => s.title.includes("贡献者"));
+    routes = await repository.getPageRoutes();
+
+    if (contributorSection) {
+      contributorHref = routes[contributorSection.id] || `/docs/${contributorSection.slug}`;
+      try {
+        const cView = await repository.getDocumentView(contributorSection.slug);
+        if (cView && cView.blocks.length > 0) {
+          const names: string[] = [];
+          for (const b of cView.blocks) {
+            if ("richText" in b && Array.isArray(b.richText)) {
+              const str = b.richText.map((r) => r.plainText).join("").trim();
+              if (str && !str.includes("贡献者") && str.length < 200) {
+                names.push(str);
+              }
+            } else if (b.type === "bulleted-list" && "items" in b && Array.isArray(b.items)) {
+              for (const it of b.items) {
+                const str = it.richText.map((r) => r.plainText).join("").trim();
+                if (str) names.push(str);
+              }
+            }
+          }
+          if (names.length > 0) {
+            contributorNames = names.slice(0, 10).join("、");
+          }
+        }
+      } catch {
+        // 安全降级
+      }
+    }
+
     // 严格过滤归档与辅助页面，确保目录网格纯净展示 6 大标准板块
     sections = rawSections.filter(
       (s) =>
@@ -62,7 +98,6 @@ export default async function HomePage() {
         !s.title.includes("未改编") &&
         !s.title.includes("贡献者")
     );
-    routes = await repository.getPageRoutes();
 
     // 组装全部板块与各板块篇目树
     allSections = await Promise.all(
@@ -196,7 +231,25 @@ export default async function HomePage() {
         <footer className="border-t border-line pt-s4 pb-s7 text-caption text-muted space-y-s2">
           <div className="grid grid-cols-[auto_1fr] gap-x-s4 gap-y-s2 leading-body">
             <span className="font-semibold text-ink-sub">致谢</span>
-            <span>感谢所有参与编写与完善本手册的同学。</span>
+            <div className="space-y-s1">
+              <p>
+                感谢所有参与编写与完善本手册的同学
+                {contributorNames ? `：${contributorNames} 等` : ""}
+                {contributorHref ? (
+                  <>
+                    （
+                    <Link
+                      href={contributorHref}
+                      className="text-brand font-medium hover:underline"
+                    >
+                      查看完整贡献者名单
+                    </Link>
+                    ）
+                  </>
+                ) : null}
+                。
+              </p>
+            </div>
             <span className="font-semibold text-ink-sub">声明</span>
             <span>自发组织、非盈利社区，并非任何官方机构，内容仅供交流学习；若认为内容侵犯您的合法权益，请通过上方邮箱联系我们。</span>
           </div>

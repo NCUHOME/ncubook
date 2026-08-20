@@ -12,7 +12,7 @@ export function CompositeSearch() {
 
   return (
     <div className="w-full">
-      <div className="flex min-h-tap items-center rounded-medium border border-line-mid bg-surface shadow-subtle transition-all hover:border-brand">
+      <div className="flex min-h-tap items-center rounded-medium border border-line-mid bg-surface transition-all hover:border-brand">
         {/* 左侧：点击进入关键词全屏搜索 */}
         <button
           type="button"
