@@ -130,14 +130,23 @@ export function AskSheet({
                   你好！我是南大家园官方 AI 知识助手。所有回答均严格基于南昌大学已发布的权威校园指南与日常规范。
                 </p>
                 <div className="space-y-s2">
-                  <span className="text-caption text-muted">猜你想问：</span>
+                  <span className="text-caption text-muted">
+                    {pageContext ? "关于当前文档的快捷提问：" : "猜你想问："}
+                  </span>
                   <div className="flex flex-wrap gap-s2">
-                    {SUGGESTED_QUESTIONS.map((q) => (
+                    {(pageContext
+                      ? [
+                          "本篇指南有哪些核心规则与注意事项？",
+                          "请帮我提取本篇的关键时间与资费节点",
+                          "遇到突发问题如何快速联系或解决？",
+                        ]
+                      : SUGGESTED_QUESTIONS
+                    ).map((q) => (
                       <button
                         key={q}
                         type="button"
                         onClick={() => onSubmit(q)}
-                        className="focus-ring rounded-pill border border-line bg-surface-subtle px-s3 py-1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
+                        className="focus-ring rounded-pill border border-line bg-surface-subtle px-s3 py-s1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
                       >
                         {q}
                       </button>

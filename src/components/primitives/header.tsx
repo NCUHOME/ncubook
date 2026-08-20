@@ -73,8 +73,8 @@ export function AppHeader({
           </Link>
 
           <div className="flex-1 min-w-0 px-s2 text-center">
-            {breadcrumb && <div className="text-caption text-muted truncate">{breadcrumb}</div>}
-            <strong className="block text-label font-semibold text-ink truncate">{title}</strong>
+            {breadcrumb && <div className="text-caption leading-tight text-muted truncate">{breadcrumb}</div>}
+            <strong className="block text-label font-semibold text-ink truncate leading-tight mt-s1">{title}</strong>
           </div>
 
           <div className="flex items-center gap-s1">

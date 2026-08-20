@@ -77,7 +77,7 @@ export function PageTreeDrawer({
           {/* 抽屉顶部栏 */}
           <div className="flex min-h-tap items-center justify-between border-b border-line px-s4 py-s3">
             <div>
-              <span className="text-caption text-muted">目录导航</span>
+              <span className="text-caption leading-tight text-muted">目录导航</span>
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
