@@ -285,7 +285,7 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
         ) : (
           <div className="divide-y divide-line max-h-96 overflow-y-auto text-caption">
             {data.recentEvents.map((ev) => {
-              const d = (ev.eventData || {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+              const d = (ev.eventData || {}) as Record<string, string | number | boolean | undefined>;
 
               return (
                 <div key={ev.id} className="py-s2.5 flex items-center justify-between gap-s4 hover:bg-surface-subtle px-s2 rounded-small transition-colors">

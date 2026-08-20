@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
-import type { AnalyticsSummary } from "@/lib/analytics/types";
+import type { AnalyticsEventName, AnalyticsSummary } from "@/lib/analytics/types";
 import { getArticleMetadataLookup, resolveArticleMeta } from "@/lib/content/metadata-resolver";
 
 export const runtime = "nodejs";
@@ -37,7 +37,13 @@ export async function GET(request: Request) {
     .limit(1000);
 
   if (!tableErr && tableEvents && tableEvents.length > 0) {
-    rawEvents = tableEvents as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    rawEvents = tableEvents.map((row) => ({
+      id: row.id,
+      session_id: row.session_id,
+      event_name: row.event_name,
+      event_data: (typeof row.event_data === "object" && row.event_data !== null ? row.event_data : {}) as Record<string, unknown>,
+      created_at: row.created_at,
+    }));
   } else {
     // 2. 读取缓冲池降级数据
     const { data: bufferData } = await supabase
@@ -47,7 +53,13 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (Array.isArray(bufferData?.value)) {
-      rawEvents = bufferData.value as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      rawEvents = (bufferData.value as Array<Record<string, unknown>>).map((item, idx) => ({
+        id: typeof item.id === "number" ? item.id : idx + 1,
+        session_id: typeof item.session_id === "string" ? item.session_id : "anonymous",
+        event_name: typeof item.event_name === "string" ? item.event_name : "page_view",
+        event_data: (typeof item.event_data === "object" && item.event_data !== null ? item.event_data : {}) as Record<string, unknown>,
+        created_at: typeof item.created_at === "string" ? item.created_at : new Date().toISOString(),
+      }));
     }
   }
 
@@ -164,7 +176,7 @@ export async function GET(request: Request) {
       const meta = resolveArticleMeta(articleLookup, slug);
       return {
         id: e.id || idx + 1,
-        eventName: e.event_name as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        eventName: e.event_name as AnalyticsEventName,
         eventData: e.event_data,
         createdAt: e.created_at,
         resolvedTitle: meta?.title || (e.event_data?.pageTitle as string) || (slug === "/" ? "首页" : undefined),

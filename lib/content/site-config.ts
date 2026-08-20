@@ -142,6 +142,19 @@ export const DEFAULT_ARTICLE_GROUPS_CONFIG: ArticleGroupsConfig = {
   },
 };
 
+function applyConfigOverride<K extends keyof AllSiteConfigs>(
+  configs: AllSiteConfigs,
+  key: K,
+  value: unknown,
+) {
+  if (!value) return;
+  if (typeof value === "object" && !Array.isArray(value)) {
+    configs[key] = { ...configs[key], ...(value as Record<string, unknown>) };
+  } else {
+    configs[key] = value as AllSiteConfigs[K];
+  }
+}
+
 /**
  * 服务端高效读取全站公共配置（带数据库与安全兜底合并）
  */
@@ -166,12 +179,7 @@ export async function getAllSiteConfigs(): Promise<AllSiteConfigs> {
         for (const item of data) {
           const key = item.key as keyof AllSiteConfigs;
           if (key in configs && item.value) {
-            // 合并对象
-            if (typeof item.value === "object" && !Array.isArray(item.value)) {
-              configs[key] = { ...configs[key], ...(item.value as any) }; // eslint-disable-line @typescript-eslint/no-explicit-any
-            } else {
-              configs[key] = item.value as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-            }
+            applyConfigOverride(configs, key, item.value);
           }
         }
       }

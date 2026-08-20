@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
+import type { Json } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,8 +49,7 @@ export async function POST(request: Request) {
 
     const { error } = await supabase
       .from("site_configs")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .upsert({ key, value: body.value as any, updated_at: new Date().toISOString() });
+      .upsert({ key, value: body.value as Json, updated_at: new Date().toISOString() });
 
     if (error) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });

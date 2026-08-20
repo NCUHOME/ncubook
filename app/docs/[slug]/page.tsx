@@ -211,8 +211,16 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
 export async function generateStaticParams() {
   try {
     const repository = await loadPublishedRepository();
-    const routes = await repository.getPageRoutes();
-    return Object.keys(routes).map((slug) => ({ slug }));
+    const sections = await repository.getPublishedSections();
+    const slugs = new Set<string>();
+
+    for (const sec of sections) {
+      slugs.add(sec.slug);
+      const children = await repository.getSectionChildren(sec.slug);
+      children.forEach((c) => slugs.add(c.slug));
+    }
+
+    return Array.from(slugs).map((slug) => ({ slug }));
   } catch {
     return [];
   }

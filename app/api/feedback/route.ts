@@ -1,6 +1,6 @@
-// API 路由：学生端提交文章与 AI 问答有用性反馈（持久化至 user_feedbacks 表，可集成飞书通知）
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
+import type { Json } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,8 +38,7 @@ export async function POST(request: Request) {
         target_id: targetId,
         is_helpful: isHelpful,
         comment,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        metadata: safeMeta as any,
+        metadata: safeMeta as Json,
       });
     }
 
@@ -49,6 +48,7 @@ export async function POST(request: Request) {
       fetch(feishuWebhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(3000),
         body: JSON.stringify({
           msg_type: "text",
           content: {
