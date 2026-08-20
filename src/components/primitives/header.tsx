@@ -3,6 +3,7 @@
 
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import type { PageTreeNode } from "@/lib/content/server";
 import { useSearch } from "@/src/components/search/search-provider";
@@ -42,9 +43,20 @@ export function AppHeader({
     <header className="sticky top-0 z-header flex min-h-tap items-center justify-between border-b border-line bg-surface/95 px-s4 py-s2 backdrop-blur-md">
       {variant === "home" ? (
         <>
-          {/* 首页模式：左侧品牌标题，右侧目录与搜索 */}
-          <Link href="/" className="text-body-large font-semibold text-ink tracking-tight hover:opacity-80">
-            {title}
+          {/* 首页模式：左侧品牌标题（带小家园吉祥物图标），右侧目录与搜索 */}
+          <Link
+            href="/"
+            className="flex items-center gap-s2 text-body-large font-semibold text-ink tracking-tight hover:opacity-80 transition-opacity group"
+          >
+            <Image
+              src="/icon.svg"
+              alt="此间"
+              width={26}
+              height={26}
+              className="size-[26px] shrink-0 rounded-round group-hover:scale-105 transition-transform"
+              priority
+            />
+            <span>{title}</span>
           </Link>
 
           <div className="flex items-center gap-s1">

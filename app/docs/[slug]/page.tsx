@@ -9,11 +9,17 @@ import { ArticleFeedbackRow } from "@/src/components/article/feedback-row";
 import { DocumentAskEntry } from "@/src/components/ask/entry";
 import { AppHeader } from "@/src/components/primitives/header";
 
+import { getSiteUrl } from "@/lib/site";
+
 export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const siteUrl = getSiteUrl();
+  const ogImageUrl = `${siteUrl}/opengraph-image`;
+  const pageUrl = `${siteUrl}/docs/${slug}`;
+
   try {
     const repository = await loadPublishedRepository();
     const view = await repository.getDocumentView(slug);
@@ -26,16 +32,52 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const section = await repository.getSectionForPage(view.page.id);
 
     const title = `${view.page.title} - ${section?.title ?? "校园知识"} · 此间`;
-    const description = `南昌大学 AI 知识库 · ${view.page.title}`;
+
+    // 智能提取正文前 120 字作为精简摘要
+    let excerpt = "";
+    for (const b of view.blocks) {
+      if ("richText" in b && Array.isArray(b.richText)) {
+        const text = b.richText.map((r) => r.plainText).join("").trim();
+        if (text && text.length > 3) {
+          excerpt += (excerpt ? " " : "") + text;
+          if (excerpt.length >= 120) break;
+        }
+      }
+    }
+    const description = excerpt
+      ? excerpt.length > 130
+        ? `${excerpt.slice(0, 125)}...`
+        : excerpt
+      : `南昌大学 AI 知识库 · ${view.page.title}`;
 
     return {
       title,
       description,
+      alternates: {
+        canonical: pageUrl,
+      },
       openGraph: {
         title,
         description,
         type: "article",
+        url: pageUrl,
         siteName: "此间",
+        locale: "zh_CN",
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: title,
+            type: "image/png",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [ogImageUrl],
       },
     };
   } catch {
@@ -153,8 +195,65 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
 
   const breadcrumb = `${section.title} · ${currentIdx >= 0 ? currentIdx + 1 : 1} / ${totalCount}`;
 
+  const siteUrl = getSiteUrl();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${siteUrl}/docs/${slug}#article`,
+        isPartOf: {
+          "@type": "WebSite",
+          "@id": `${siteUrl}/#website`,
+          name: "此间 - 南昌大学校园知识库",
+          url: siteUrl,
+        },
+        headline: view.page.title,
+        dateModified: view.page.lastPublishedAt ?? new Date().toISOString(),
+        publisher: {
+          "@type": "Organization",
+          name: "南大家园",
+          url: "https://ncuos.com",
+        },
+        inLanguage: "zh-CN",
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}/docs/${slug}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "首页",
+            item: siteUrl,
+          },
+          ...(section
+            ? [
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: section.title,
+                  item: `${siteUrl}/sections/${section.slug}`,
+                },
+              ]
+            : []),
+          {
+            "@type": "ListItem",
+            position: section ? 3 : 2,
+            name: view.page.title,
+            item: `${siteUrl}/docs/${slug}`,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto min-h-screen w-full max-w-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <AppHeader
         variant="doc"
         title={view.page.title}

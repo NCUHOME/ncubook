@@ -6,6 +6,7 @@ import { AppHeader } from "@/src/components/primitives/header";
 import { CompositeSearch } from "@/src/components/ask/composite-search";
 import { ContributeCard } from "@/src/components/home/contribute-card";
 import { FloatingAskButton } from "@/src/components/ask/button";
+import { getSiteUrl } from "@/lib/site";
 import type { SectionSummary } from "@/src/components/primitives/drawer";
 
 export default async function HomePage() {
@@ -81,7 +82,8 @@ export default async function HomePage() {
                 {
                   id: sec.id,
                   title: sec.title,
-                  href: `/docs/${sec.slug}`,
+                  slug: sec.slug,
+                  href: routes[sec.id] || `/sections/${sec.slug}`,
                   children: [],
                 },
               ];
@@ -99,8 +101,31 @@ export default async function HomePage() {
     // 允许在初次构建或尚未同步发版时安全降级
   }
 
+  const siteUrl = getSiteUrl();
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    name: "此间 - 南昌大学校园知识库",
+    url: siteUrl,
+    description: "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+    inLanguage: "zh-CN",
+  };
+
   return (
     <div className="mx-auto min-h-screen w-full max-w-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <AppHeader variant="home" allSections={allSections} />
 
       <main className="px-s5 pb-s7 pt-s5 space-y-s6">
