@@ -38,11 +38,19 @@ export function ContributeCard({
           <button
             type="button"
             onClick={handleCopyEmail}
-            className="text-brand font-medium hover:underline text-left"
+            className="text-brand font-medium hover:underline text-left cursor-pointer"
+            style={{ color: "var(--brand-blue)" }}
           >
             {email}
           </button>
-          <span className="ml-s2 text-caption text-muted">（点击复制）</span>
+          <button
+            type="button"
+            onClick={handleCopyEmail}
+            className="ml-s2 text-caption text-brand hover:underline cursor-pointer"
+            style={{ color: "var(--brand-blue)" }}
+          >
+            （点击复制）
+          </button>
         </div>
 
         <span className="text-caption text-muted">QQ群</span>
@@ -50,11 +58,19 @@ export function ContributeCard({
           <button
             type="button"
             onClick={handleCopyQQ}
-            className="text-brand font-medium hover:underline text-left"
+            className="text-brand font-medium hover:underline text-left cursor-pointer"
+            style={{ color: "var(--brand-blue)" }}
           >
             {qqGroup}
           </button>
-          <span className="ml-s2 text-caption text-muted">（点击复制）</span>
+          <button
+            type="button"
+            onClick={handleCopyQQ}
+            className="ml-s2 text-caption text-brand hover:underline cursor-pointer"
+            style={{ color: "var(--brand-blue)" }}
+          >
+            （点击复制）
+          </button>
         </div>
       </div>
     </section>

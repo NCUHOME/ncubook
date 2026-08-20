@@ -186,13 +186,15 @@ export default async function HomePage() {
             <div className="space-y-s1">
               <p>
                 {(footerConfig.thankPrefix || "感谢所有参与编写与完善本手册的同学")
-                  .replace(/[（(]查看完整贡献者名单[）)]/g, "")
-                  .replace(/。$/, "")}
+                  .replace(/[（(]\s*查看.*?贡献者名单\s*[）)]/g, "")
+                  .replace(/。$/, "")
+                  .trim()}
                 {contributorNames ? `：${contributorNames} 等` : ""}
                 （
                 <Link
                   href={contributorHref || "/docs/gongxianzhe"}
-                  className="text-brand font-medium hover:underline"
+                  className="text-brand font-semibold hover:underline"
+                  style={{ color: "var(--brand-blue)" }}
                 >
                   查看完整贡献者名单
                 </Link>

@@ -6,7 +6,21 @@ const allowedHosts = new Set(["school-map.ncuos.com"]);
 
 export function EmbedBlock({ block }: { block: Extract<Block, { type: "embed" }> }) {
   const safe = isAllowed(block.canonicalUrl);
-  if (!safe) return <a id={block.anchor} className="focus-ring flex min-h-tap items-center gap-s2 border-y border-line py-s3 text-label underline underline-offset-4" href={block.canonicalUrl}><ArrowUpRight className="size-icon-small" strokeWidth={1.9} />打开{block.title}</a>;
+  if (!safe) {
+    return (
+      <a
+        id={block.anchor}
+        className="focus-ring flex min-h-tap items-center gap-s2 border-y border-line py-s3 text-label underline underline-offset-4 text-brand font-medium hover:underline"
+        style={{ color: "var(--brand-blue)" }}
+        href={block.canonicalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <ArrowUpRight className="size-icon-small text-brand" strokeWidth={1.9} />
+        打开{block.title}
+      </a>
+    );
+  }
   return <div id={block.anchor} className="overflow-hidden border border-line"><iframe className="h-80 w-full border-0" src={block.canonicalUrl} title={block.title} loading="lazy" /></div>;
 }
 

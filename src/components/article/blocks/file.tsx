@@ -5,8 +5,15 @@ import type { Asset, Block } from "@/lib/content/schema";
 export function FileBlock({ block, asset }: { block: Extract<Block, { type: "file" }>; asset: Asset | null }) {
   if (!asset) return <p id={block.anchor} className="text-label text-muted">附件暂时无法加载：{block.name}</p>;
   return (
-    <a id={block.anchor} className="focus-ring flex min-h-tap items-center gap-s3 border-y border-line py-s3 text-label underline underline-offset-4" href={asset.publicUrl}>
-      <Paperclip aria-hidden="true" className="size-icon shrink-0" strokeWidth={1.9} />
+    <a
+      id={block.anchor}
+      className="focus-ring flex min-h-tap items-center gap-s3 border-y border-line py-s3 text-label underline underline-offset-4 text-brand font-medium hover:underline"
+      style={{ color: "var(--brand-blue)" }}
+      href={asset.publicUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Paperclip aria-hidden="true" className="size-icon shrink-0 text-brand" strokeWidth={1.9} />
       <span>{block.name}</span>
     </a>
   );
