@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Search, X } from "lucide-react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics/client";
 
 const DEFAULT_CHIPS = ["校内出行", "防诈指南", "保卫电话", "GPA 绩点", "通识选课", "转专业"];
 
@@ -56,11 +57,16 @@ export function SearchOverlay({
         .then((res) => {
           if (Array.isArray(res.items)) {
             setResults(res.items);
+            trackEvent("search_query", { query: trimmed, resultCount: res.items.length, source: "overlay" });
           } else {
             setResults([]);
+            trackEvent("search_query", { query: trimmed, resultCount: 0, source: "overlay" });
           }
         })
-        .catch(() => setResults([]))
+        .catch(() => {
+          setResults([]);
+          trackEvent("search_query", { query: trimmed, resultCount: 0, source: "overlay" });
+        })
         .finally(() => setLoading(false));
     }, 180);
 
@@ -161,7 +167,15 @@ export function SearchOverlay({
                 <Link
                   key={`${item.pageId}-${item.anchor || idx}`}
                   href={`${item.routePath}${item.anchor ? `#${item.anchor}` : ""}`}
-                  onClick={onClose}
+                  onClick={() => {
+                    trackEvent("search_result_click", {
+                      query,
+                      clickedSlug: item.pageId,
+                      clickedTitle: item.pageTitle,
+                      rankIndex: idx + 1,
+                    });
+                    onClose();
+                  }}
                   className="focus-ring block py-s3 hover:bg-surface-subtle transition-colors"
                 >
                   <div className="text-body font-semibold text-ink">

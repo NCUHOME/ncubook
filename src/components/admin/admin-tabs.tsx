@@ -1,9 +1,16 @@
-// 组件：Admin 控制台多 Tab 容器 (AdminTabs)，组织同步版本、配置编辑、用户反馈、AI 评测看板与调试沙盒
+// 组件：Admin 控制台多 Tab 容器 (AdminTabs)，组织数据洞察、同步版本、配置编辑、用户反馈与 AI 实验
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, Settings, MessageSquare, BarChart3, FlaskConical } from "lucide-react";
+import {
+  BarChart3,
+  RefreshCw,
+  Settings,
+  MessageSquare,
+  FlaskConical,
+} from "lucide-react";
 import type { VersionRecord } from "@/lib/content/server";
+import { AnalyticsDashboard } from "@/src/components/admin/analytics-dashboard";
 import { SyncPanel } from "@/src/components/admin/sync-panel";
 import { VersionTimeline } from "@/src/components/admin/version-timeline";
 import { SiteConfigPanel } from "@/src/components/admin/site-config-panel";
@@ -16,15 +23,21 @@ type AdminTabsProps = {
   initialVersions?: VersionRecord[];
 };
 
-export type AdminTabKey = "sync" | "settings" | "feedbacks" | "evals" | "playground";
+export type AdminTabKey = "analytics" | "sync" | "settings" | "feedbacks" | "ai-lab";
 
 export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }: AdminTabsProps) {
-  const [activeTab, setActiveTab] = useState<AdminTabKey>("sync");
+  const [activeTab, setActiveTab] = useState<AdminTabKey>("analytics");
+  const [aiSubTab, setAiSubTab] = useState<"evals" | "playground">("evals");
 
-  // 支持 URL Hash 记忆当前激活的 Tab
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    if (hash === "sync" || hash === "settings" || hash === "feedbacks" || hash === "evals" || hash === "playground") {
+    if (
+      hash === "analytics" ||
+      hash === "sync" ||
+      hash === "settings" ||
+      hash === "feedbacks" ||
+      hash === "ai-lab"
+    ) {
       setActiveTab(hash as AdminTabKey);
     }
   }, []);
@@ -34,75 +47,44 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
     window.location.hash = tab;
   };
 
+  const tabs: Array<{ key: AdminTabKey; label: string; icon: typeof BarChart3 }> = [
+    { key: "analytics", label: "数据洞察与埋点", icon: BarChart3 },
+    { key: "sync", label: "内容发布与版本", icon: RefreshCw },
+    { key: "settings", label: "网站与目录配置", icon: Settings },
+    { key: "feedbacks", label: "用户反馈监控", icon: MessageSquare },
+    { key: "ai-lab", label: "AI 评测与沙盒", icon: FlaskConical },
+  ];
+
   return (
     <div className="space-y-s6">
-      {/* 顶部 Tab 切换控制器 */}
-      <nav aria-label="控制台模块切换" className="flex items-center gap-s2 border-b border-line pb-s1 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => handleTabChange("sync")}
-          className={`focus-ring tap-target flex items-center gap-s2 rounded-small px-s4 py-s3 text-label font-medium transition-colors ${
-            activeTab === "sync"
-              ? "bg-ink text-surface shadow-subtle"
-              : "text-muted hover:text-ink hover:bg-surface-subtle"
-          }`}
-        >
-          <RefreshCw className="size-icon-small" />
-          <span>内容发布与版本</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange("settings")}
-          className={`focus-ring tap-target flex items-center gap-s2 rounded-small px-s4 py-s3 text-label font-medium transition-colors ${
-            activeTab === "settings"
-              ? "bg-ink text-surface shadow-subtle"
-              : "text-muted hover:text-ink hover:bg-surface-subtle"
-          }`}
-        >
-          <Settings className="size-icon-small" />
-          <span>网站公告与配置</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange("feedbacks")}
-          className={`focus-ring tap-target flex items-center gap-s2 rounded-small px-s4 py-s3 text-label font-medium transition-colors ${
-            activeTab === "feedbacks"
-              ? "bg-ink text-surface shadow-subtle"
-              : "text-muted hover:text-ink hover:bg-surface-subtle"
-          }`}
-        >
-          <MessageSquare className="size-icon-small" />
-          <span>用户反馈监控</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange("evals")}
-          className={`focus-ring tap-target flex items-center gap-s2 rounded-small px-s4 py-s3 text-label font-medium transition-colors ${
-            activeTab === "evals"
-              ? "bg-ink text-surface shadow-subtle"
-              : "text-muted hover:text-ink hover:bg-surface-subtle"
-          }`}
-        >
-          <BarChart3 className="size-icon-small" />
-          <span>AI 质量评测</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange("playground")}
-          className={`focus-ring tap-target flex items-center gap-s2 rounded-small px-s4 py-s3 text-label font-medium transition-colors ${
-            activeTab === "playground"
-              ? "bg-ink text-surface shadow-subtle"
-              : "text-muted hover:text-ink hover:bg-surface-subtle"
-          }`}
-        >
-          <FlaskConical className="size-icon-small" />
-          <span>问答测试沙盒</span>
-        </button>
+      {/* 顶部 Tab 切换控制器：采用防折叠水平滑动栏，彻底杜绝竖排折字 */}
+      <nav
+        aria-label="控制台模块切换"
+        className="flex items-center gap-s2 border-b border-line pb-s2 overflow-x-auto no-scrollbar scroll-smooth"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => handleTabChange(tab.key)}
+              className={`focus-ring tap-target flex shrink-0 items-center gap-s2 rounded-small px-s4 py-s2.5 text-label font-medium whitespace-nowrap transition-colors ${
+                isActive
+                  ? "bg-ink text-surface shadow-subtle"
+                  : "text-muted hover:text-ink hover:bg-surface-subtle"
+              }`}
+            >
+              <Icon className="size-icon-small shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </nav>
+
+      {/* 模块 0: 全站数据洞察与埋点大盘 */}
+      {activeTab === "analytics" && <AnalyticsDashboard />}
 
       {/* 模块 1: 内容发布与真实版本时间线 */}
       {activeTab === "sync" && (
@@ -118,11 +100,33 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
       {/* 模块 3: 用户反馈监控与好评率大盘 */}
       {activeTab === "feedbacks" && <FeedbackPanel />}
 
-      {/* 模块 4: AI 质量评测看板 */}
-      {activeTab === "evals" && <EvalDashboard />}
+      {/* 模块 4: AI 质量评测与问答沙盒实验室 */}
+      {activeTab === "ai-lab" && (
+        <div className="space-y-s6">
+          <div className="flex items-center gap-s2 border-b border-line pb-s2">
+            <button
+              type="button"
+              onClick={() => setAiSubTab("evals")}
+              className={`focus-ring rounded-pill px-s4 py-s1 text-caption font-medium transition-colors ${
+                aiSubTab === "evals" ? "bg-brand text-surface" : "bg-surface-subtle text-muted hover:text-ink"
+              }`}
+            >
+              35 项黄金基准评测看板
+            </button>
+            <button
+              type="button"
+              onClick={() => setAiSubTab("playground")}
+              className={`focus-ring rounded-pill px-s4 py-s1 text-caption font-medium transition-colors ${
+                aiSubTab === "playground" ? "bg-brand text-surface" : "bg-surface-subtle text-muted hover:text-ink"
+              }`}
+            >
+              AI 问答调试沙盒
+            </button>
+          </div>
 
-      {/* 模块 5: 问答测试沙盒与白盒探针 */}
-      {activeTab === "playground" && <QAPlayground />}
+          {aiSubTab === "evals" ? <EvalDashboard /> : <QAPlayground />}
+        </div>
+      )}
     </div>
   );
 }

@@ -133,7 +133,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   const breadcrumb = `${section.title} · ${currentIdx >= 0 ? currentIdx + 1 : 1} / ${totalCount}`;
 
   return (
-    <>
+    <div className="mx-auto min-h-screen w-full max-w-shell">
       <AppHeader
         variant="doc"
         title={view.page.title}
@@ -184,7 +184,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
         pageId={view.page.id}
         initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor}
       />
-    </>
+    </div>
   );
 }
 

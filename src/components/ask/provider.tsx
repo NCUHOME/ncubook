@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import dynamic from "next/dynamic";
 import { validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
 import { resolvePageRoute as defaultResolvePageRoute } from "@/lib/content/fixture";
+import { trackEvent } from "@/lib/analytics/client";
 
 const AskSheet = dynamic(() => import("@/src/components/ask/sheet").then((mod) => mod.AskSheet), { ssr: false });
 
@@ -73,6 +74,12 @@ export function AskProvider({
     setStatus("loading");
     setSession(null);
     setError("");
+
+    trackEvent("ai_ask_submitted", {
+      questionPreview: value.slice(0, 100),
+      source: input.pageContext ? "doc" : "fab",
+      docSlug: input.pageContext?.pageId,
+    });
     try {
       const nextSession = validateAnswerSession(await requestAnswer({ question: value, pageContext: input.pageContext }));
       setSession(nextSession);

@@ -148,7 +148,7 @@ export default async function HomePage() {
   }
 
   return (
-    <>
+    <div className="mx-auto min-h-screen w-full max-w-shell">
       <AppHeader variant="home" allSections={allSections} />
 
       <main className="px-s5 pb-s7 pt-s5 space-y-s6">
@@ -258,6 +258,6 @@ export default async function HomePage() {
 
       {/* 固定在右下角的 50px 小家园 AI 悬浮入口 */}
       <FloatingAskButton />
-    </>
+    </div>
   );
 }

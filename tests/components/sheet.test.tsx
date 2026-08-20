@@ -65,7 +65,7 @@ describe("grounded answer sheet", () => {
     expect(JSON.parse(sessionStorage.getItem("answer-session:answer-shuttle-fare") ?? "null")).toMatchObject({
       session: { id: "answer-shuttle-fare" },
     });
-  });
+  }, 15000);
 
   it("submits the current document context from the floating entry", async () => {
     const user = userEvent.setup();

@@ -511,6 +511,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      analytics_events: {
+        Row: {
+          id: number;
+          session_id: string;
+          event_name: string;
+          event_data: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          session_id: string;
+          event_name: string;
+          event_data?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          session_id?: string;
+          event_name?: string;
+          event_data?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

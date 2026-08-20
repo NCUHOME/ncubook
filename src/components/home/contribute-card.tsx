@@ -2,6 +2,7 @@
 "use client";
 
 import { showToast } from "@/src/components/primitives/toast";
+import { trackEvent } from "@/lib/analytics/client";
 
 export function ContributeCard({
   email = "book@nchuhome.club",
@@ -14,11 +15,13 @@ export function ContributeCard({
 }) {
   const handleCopyEmail = () => {
     navigator.clipboard?.writeText(email).catch(() => {});
+    trackEvent("contact_copied", { targetType: "email", value: email, label: "投稿邮箱" });
     showToast(`已复制邮箱：${email}`);
   };
 
   const handleCopyQQ = () => {
     navigator.clipboard?.writeText(qqGroup).catch(() => {});
+    trackEvent("contact_copied", { targetType: "qq", value: qqGroup, label: "交流QQ群" });
     showToast(`已复制交流群：${qqGroup}`);
   };
 

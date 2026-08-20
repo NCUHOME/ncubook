@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { EvalDashboard } from "@/src/components/admin/eval-dashboard";
 import { QAPlayground } from "@/src/components/admin/qa-playground";
 import { VersionTimeline } from "@/src/components/admin/version-timeline";
+import { AnalyticsDashboard } from "@/src/components/admin/analytics-dashboard";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -17,19 +18,44 @@ describe("admin dashboard component suite", () => {
   it("renders AdminTabs and switches between panels smoothly", async () => {
     render(<AdminTabs currentVersion="content-test-v1" />);
 
-    // 默认展示内容发布面板
+    // 包含 5 个核心 Tab 栏
+    expect(screen.getByText("数据洞察与埋点")).toBeDefined();
     expect(screen.getByText("内容发布与版本")).toBeDefined();
-    expect(screen.getByText("AI 质量评测")).toBeDefined();
-    expect(screen.getByText("问答测试沙盒")).toBeDefined();
+    expect(screen.getByText("网站与目录配置")).toBeDefined();
+    expect(screen.getByText("用户反馈监控")).toBeDefined();
+    expect(screen.getByText("AI 评测与沙盒")).toBeDefined();
+
+    // 点击切换到内容发布面板
+    fireEvent.click(screen.getByText("内容发布与版本"));
     expect(screen.getByText("Notion 文章更新")).toBeDefined();
 
-    // 点击切换到 AI 评测看板
-    fireEvent.click(screen.getByText("AI 质量评测"));
-    expect(screen.getByText("运行评测")).toBeDefined();
+    // 点击切换到 AI 评测与沙盒
+    fireEvent.click(screen.getByText("AI 评测与沙盒"));
+    expect(screen.getByText("35 项黄金基准评测看板")).toBeDefined();
+    expect(screen.getByText("AI 问答调试沙盒")).toBeDefined();
+  });
 
-    // 点击切换到问答沙盒
-    fireEvent.click(screen.getByText("问答测试沙盒"));
-    expect(screen.getByText("测试问答")).toBeDefined();
+  it("renders AnalyticsDashboard with metrics and charts", () => {
+    const mockSummary = {
+      todayPv: 120,
+      todayUv: 45,
+      totalSearches: 88,
+      zeroResultSearches: 3,
+      totalAiAsks: 26,
+      totalContactCopies: 14,
+      topArticles: [{ slug: "xinsheng", title: "新生必看", views: 50 }],
+      topSearchQueries: [{ query: "体测", count: 20, zeroResult: false }],
+      zeroResultQueries: [{ query: "游泳馆", count: 3, lastSearchedAt: "2026-08-20T12:00:00Z" }],
+      recentEvents: [],
+    };
+
+    render(<AnalyticsDashboard initialSummary={mockSummary} />);
+    expect(screen.getByText("全站数据洞察与埋点大盘")).toBeDefined();
+    expect(screen.getByText("今日访问 (PV / UV)")).toBeDefined();
+    expect(screen.getByText("搜索使用总量")).toBeDefined();
+    expect(screen.getByText("AI 问答提问量")).toBeDefined();
+    expect(screen.getByText("电话/服务复制转化")).toBeDefined();
+    expect(screen.getByText("新生必看")).toBeDefined();
   });
 
   it("renders EvalDashboard with initial report and metric cards", () => {
