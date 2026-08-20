@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   },
   description: "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",
   applicationName: "此间",
-  // 图标与 manifest 链接由 app/ 文件约定自动注入（favicon.ico / icon.svg / apple-icon.png / manifest.ts），无需手写
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
   openGraph: {
     title: "此间 - 南昌大学校园知识库",
     description: "面向手机端的南昌大学 AI 校园知识产品与可追溯问答助手",

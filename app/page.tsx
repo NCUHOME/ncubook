@@ -54,7 +54,14 @@ export default async function HomePage() {
 
   try {
     const repository = await loadPublishedRepository();
-    sections = await repository.getPublishedSections();
+    const rawSections = await repository.getPublishedSections();
+    // 严格过滤归档与辅助页面，确保目录网格纯净展示 6 大标准板块
+    sections = rawSections.filter(
+      (s) =>
+        !s.title.includes("归档") &&
+        !s.title.includes("未改编") &&
+        !s.title.includes("贡献者")
+    );
     routes = await repository.getPageRoutes();
 
     // 组装全部板块与各板块篇目树

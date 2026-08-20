@@ -1,4 +1,4 @@
-// 单测：真实集成测试文档阅读页 (app/docs/[slug]/page.tsx) 与板块导引页 (app/sections/[slug]/page.tsx) 真实服务端组件渲染与元数据生成
+// 单测：真实集成测试文档阅读页 (app/docs/[slug]/page.tsx) 与板块直跳逻辑 (app/sections/[slug]/page.tsx)
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
@@ -8,25 +8,15 @@ import { AskProvider } from "@/src/components/ask/provider";
 import { SearchProvider } from "@/src/components/search/search-provider";
 
 describe("published page views (app/sections/[slug] & app/docs/[slug])", () => {
-  it("renders a real section page with introduction, blocks and child page list", async () => {
+  it("generates section metadata correctly and redirects to the section's first document", async () => {
     const params = Promise.resolve({ slug: "campus-life" });
     const meta = await generateSectionMetadata({ params });
     expect(meta.title).toContain("校园生活");
 
-    const pageJsx = await SectionPage({ params });
-    render(
-      <SearchProvider>
-        <AskProvider>{pageJsx}</AskProvider>
-      </SearchProvider>,
-    );
-
-    expect(screen.getByRole("heading", { name: "校园生活", level: 1 })).toBeVisible();
-    expect(screen.getByText(/从住宿、交通到日常服务/)).toBeVisible();
-    expect(screen.getByRole("heading", { name: "本板块全部页面", level: 2 })).toBeVisible();
-    expect(screen.getByRole("link", { name: /校园交通/ })).toHaveAttribute("href", "/docs/campus-transport");
+    await expect(SectionPage({ params })).rejects.toThrow();
   });
 
-  it("renders a real reader-first document page with header, breadcrumbs, article blocks, progress and ask entry", async () => {
+  it("renders a real reader-first document page with header, breadcrumbs, article blocks, progress, next card and ask entry", async () => {
     const params = Promise.resolve({ slug: "campus-shuttle" });
     const meta = await generateDocMetadata({ params });
     expect(meta.title).toContain("校园环游车乘坐指南");

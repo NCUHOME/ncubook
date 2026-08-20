@@ -1,4 +1,4 @@
-// 组件：双层板块目录抽屉原语 (PageTreeDrawer)，支持全部板块概览与板块内篇目分组树无缝切换
+// 组件：双层板块目录抽屉原语 (PageTreeDrawer)，完全对齐优化重构版原型（支持全部板块概览与分组篇目树无缝切换）
 "use client";
 
 import { useState } from "react";
@@ -6,6 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowLeft, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import type { PageTreeNode } from "@/lib/content/server";
+import { getArticleGroup } from "@/lib/content/groups";
 
 export type SectionSummary = {
   id: string;
@@ -53,6 +54,63 @@ export function PageTreeDrawer({
       setActiveSection({ title: sec.title, nodes: sec.tree, slug: sec.slug });
       setMode("tree");
     }
+  };
+
+  // 预排序与分组渲染篇目
+  const renderGroupedTree = (section: { title: string; nodes: PageTreeNode[] }) => {
+    let lastGroup: string | null = null;
+    return section.nodes.map((node) => {
+      const group = getArticleGroup(section.title, node.title);
+      const showGroupHeader = group && group !== lastGroup;
+      if (group) lastGroup = group;
+
+      const current = node.id === currentPageId;
+
+      return (
+        <div key={node.id}>
+          {showGroupHeader && (
+            <div className="pt-s4 pb-s1 text-caption font-semibold tracking-widest text-brand">
+              {group}
+            </div>
+          )}
+          <Link
+            href={node.href}
+            onClick={() => setOpen(false)}
+            aria-current={current ? "page" : undefined}
+            className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+              current
+                ? "border-brand bg-brand-tint font-semibold text-brand"
+                : "border-line text-ink-body hover:bg-surface-subtle"
+            }`}
+          >
+            <span className="truncate leading-body">{node.title}</span>
+            {node.children.length > 0 ? <ChevronRight className="size-icon-small text-muted shrink-0" /> : null}
+          </Link>
+          {node.children.length > 0 && (
+            <div className="pl-s3 space-y-s1">
+              {node.children.map((child) => {
+                const childCurrent = child.id === currentPageId;
+                return (
+                  <Link
+                    key={child.id}
+                    href={child.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={childCurrent ? "page" : undefined}
+                    className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+                      childCurrent
+                        ? "border-brand bg-brand-tint font-semibold text-brand"
+                        : "border-line text-ink-body hover:bg-surface-subtle"
+                    }`}
+                  >
+                    <span className="truncate leading-body">{child.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   return (
@@ -119,14 +177,14 @@ export function PageTreeDrawer({
               </div>
             )}
 
-            {/* Mode 2: 板块内篇目树 */}
+            {/* Mode 2: 板块内篇目树 (完全对齐原型图样式) */}
             {mode === "tree" && activeSection && (
-              <div className="space-y-s3">
+              <div className="space-y-s2">
                 {allSections.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setMode("sections")}
-                    className="focus-ring flex items-center gap-s1 text-caption text-brand hover:underline pb-s2"
+                    className="focus-ring flex items-center gap-s1 text-caption font-medium text-brand hover:underline pb-s2"
                   >
                     <ArrowLeft className="size-icon-small" />
                     <span>全部板块</span>
@@ -142,7 +200,7 @@ export function PageTreeDrawer({
                     <Link
                       href={activeSection.nodes[0].href}
                       onClick={() => setOpen(false)}
-                      className="text-caption text-brand hover:underline"
+                      className="text-caption font-medium text-brand hover:underline"
                     >
                       从头读
                     </Link>
@@ -150,15 +208,7 @@ export function PageTreeDrawer({
                 </div>
 
                 <nav className="space-y-s1 py-s2" aria-label={`${activeSection.title}篇目树`}>
-                  {activeSection.nodes.map((node) => (
-                    <TreeNode
-                      key={node.id}
-                      node={node}
-                      currentPageId={currentPageId}
-                      depth={0}
-                      onSelect={() => setOpen(false)}
-                    />
-                  ))}
+                  {renderGroupedTree(activeSection)}
                 </nav>
               </div>
             )}
@@ -166,46 +216,5 @@ export function PageTreeDrawer({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
-}
-
-function TreeNode({
-  node,
-  currentPageId,
-  depth,
-  onSelect,
-}: {
-  node: PageTreeNode;
-  currentPageId?: string;
-  depth: number;
-  onSelect: () => void;
-}) {
-  const current = node.id === currentPageId;
-  return (
-    <>
-      <Link
-        href={node.href}
-        onClick={onSelect}
-        aria-current={current ? "page" : undefined}
-        className={`focus-ring flex min-h-tap items-center justify-between rounded-r-small border-l-2 py-s2 pr-s3 text-body transition-colors ${
-          current
-            ? "border-brand bg-brand-tint font-semibold text-brand"
-            : "border-line text-ink hover:bg-surface-subtle"
-        }`}
-        style={{ paddingInlineStart: `calc(var(--space-3) + ${depth} * var(--space-3))` }}
-      >
-        <span className="truncate">{node.title}</span>
-        {node.children.length > 0 ? <ChevronRight className="size-icon-small text-muted shrink-0" /> : null}
-      </Link>
-      {node.children.map((child) => (
-        <TreeNode
-          key={child.id}
-          node={child}
-          currentPageId={currentPageId}
-          depth={depth + 1}
-          onSelect={onSelect}
-        />
-      ))}
-    </>
   );
 }
