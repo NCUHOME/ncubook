@@ -27,10 +27,10 @@
 
 | 脚本文件 | npm 指令 | 核心职责 | 参数选项与环境变量 |
 | :--- | :--- | :--- | :--- |
-| **`publish.ts`** | `npm run publish:all`<br>`npm run publish:dry` | **Notion 同步发版管线**。拉取 Notion 页面树、Block 转换、图片镜像、分块暂存、版本切线与回滚。 | `--all`: 全量发版<br>`--dry-run`: 预检不写库<br>`--page <ID>`: 单页发布<br>`--rollback <VER>`: 切线回滚 |
-| **`seed-evals.ts`**| `npm run seed:evals` | **评测题库入库**。读取 `evals/test.json` 中的 36 题基准，upsert 写入 Supabase `evaluation_cases`。 | 无需额外参数，依赖 `SUPABASE_SERVICE_ROLE_KEY`。 |
+| **`publish.ts`** | `npm run publish:all`<br>`npm run publish:dry` | **Notion 同步发版管线**。拉取 Notion 页面树、Block 转换、图片镜像、分块暂存、版本切线、回滚、历史版本删除与死锁释放。 | `--all`: 全量发版<br>`--dry-run`: 预检不写库<br>`--page <ID>`: 单页发布<br>`--rollback <VER>`: 切线回滚<br>`--delete-version <VER>`: 物理删除历史版本<br>`--force-unlock`: 强行释放死锁 |
+| **`seed-evals.ts`**| `npm run seed:evals` | **评测题库入库**。读取 `evals/test.json` 中的基准用例集，批量 Upsert 写入 Supabase `evaluation_cases`。 | 无需额外参数，依赖 `SUPABASE_SERVICE_ROLE_KEY`。 |
 | **`eval.ts`** | `npm run eval` | **AI 问答质量评估**。对指定问答接口进行全量自动化评测，计算归因合规率、事实符合率与 P95 延迟。 | `--mock`: 离线算法基线<br>`ANSWER_EVAL_ENDPOINT`: 指定目标接口 URL |
-| **`audit-routes.ts`**| `npm run audit:routes`| **生产路由探针审计**。自动扫描核心页面的 HTTP 状态码、首包时间 (TTFB) 与关键 HTML 标签。 | `--url <BASE_URL>`: 目标站点根地址 (默认 `http://localhost:3000`) |
+| **`audit-routes.ts`**| `npm run audit:routes`| **生产路由与 SEO 健康探针**。自动扫描核心页面与 SEO 静态端点（sitemap, robots, manifest, icon）的 HTTP 状态码、首包时间 (TTFB) 与 HTML 标签。 | `--url <BASE_URL>`: 目标站点根地址 (默认 `http://localhost:3000`)<br>`--doc-slug <SLUG>`: 指定文档路径 |
 
 ---
 
@@ -45,9 +45,11 @@
 │ 1. 线上全量同步  │ publish:all      │ 30秒完成43篇指南发版并更新CDN缓存│
 │ 2. 发版前结构预检│ publish:dry      │ 零写库校验文章排版与外链完整性   │
 │ 3. 紧急故障回滚  │ publish --rollback 1秒内原子将线上切线至历史任意版本 │
-│ 4. 评测基准同步  │ seed:evals       │ 批量写入36题黄金评测集           │
-│ 5. 质量自动化回归│ eval --mock      │ 4秒内完成算法基线量化评估        │
-│ 6. 站点健康巡检  │ audit:routes     │ 自动化断言全站路由 200 与 TTFB   │
+│ 4. 历史版本清理  │ publish --delete-version 物理清除失效历史版本       │
+│ 5. 异常死锁释放  │ publish --force-unlock 强行解除任务并发挂起锁    │
+│ 6. 评测基准同步  │ seed:evals       │ 批量写入黄金评测基准集           │
+│ 7. 质量自动化回归│ eval --mock      │ 4秒内完成算法基线量化评估        │
+│ 8. 全站健康巡检  │ audit:routes     │ 自动化断言页面与SEO端点200/TTFB  │
 └──────────────────┴──────────────────┴──────────────────────────────────┘
 ```
 
@@ -68,6 +70,12 @@ npx tsx scripts/publish.ts --page 6cecddfd-3b9d-46dd-b6f6-fd458c011cbf
 
 # 紧急切线回滚至历史版本
 npx tsx scripts/publish.ts --rollback content-20260818151638454
+
+# 永久删除指定废弃版本
+npx tsx scripts/publish.ts --delete-version content-20260818151638454
+
+# 强行释放任务死锁
+npx tsx scripts/publish.ts --force-unlock
 ```
 
 ### 4.2 评测题库种子导入
@@ -88,9 +96,9 @@ ANSWER_EVAL_ENDPOINT="http://localhost:3000/api/ask" npm run eval
 ANSWER_EVAL_ENDPOINT="https://book.ncuos.com/api/ask" npm run eval
 ```
 
-### 4.4 生产路由健康巡检
+### 4.4 生产路由与 SEO 健康巡检
 ```bash
-# 巡检本地生产构建产物
+# 巡检本地生产构建产物（包含页面与 SEO 资产）
 npm run audit:routes -- --url http://localhost:3000
 
 # 巡检 EdgeOne 生产线上环境

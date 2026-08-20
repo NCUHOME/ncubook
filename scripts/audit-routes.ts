@@ -89,6 +89,11 @@ export async function runAudit() {
     { path: "/", name: "首页" },
     { path: "/search", name: "关键词搜索页" },
     { path: docPath, name: "文档阅读页" },
+    { path: "/sitemap.xml", name: "SEO 站点地图" },
+    { path: "/robots.txt", name: "搜索引擎爬虫协议" },
+    { path: "/manifest.webmanifest", name: "PWA 应用清单" },
+    { path: "/icon.svg", name: "全站矢量图标" },
+    { path: "/api/config", name: "公共配置分发接口" },
   ];
 
   const sectionSlugIndex = args.indexOf("--section-slug");
@@ -102,23 +107,33 @@ export async function runAudit() {
   }
 
   console.log(`\n======================================================`);
-  console.log(` 此间 (NCU Book) 路由冒烟探针`);
+  console.log(` 此间 (NCU Book) 全站生产路由与 SEO 健康探针`);
   console.log(` 目标环境: ${baseUrl}`);
   console.log(` 测试时间: ${new Date().toISOString()}`);
   console.log(`======================================================\n`);
 
-  console.log(`| 路由 | 状态码 | TTFB (ms) | 传输耗时 (ms) | HTML 体积 | Viewport | Title |`);
+  console.log(`| 路由 | 状态码 | TTFB (ms) | 传输耗时 (ms) | 响应体积 | 关键标记/格式 | 状态 |`);
   console.log(`|---|---|---|---|---|---|---|`);
 
   let failures = 0;
   for (const route of routes) {
     try {
       const result = await measureRoute(baseUrl, route.path);
-      const isPass = result.statusCode === 200 && result.hasTitle && result.hasViewport;
+      const isHtmlPage = route.path === "/" || route.path === "/search" || route.path.startsWith("/docs/") || route.path.startsWith("/sections/");
+      const isPass = isHtmlPage
+        ? result.statusCode === 200 && result.hasTitle && result.hasViewport
+        : result.statusCode === 200 && result.contentLength > 0;
+
       if (!isPass) failures += 1;
 
+      const flagText = isHtmlPage
+        ? `Viewport: ${result.hasViewport ? "✓" : "✗"}, Title: ${result.hasTitle ? "✓" : "✗"}`
+        : "Static / API 格式正常";
+
+      const latencyTag = result.ttfbMs < 100 ? "极速" : result.ttfbMs < 500 ? "良好" : "偏高";
+
       console.log(
-        `| \`${route.path}\` (${route.name}) | ${result.statusCode} | ${result.ttfbMs}ms | ${result.totalMs}ms | ${(result.contentLength / 1024).toFixed(2)} KB | ${result.hasViewport ? "PASS" : "FAIL"} | ${result.hasTitle ? "PASS" : "FAIL"} |`
+        `| \`${route.path}\` (${route.name}) | ${result.statusCode} | ${result.ttfbMs}ms (${latencyTag}) | ${result.totalMs}ms | ${(result.contentLength / 1024).toFixed(2)} KB | ${flagText} | ${isPass ? "PASS ✓" : "FAIL ✗"} |`
       );
 
       if (result.statusCode === 404 && route.path.startsWith("/docs/")) {
