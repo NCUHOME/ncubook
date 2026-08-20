@@ -10,13 +10,16 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
       session_id?: string;
+      sessionId?: string;
       event_name?: AnalyticsEventName;
+      eventName?: AnalyticsEventName;
       event_data?: Record<string, unknown>;
+      eventData?: Record<string, unknown>;
     };
 
-    const eventName = body.event_name;
-    const sessionId = body.session_id || "anonymous";
-    const eventData = body.event_data || {};
+    const eventName = body.event_name || body.eventName;
+    const sessionId = body.session_id || body.sessionId || "anonymous";
+    const eventData = body.event_data || body.eventData || {};
 
     if (!eventName) {
       return NextResponse.json({ ok: false, error: "missing_event_name" }, { status: 400 });

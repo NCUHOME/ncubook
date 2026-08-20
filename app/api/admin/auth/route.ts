@@ -18,7 +18,12 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  if (!safeStringEqual(password, expectedPassword)) {
+  const isMatch =
+    safeStringEqual(password, expectedPassword) ||
+    safeStringEqual(password.replace(/!/g, "！"), expectedPassword) ||
+    safeStringEqual(password.replace(/！/g, "!"), expectedPassword);
+
+  if (!isMatch) {
     return Response.json(
       { ok: false, error: "invalid_password", reason: "密码错误，请重新输入" },
       { status: 401 },

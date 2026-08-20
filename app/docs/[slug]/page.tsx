@@ -1,6 +1,6 @@
 // 校园知识文档阅读页路由：静态 SSG/ISR 生成 (/docs/[slug])，配置 1小时增量刷新，直连领域渲染组件
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { loadPublishedRepository, type PageTreeNode } from "@/lib/content/server";
@@ -17,7 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   try {
     const repository = await loadPublishedRepository();
     const view = await repository.getDocumentView(slug);
-    if (!view || view.page.parentId === null) return { title: "文档未找到 - 此间" };
+    if (!view) {
+      if (slug === "why" || slug === "about") return { title: "写在前面 - 校园指南 · 此间" };
+      if (slug === "gongxianzhe" || slug === "contributors") return { title: "贡献者名单 - 校园指南 · 此间" };
+      if (slug === "xinsheng" || slug === "freshman") return { title: "新生指南 - 校园指南 · 此间" };
+      return { title: "校园指南 - 此间" };
+    }
     const section = await repository.getSectionForPage(view.page.id);
 
     const title = `${view.page.title} - ${section?.title ?? "校园知识"} · 此间`;
@@ -34,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       },
     };
   } catch {
-    return { title: "文档未找到 - 此间" };
+    return { title: "校园指南 - 此间" };
   }
 }
 
@@ -51,7 +56,24 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
     const repo = await loadPublishedRepository();
     repository = repo;
     view = await repo.getDocumentView(slug);
-    if (!view) notFound();
+    if (!view) {
+      // 智能别名重定向
+      const rawSections = await repo.getPublishedSections();
+      if (slug === "why" || slug === "about") {
+        const intro = rawSections.find((s) => s.title.includes("写在前面") || s.title.includes("关于"));
+        if (intro) redirect(`/sections/${intro.slug}`);
+      }
+      if (slug === "gongxianzhe" || slug === "contributors") {
+        const contrib = rawSections.find((s) => s.title.includes("贡献者"));
+        if (contrib) redirect(`/sections/${contrib.slug}`);
+      }
+      if (slug === "xinsheng" || slug === "freshman") {
+        const learn = rawSections.find((s) => s.title.includes("学习") || s.title.includes("基本认识"));
+        if (learn) redirect(`/sections/${learn.slug}`);
+        if (rawSections[0]) redirect(`/sections/${rawSections[0].slug}`);
+      }
+      notFound();
+    }
 
     if (view.page.parentId === null) {
       section = view.page;
