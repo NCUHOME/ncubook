@@ -1,6 +1,6 @@
 # 自动化测试套件与防漂移门禁设计说明 (tests/)
 
-本文档全面阐述「此间 (NCU Book)」自动化测试体系、分层测试架构、44 个测试套件字典、Schema 防漂移门禁与质量守护策略。
+本文档全面阐述「此间 (NCU Book)」自动化测试体系、分层测试架构、45 个测试套件字典、Schema 防漂移门禁与质量守护策略。
 
 ---
 
@@ -16,9 +16,9 @@
           ┌────────────────────┼────────────────────┐
           ▼                    ▼                    ▼
    [单元与领域测试]      [组件与交互测试]     [API与路由测试]
-   - lib/ai/*           - AdminDashboard     - /api/ask 限流
-   - lib/publishing/*   - SearchInput        - /api/search 检索
-   - lib/content/*      - Drawer / Sheet     - /api/admin/* 鉴权
+   - lib/ai/*           - AdminDashboard     - /api/admin/config
+   - lib/publishing/*   - SearchInput        - /api/admin/feedbacks
+   - lib/content/*      - Drawer / Sheet     - /api/admin/mutations
           │                    │                    │
           └────────────────────┼────────────────────┘
                                ▼
@@ -29,14 +29,14 @@
                          100% 通过 ➔ 允许部署
 ```
 
-1. **确定性与高执行速度**：183 项测试全部在 **4 秒以内**完成，杜绝任何随机性 Flaky 测试；
+1. **确定性与高执行速度**：198 项测试全部在 **4 秒以内**完成，杜绝任何随机性 Flaky 测试；
 2. **多层防御矩阵**：自底向上涵盖领域算法、UI 组件渲染、无障碍键盘导航、API 限流与鉴权拦截；
 3. **架构防漂移门禁**：数据库 DDL 发生变化时，强制要求同步更新 TypeScript 类型契约，否则门禁直接阻断；
 4. **真实交互模拟**：使用 React Testing Library 模拟真实用户点击、输入、弹层展开与后退恢复。
 
 ---
 
-## 2. 测试套件分类字典 (44 个测试套件)
+## 2. 测试套件分类字典 (45 个测试套件)
 
 ### 2.1 核心领域与算法测试 (`tests/lib/`)
 

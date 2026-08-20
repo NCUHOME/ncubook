@@ -479,6 +479,13 @@
       "question": "测试题目？",
       "expectedAnswerable": true,
       "riskClass": "normal"
+    },
+    {
+      "id": "case-custom-test-1",
+      "question": "南昌大学保卫处电话是多少？",
+      "category": "校园安全",
+      "expectedAnswerable": true,
+      "riskClass": "normal"
     }
   ]
 }

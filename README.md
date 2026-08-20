@@ -21,7 +21,7 @@
 | **`docs/`** | 产品定位规范、设计令牌 (`tokens.json`)、数据契约与生产部署回滚手册 | 📑 [产品设计与运维文档中心 (`docs/README.md`)](docs/README.md) |
 | **`evals/`** | 36+ 题真实南大校园问题评测基准题库、动态飞轮入库与 6 大质量红线指标 | 🧪 [AI 问答质量评测基准 (`evals/README.md`)](evals/README.md) |
 | **`scripts/`** | 一键发版同步、评测种子入库、基准回归与生产路由探针等 CLI 运维工具 | 🛠️ [运维与自动化脚本工具 (`scripts/README.md`)](scripts/README.md) |
-| **`tests/`** | 183 项自动化单测（44 组套件）、组件交互测试、API 集成测试与 Schema 防漂移门禁 | 🛡️ [自动化测试套件与门禁 (`tests/README.md`)](tests/README.md) |
+| **`tests/`** | 198 项自动化单测（45 组套件）、管理全域数据流转、组件交互测试、API 集成测试与 Schema 防漂移门禁 | 🛡️ [自动化测试套件与门禁 (`tests/README.md`)](tests/README.md) |
 
 ---
 
@@ -48,7 +48,7 @@ npm run typecheck
 # 2. 代码规范检查
 npm run lint
 
-# 3. 运行全部 183 项单元与集成测试 (100% pass)
+# 3. 运行全部 198 项单元与集成测试 (100% pass)
 npm test
 
 # 4. 验证 Next.js 生产打包构建
