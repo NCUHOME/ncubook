@@ -70,13 +70,24 @@ export default async function HomePage() {
         const tree = await repository.getSectionTree(sec.slug);
         const children = await repository.getSectionChildren(sec.slug);
         const count = children.length > 0 ? children.length : 1;
+        const effectiveTree =
+          tree.length > 0
+            ? tree
+            : [
+                {
+                  id: sec.id,
+                  title: sec.title,
+                  href: `/docs/${sec.slug}`,
+                  children: [],
+                },
+              ];
         totalArticlesCount += count;
         return {
           id: sec.id,
           title: sec.title,
           slug: sec.slug,
           count,
-          tree,
+          tree: effectiveTree,
         };
       }),
     );

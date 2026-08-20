@@ -1,6 +1,15 @@
-// 辅助工具：南昌大学生存手册标准章节二级分类（Group）映射表与分组计算器
-export const CANONICAL_ARTICLE_GROUPS: Record<string, Record<string, string>> = {
-  // 学习板块分组
+// 核心工具：章节二级分类（Group）映射表、分组排序器与 Admin 配置管理
+import type { PageTreeNode } from "@/lib/content/server";
+
+// 默认标准二级分组映射（用于在未自定义配置时开箱即用）
+export const DEFAULT_SECTION_GROUP_ORDER: Record<string, string[]> = {
+  学习: ["入学必看", "考试", "基本认识", "评优评先"],
+  生活: ["常识", "重要信息", "休闲"],
+  课程: ["培养方案", "选课攻略"],
+  黄页: ["紧急电话", "账号指南"],
+};
+
+export const DEFAULT_ARTICLE_TO_GROUP: Record<string, Record<string, string>> = {
   学习: {
     "新生必看": "入学必看",
     "不喜欢本专业 / 想学其他专业": "入学必看",
@@ -22,7 +31,6 @@ export const CANONICAL_ARTICLE_GROUPS: Record<string, Record<string, string>> = 
     "大学生创新创业计划项目&科研训练": "评优评先",
     "大创项目": "评优评先",
   },
-  // 生活板块分组
   生活: {
     "必备物品": "常识",
     "网络与流量卡": "常识",
@@ -41,36 +49,88 @@ export const CANONICAL_ARTICLE_GROUPS: Record<string, Record<string, string>> = 
     "吃饭": "休闲",
     "校外游玩": "休闲",
   },
-  // 课程板块分组
-  课程: {
-    "专业课": "培养方案",
-    "通识课": "选课攻略",
-  },
-  // 黄页板块分组
-  黄页: {
-    "安全保卫": "紧急电话",
-    "电话": "紧急电话",
-    "家园注册": "账号指南",
-    "南大家园注册": "账号指南",
-  },
+};
+
+export type GroupedSectionBucket = {
+  groupName: string | null;
+  nodes: PageTreeNode[];
 };
 
 /**
- * 根据板块名与篇目名，获取其标准二级分组小标题（如「入学必看」「基本认识」「重要信息」等）
+ * 将某一板块下的篇目按分类桶（Bucket）进行有序归类与聚类排序，
+ * 保证同一分组下的所有文章严格聚集在一起，杜绝分散与重复标题。
  */
-export function getArticleGroup(sectionTitle?: string, articleTitle?: string): string | null {
-  if (!sectionTitle || !articleTitle) return null;
+export function groupAndSortSectionNodes(
+  sectionTitle: string,
+  nodes: PageTreeNode[],
+  customConfig?: Record<string, Record<string, string>>
+): GroupedSectionBucket[] {
+  if (!nodes || nodes.length === 0) return [];
 
   const cleanSec = sectionTitle.replace(/[\s·]/g, "");
-  for (const [secKey, groupMap] of Object.entries(CANONICAL_ARTICLE_GROUPS)) {
+  const mappingConfig = customConfig || DEFAULT_ARTICLE_TO_GROUP;
+
+  // 匹配当前板块的规则映射
+  let targetGroupMap: Record<string, string> | null = null;
+  for (const [secKey, gMap] of Object.entries(mappingConfig)) {
     if (cleanSec.includes(secKey) || secKey.includes(cleanSec)) {
-      const cleanTitle = articleTitle.replace(/[\s·]/g, "");
-      for (const [titleKey, groupName] of Object.entries(groupMap)) {
-        if (cleanTitle.includes(titleKey.replace(/[\s·]/g, ""))) {
-          return groupName;
-        }
-      }
+      targetGroupMap = gMap;
+      break;
     }
   }
-  return null;
+
+  // 若无分组映射规则（如 写在前面、经验包、单篇），则直接作为单个无标题桶返回
+  if (!targetGroupMap || Object.keys(targetGroupMap).length === 0) {
+    return [{ groupName: null, nodes }];
+  }
+
+  // 依据规则将节点放入对应分组桶
+  const buckets: Record<string, PageTreeNode[]> = {};
+  const unmappedNodes: PageTreeNode[] = [];
+
+  for (const node of nodes) {
+    const cleanTitle = node.title.replace(/[\s·]/g, "");
+    let matchedGroup: string | null = null;
+
+    for (const [titleKey, groupName] of Object.entries(targetGroupMap)) {
+      if (cleanTitle.includes(titleKey.replace(/[\s·]/g, ""))) {
+        matchedGroup = groupName;
+        break;
+      }
+    }
+
+    if (matchedGroup) {
+      const bucket = buckets[matchedGroup] ?? [];
+      bucket.push(node);
+      buckets[matchedGroup] = bucket;
+    } else {
+      unmappedNodes.push(node);
+    }
+  }
+
+  const result: GroupedSectionBucket[] = [];
+  const groupOrder = DEFAULT_SECTION_GROUP_ORDER[cleanSec] ?? Object.keys(buckets);
+
+  // 按预设顺序放入结果
+  for (const gName of groupOrder) {
+    const bucketNodes = buckets[gName];
+    if (bucketNodes && bucketNodes.length > 0) {
+      result.push({ groupName: gName, nodes: bucketNodes });
+      delete buckets[gName];
+    }
+  }
+
+  // 放入其他动态定义的分组
+  for (const [gName, gNodes] of Object.entries(buckets)) {
+    if (gNodes && gNodes.length > 0) {
+      result.push({ groupName: gName, nodes: gNodes });
+    }
+  }
+
+  // 放入未匹配分组的文章（平铺在底部，不加蓝色前缀）
+  if (unmappedNodes.length > 0) {
+    result.push({ groupName: null, nodes: unmappedNodes });
+  }
+
+  return result;
 }

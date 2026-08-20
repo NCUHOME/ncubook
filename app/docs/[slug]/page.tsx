@@ -44,18 +44,67 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   let view: import("@/lib/content/server").DocumentView | null = null;
   let section: import("@/lib/content/schema").Page | null = null;
   let tree: PageTreeNode[] = [];
+  let allSections: import("@/src/components/primitives/drawer").SectionSummary[] = [];
   let routes: Record<string, string> = {};
   let repository: import("@/lib/content/server").ContentRepository | null = null;
 
   try {
-    repository = await loadPublishedRepository();
-    view = await repository.getDocumentView(slug);
-    if (!view || view.page.parentId === null) notFound();
-    section = await repository.getSectionForPage(view.page.id);
-    if (!section) notFound();
+    const repo = await loadPublishedRepository();
+    repository = repo;
+    view = await repo.getDocumentView(slug);
+    if (!view) notFound();
 
-    tree = await repository.getSectionTree(section.slug);
-    routes = await repository.getPageRoutes();
+    if (view.page.parentId === null) {
+      section = view.page;
+    } else {
+      section = (await repo.getSectionForPage(view.page.id)) || view.page;
+    }
+
+    tree = await repo.getSectionTree(section.slug);
+    if (tree.length === 0) {
+      tree = [
+        {
+          id: view.page.id,
+          title: view.page.title,
+          href: `/docs/${view.page.slug}`,
+          children: [],
+        },
+      ];
+    }
+    routes = await repo.getPageRoutes();
+
+    const rawSections = await repo.getPublishedSections();
+    const cleanSections = rawSections.filter(
+      (s) =>
+        !s.title.includes("归档") &&
+        !s.title.includes("未改编") &&
+        !s.title.includes("贡献者")
+    );
+    allSections = await Promise.all(
+      cleanSections.map(async (sec) => {
+        const secTree = await repo.getSectionTree(sec.slug);
+        const children = await repo.getSectionChildren(sec.slug);
+        const count = children.length > 0 ? children.length : 1;
+        const effectiveTree =
+          secTree.length > 0
+            ? secTree
+            : [
+                {
+                  id: sec.id,
+                  title: sec.title,
+                  href: `/docs/${sec.slug}`,
+                  children: [],
+                },
+              ];
+        return {
+          id: sec.id,
+          title: sec.title,
+          slug: sec.slug,
+          count,
+          tree: effectiveTree,
+        };
+      })
+    );
   } catch {
     notFound();
   }
@@ -92,6 +141,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
         backHref="/"
         sectionTitle={section.title}
         sectionTree={tree}
+        allSections={allSections}
         currentPageId={view.page.id}
       />
       <ArticleProgressBar />

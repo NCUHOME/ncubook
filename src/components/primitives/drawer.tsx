@@ -1,4 +1,4 @@
-// 组件：双层板块目录抽屉原语 (PageTreeDrawer)，完全对齐优化重构版原型（支持全部板块概览与分组篇目树无缝切换）
+// 组件：双层板块目录抽屉原语 (PageTreeDrawer)，完全对齐原型图规范（支持单篇文章板块展开与有序篇目分组）
 "use client";
 
 import { useState } from "react";
@@ -6,7 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowLeft, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import type { PageTreeNode } from "@/lib/content/server";
-import { getArticleGroup } from "@/lib/content/groups";
+import { groupAndSortSectionNodes } from "@/lib/content/groups";
 
 export type SectionSummary = {
   id: string;
@@ -50,67 +50,80 @@ export function PageTreeDrawer({
   };
 
   const handleSelectSection = (sec: SectionSummary) => {
-    if (sec.tree && sec.tree.length > 0) {
-      setActiveSection({ title: sec.title, nodes: sec.tree, slug: sec.slug });
-      setMode("tree");
-    }
+    // 无论是多篇树还是单篇板块，均构造有效节点以确保 100% 能够进入 Mode 2 目录树
+    const effectiveNodes: PageTreeNode[] =
+      sec.tree && sec.tree.length > 0
+        ? sec.tree
+        : [
+            {
+              id: sec.id,
+              title: sec.title,
+              href: `/docs/${sec.slug}`,
+              children: [],
+            },
+          ];
+
+    setActiveSection({ title: sec.title, nodes: effectiveNodes, slug: sec.slug });
+    setMode("tree");
   };
 
-  // 预排序与分组渲染篇目
+  // 聚类渲染板块内的篇目分组树
   const renderGroupedTree = (section: { title: string; nodes: PageTreeNode[] }) => {
-    let lastGroup: string | null = null;
-    return section.nodes.map((node) => {
-      const group = getArticleGroup(section.title, node.title);
-      const showGroupHeader = group && group !== lastGroup;
-      if (group) lastGroup = group;
+    const buckets = groupAndSortSectionNodes(section.title, section.nodes);
 
-      const current = node.id === currentPageId;
-
-      return (
-        <div key={node.id}>
-          {showGroupHeader && (
-            <div className="pt-s4 pb-s1 text-caption font-semibold tracking-widest text-brand">
-              {group}
-            </div>
-          )}
-          <Link
-            href={node.href}
-            onClick={() => setOpen(false)}
-            aria-current={current ? "page" : undefined}
-            className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
-              current
-                ? "border-brand bg-brand-tint font-semibold text-brand"
-                : "border-line text-ink-body hover:bg-surface-subtle"
-            }`}
-          >
-            <span className="truncate leading-body">{node.title}</span>
-            {node.children.length > 0 ? <ChevronRight className="size-icon-small text-muted shrink-0" /> : null}
-          </Link>
-          {node.children.length > 0 && (
-            <div className="pl-s3 space-y-s1">
-              {node.children.map((child) => {
-                const childCurrent = child.id === currentPageId;
-                return (
-                  <Link
-                    key={child.id}
-                    href={child.href}
-                    onClick={() => setOpen(false)}
-                    aria-current={childCurrent ? "page" : undefined}
-                    className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
-                      childCurrent
-                        ? "border-brand bg-brand-tint font-semibold text-brand"
-                        : "border-line text-ink-body hover:bg-surface-subtle"
-                    }`}
-                  >
-                    <span className="truncate leading-body">{child.title}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+    return buckets.map((bucket, bIdx) => (
+      <div key={bucket.groupName || `bucket-${bIdx}`} className="space-y-s1">
+        {bucket.groupName && (
+          <div className="pt-s3 pb-s1 text-caption font-semibold tracking-widest text-brand">
+            {bucket.groupName}
+          </div>
+        )}
+        <div className="space-y-s1">
+          {bucket.nodes.map((node) => {
+            const current = node.id === currentPageId;
+            return (
+              <div key={node.id}>
+                <Link
+                  href={node.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={current ? "page" : undefined}
+                  className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+                    current
+                      ? "border-brand bg-brand-tint font-semibold text-brand"
+                      : "border-line text-ink-body hover:bg-surface-subtle"
+                  }`}
+                >
+                  <span className="truncate leading-body">{node.title}</span>
+                  {node.children.length > 0 ? <ChevronRight className="size-icon-small text-muted shrink-0" /> : null}
+                </Link>
+                {node.children.length > 0 && (
+                  <div className="pl-s3 space-y-s1">
+                    {node.children.map((child) => {
+                      const childCurrent = child.id === currentPageId;
+                      return (
+                        <Link
+                          key={child.id}
+                          href={child.href}
+                          onClick={() => setOpen(false)}
+                          aria-current={childCurrent ? "page" : undefined}
+                          className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+                            childCurrent
+                              ? "border-brand bg-brand-tint font-semibold text-brand"
+                              : "border-line text-ink-body hover:bg-surface-subtle"
+                          }`}
+                        >
+                          <span className="truncate leading-body">{child.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-      );
-    });
+      </div>
+    ));
   };
 
   return (
@@ -207,7 +220,7 @@ export function PageTreeDrawer({
                   )}
                 </div>
 
-                <nav className="space-y-s1 py-s2" aria-label={`${activeSection.title}篇目树`}>
+                <nav className="space-y-s2 py-s2" aria-label={`${activeSection.title}篇目树`}>
                   {renderGroupedTree(activeSection)}
                 </nav>
               </div>
