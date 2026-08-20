@@ -39,18 +39,18 @@
 
 | 组件文件 | 组件名称 | 核心职责与交互特性 |
 | :--- | :--- | :--- |
-| **`header.tsx`** | `AppHeader` | 全局统一移动端顶部导航栏，集成返回按钮、当前板块抽屉触发器与搜索入口。 |
-| **`drawer.tsx`** | `Drawer` | 移动端轻量级抽屉，承载当前文章所属板块的层级树与快捷目录，支持手势关闭。 |
+| **`header.tsx`** | `AppHeader` | 全局统一移动端顶部导航栏。**文档页**：左返回（`←`）、中板块进度+标题、右目录（`☰`）+搜索（`Q`）；**首页**：左品牌、右目录+搜索；严格保障 44px 舒适热区。 |
+| **`drawer.tsx`** | `Drawer` | 移动端轻量级双层抽屉，承载 6 大板块与篇目层级树，支持平滑手势关闭与上级返回。 |
 | **`sheet.tsx`** | `Sheet` | 移动端底部滑出弹层（Bottom Sheet），承载 AI 问答交互，支持平滑手势展开与收起。 |
 | **`form.tsx`** | `Input` / `Button` | 基础表单输入框与按钮，内置 44px 触控热区与标准焦点环状态。 |
-| **`citation.tsx`** | `CitationBadge` | 结构化观点出处角标（如 `[1]`），点击触发锚点高亮并平滑定位至原文段落。 |
+| **`citation.tsx`** | `CitationBadge` | 结构化观点出处角标（如 `[1]` / `¹`），点击触发 1.6s 墨蓝呼吸高亮（Flash Highlight）并平滑定位至原文段落。 |
 
 ### 2.2 文章阅读器 (`src/components/article/`)
 
 | 组件文件 | 组件名称 | 核心职责与交互特性 |
 | :--- | :--- | :--- |
-| **`article-renderer.tsx`** | `ArticleRenderer` | 文章主容器，负责渲染标题元数据、校区标签、更新时间、正文与文末上一篇/下一篇导航。 |
-| **`block-renderer.tsx`** | `BlockRenderer` | 富文本块递归解析器，精确还原 Notion 标准富文本块（文本段落、标题、折叠列表、表格、代码高亮、引用 Callout 等），每个块带有 `id="b-xxx"` 稳定锚点。 |
+| **`article-renderer.tsx`** | `ArticleRenderer` | 文章主容器，负责渲染顶部阅读进度条、标题元数据、更新时间、正文、文末上下篇导航卡片与「有帮助/没帮助」反馈条。 |
+| **`block-renderer.tsx`** | `BlockRenderer` | 富文本块递归解析器，精确还原 Notion 标准富文本块（文本段落、标题、折叠列表、表格、代码高亮、引用 Callout 等）。**语义支持**：红底警示（`.notion-callout-red`）、蓝底指引（`.notion-callout-blue`）、黄页电话一键呼叫/复制 Toast，每个块带有 `id="b-xxx"` 稳定锚点。 |
 | **`table-of-contents.tsx`** | `TableOfContents` | 文章大纲目录，解析正文 H2/H3 标题并生成平滑滚动链接。 |
 
 ### 2.3 可溯源 AI 问答 (`src/components/ask/`)
@@ -58,7 +58,7 @@
 | 组件文件 | 组件名称 | 核心职责与交互特性 |
 | :--- | :--- | :--- |
 | **`provider.tsx`** | `AskProvider` | 全局问答状态机与 Context，负责处理 API 交互、请求中状态、错误恢复与 `sessionStorage` 本地会话持久化。 |
-| **`entry.tsx`** | `AskEntry` | 全局浮动问答入口（首页主输入框与文档页右下角快捷胶囊）。 |
+| **`entry.tsx`** | `AskEntry` | 全局问答入口。**首页**：胶囊提问框（白底浅灰线，右侧吉祥物触发器）；**文档页**：**50px 纯圆形固定白底吉祥物悬浮球**（`right: 18px; bottom: 22px;` 脱离正文滚动流），点击自动感知当前篇章上下文。 |
 | **`sheet.tsx`** | `AskSheet` | 问答弹层全视图，展示结构化回答卡片、逐句观点归因、站内引用链接与免责声明。 |
 | **`claims.tsx`** | `ClaimsList` | 结构化观点分解列表，渲染事实断言与对应的出处角标。 |
 
@@ -66,8 +66,8 @@
 
 | 组件文件 | 组件名称 | 核心职责与交互特性 |
 | :--- | :--- | :--- |
-| **`search-input.tsx`** | `SearchInput` | 带防抖机制的搜索输入框，支持一键清空与回车即时检索。 |
-| **`search-results.tsx`** | `SearchResults` | 结构化展示匹配文章、匹配段落文字摘要、所属路径面包屑与精准路由跳转。 |
+| **`search-input.tsx`** | `SearchInput` | 带防抖机制的搜索输入框，支持一键清空与回车即时检索，内置热门快捷搜索 Chips（校内出行、防诈指南、保卫电话、绩点、选课等）。 |
+| **`search-results.tsx`** | `SearchResults` | 结构化展示匹配文章、匹配段落文字摘要、所属路径面包屑、**匹配关键词加粗高亮 (`<mark class="search-highlight">`)** 与精准路由跳转。 |
 | **`quick-filters.tsx`** | `QuickFilters` | 搜索结果快速分类标签过滤组件。 |
 
 ### 2.5 管理控制台 (`src/components/admin/`)
