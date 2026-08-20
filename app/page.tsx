@@ -1,30 +1,12 @@
 // 首页路由：南大家园核心模块风格首页 RSC（结合 Hero 引言、胶囊复合搜索栏、公告卡、双列动态目录、贡献与页脚）
 import Link from "next/link";
 import { loadPublishedRepository } from "@/lib/content/server";
-import { getSupabaseAdmin } from "@/lib/integrations/supabase";
+import { getAllSiteConfigs } from "@/lib/content/site-config";
 import { AppHeader } from "@/src/components/primitives/header";
 import { CompositeSearch } from "@/src/components/ask/composite-search";
 import { ContributeCard } from "@/src/components/home/contribute-card";
 import { FloatingAskButton } from "@/src/components/ask/button";
 import type { SectionSummary } from "@/src/components/primitives/drawer";
-
-type SiteConfigNotice = {
-  title?: string;
-  date?: string;
-  desc?: string;
-  links?: Array<{ text: string; slug: string }>;
-};
-
-type SiteConfigContribute = {
-  email?: string;
-  qq_group?: string;
-  desc?: string;
-};
-
-type SiteConfigHero = {
-  title?: string;
-  quote?: string;
-};
 
 export default async function HomePage() {
   let sections: import("@/lib/content/schema").Page[] = [];
@@ -32,25 +14,12 @@ export default async function HomePage() {
   let allSections: SectionSummary[] = [];
   let totalArticlesCount = 0;
 
-  // 默认配置回退值
-  let noticeConfig: SiteConfigNotice = {
-    title: "公告",
-    date: "2026 年 8 月",
-    desc: "目前手册还在持续更新中……",
-    links: [
-      { text: "新生必看", slug: "xinsheng" },
-      { text: "关于我们", slug: "why" },
-    ],
-  };
-  let contributeConfig: SiteConfigContribute = {
-    email: "book@nchuhome.club",
-    qq_group: "930991836",
-    desc: "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～",
-  };
-  let heroConfig: SiteConfigHero = {
-    title: "校园里的事<br>在此问明白",
-    quote: "是什么曾经拯救过你，就用它来更好地拯救这个世界",
-  };
+  // 读取全站配置
+  const siteConfigs = await getAllSiteConfigs();
+  const noticeConfig = siteConfigs.home_notice;
+  const contributeConfig = siteConfigs.home_contribute;
+  const heroConfig = siteConfigs.home_hero;
+  const footerConfig = siteConfigs.footer_config;
 
   let contributorHref: string | null = null;
   let contributorNames: string | null = null;
@@ -128,23 +97,6 @@ export default async function HomePage() {
     );
   } catch {
     // 允许在初次构建或尚未同步发版时安全降级
-  }
-
-  // 读取 site_configs 表
-  const supabase = getSupabaseAdmin();
-  if (supabase) {
-    try {
-      const { data } = await supabase.from("site_configs").select("key, value");
-      if (data) {
-        for (const item of data) {
-          if (item.key === "home_notice" && item.value) noticeConfig = item.value as SiteConfigNotice;
-          if (item.key === "home_contribute" && item.value) contributeConfig = item.value as SiteConfigContribute;
-          if (item.key === "home_hero" && item.value) heroConfig = item.value as SiteConfigHero;
-        }
-      }
-    } catch {
-      // 容错降级
-    }
   }
 
   return (
@@ -233,7 +185,7 @@ export default async function HomePage() {
             <span className="font-semibold text-ink-sub">致谢</span>
             <div className="space-y-s1">
               <p>
-                感谢所有参与编写与完善本手册的同学
+                {footerConfig.thankPrefix}
                 {contributorNames ? `：${contributorNames} 等` : ""}
                 {contributorHref ? (
                   <>
@@ -251,7 +203,7 @@ export default async function HomePage() {
               </p>
             </div>
             <span className="font-semibold text-ink-sub">声明</span>
-            <span>自发组织、非盈利社区，并非任何官方机构，内容仅供交流学习；若认为内容侵犯您的合法权益，请通过上方邮箱联系我们。</span>
+            <span>{footerConfig.disclaimer}</span>
           </div>
         </footer>
       </main>

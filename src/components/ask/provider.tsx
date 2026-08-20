@@ -2,12 +2,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import dynamic from "next/dynamic";
 import { validateAnswerSession, type AnswerSession } from "@/lib/ai/session";
 import { resolvePageRoute as defaultResolvePageRoute } from "@/lib/content/fixture";
 import { trackEvent } from "@/lib/analytics/client";
-
-const AskSheet = dynamic(() => import("@/src/components/ask/sheet").then((mod) => mod.AskSheet), { ssr: false });
+import { AskSheet } from "@/src/components/ask/sheet";
 
 export type PageContext = { pageId: string; anchor?: string };
 export type AskInput = { question?: string; pageContext?: PageContext };

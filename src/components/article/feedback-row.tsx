@@ -1,11 +1,28 @@
 // 组件：文章底部有用性反馈组件（支持点赞/点踩、自动入库与直通飞书预填收集表）
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getFeishuFeedbackUrl } from "@/lib/feishu";
+import { DEFAULT_ARTICLE_FEEDBACK_CONFIG, type ArticleFeedbackConfig } from "@/lib/content/site-config";
 
 export function ArticleFeedbackRow({ slug, pageTitle }: { slug: string; pageTitle?: string }) {
   const [submitted, setSubmitted] = useState<boolean | null>(null);
+  const [config, setConfig] = useState<ArticleFeedbackConfig>(DEFAULT_ARTICLE_FEEDBACK_CONFIG);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((res) => {
+        if (active && res?.ok && res?.data?.article_feedback_config) {
+          setConfig(res.data.article_feedback_config);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleFeedback = (isHelpful: boolean) => {
     setSubmitted(isHelpful);
@@ -20,7 +37,7 @@ export function ArticleFeedbackRow({ slug, pageTitle }: { slug: string; pageTitl
     }).catch(() => {});
   };
 
-  const feishuUrl = getFeishuFeedbackUrl({
+  const feishuUrl = config.feishuUrl || getFeishuFeedbackUrl({
     source: "文档页",
     pageTitle,
     pageSlug: slug,
@@ -31,7 +48,7 @@ export function ArticleFeedbackRow({ slug, pageTitle }: { slug: string; pageTitl
     <div className="mt-s6 flex flex-wrap items-center gap-s2 border-t border-line pt-s4 text-caption text-muted">
       {submitted === null ? (
         <>
-          <span>本篇指南是否对你有帮助？</span>
+          <span>{config.prompt}</span>
           <button
             type="button"
             onClick={() => handleFeedback(true)}
@@ -51,7 +68,7 @@ export function ArticleFeedbackRow({ slug, pageTitle }: { slug: string; pageTitl
       ) : (
         <div className="text-ink-body">
           {submitted ? (
-            <span>感谢您的点赞支持！</span>
+            <span>{config.thankMsg}</span>
           ) : (
             <span>
               已记录您的反馈！若有错漏或补充，欢迎{" "}

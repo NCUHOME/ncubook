@@ -5,8 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Search, X } from "lucide-react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics/client";
-
-const DEFAULT_CHIPS = ["校内出行", "防诈指南", "保卫电话", "GPA 绩点", "通识选课", "转专业"];
+import { DEFAULT_SEARCH_CONFIG, type SearchConfig } from "@/lib/content/site-config";
 
 type SearchItem = {
   pageId: string;
@@ -28,7 +27,23 @@ export function SearchOverlay({
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState<SearchConfig>(DEFAULT_SEARCH_CONFIG);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((res) => {
+        if (active && res?.ok && res?.data?.search_config) {
+          setConfig(res.data.search_config);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -112,7 +127,7 @@ export function SearchOverlay({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索手册（如：出行、绩点、报修...）"
+            placeholder={config.placeholder}
             className="focus-ring w-full h-10 rounded-medium border border-line bg-surface-subtle pl-s6 pr-s6 text-body text-ink placeholder:text-muted"
           />
           {query && (
@@ -130,12 +145,12 @@ export function SearchOverlay({
 
       {/* 快捷搜索 Chips 标签行 */}
       <div className="flex items-center gap-s2 overflow-x-auto border-b border-line bg-surface-subtle px-s4 py-s2 no-scrollbar">
-        {DEFAULT_CHIPS.map((chip) => (
+        {config.chips.map((chip) => (
           <button
             key={chip}
             type="button"
             onClick={() => setQuery(chip)}
-            className="focus-ring shrink-0 rounded-pill border border-line bg-surface px-s3 py-1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
+            className="focus-ring shrink-0 rounded-pill border border-line bg-surface px-s3 py-s1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
           >
             {chip}
           </button>
@@ -147,13 +162,13 @@ export function SearchOverlay({
         {loading && <p className="text-caption text-muted py-s3 text-center">正在极速检索校园指南...</p>}
 
         {!loading && !query.trim() && (
-          <p className="text-caption text-muted py-s3 text-center">输入关键词实时检索校园指南文章与具体段落...</p>
+          <p className="text-caption text-muted py-s3 text-center">{config.emptyHint}</p>
         )}
 
         {!loading && query.trim() && results.length === 0 && (
           <div className="py-s7 text-center">
-            <p className="text-body text-muted">未找到与「{query}」相关的篇目或段落</p>
-            <p className="mt-s2 text-caption text-muted">试试换个关键词，或向右下角小家园直接提问</p>
+            <p className="text-body text-muted">{config.noResultTitle.replace("{query}", query)}</p>
+            <p className="mt-s2 text-caption text-muted">{config.noResultSub}</p>
           </div>
         )}
 

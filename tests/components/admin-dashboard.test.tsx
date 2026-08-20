@@ -5,6 +5,7 @@ import { EvalDashboard } from "@/src/components/admin/eval-dashboard";
 import { QAPlayground } from "@/src/components/admin/qa-playground";
 import { VersionTimeline } from "@/src/components/admin/version-timeline";
 import { AnalyticsDashboard } from "@/src/components/admin/analytics-dashboard";
+import { SiteConfigPanel } from "@/src/components/admin/site-config-panel";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -56,6 +57,35 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("AI 问答提问量")).toBeDefined();
     expect(screen.getByText("电话/服务复制转化")).toBeDefined();
     expect(screen.getByText("新生必看")).toBeDefined();
+  });
+
+  it("renders SiteConfigPanel and switches between 5 configuration sub-tabs", () => {
+    render(<SiteConfigPanel />);
+    expect(screen.getByText("全站公共信息配置中心")).toBeDefined();
+    expect(screen.getByText("搜索与推荐配置")).toBeDefined();
+    expect(screen.getByText("AI 助手与预设问题")).toBeDefined();
+    expect(screen.getByText("首页标语与公告栏")).toBeDefined();
+    expect(screen.getByText("完善手册与渠道声明")).toBeDefined();
+    expect(screen.getByText("目录二级分类前称")).toBeDefined();
+
+    // 默认展示搜索配置
+    expect(screen.getByText("热门推荐标签 (Chips)")).toBeDefined();
+
+    // 切换到 AI 助手
+    fireEvent.click(screen.getByText("AI 助手与预设问题"));
+    expect(screen.getByText("推荐快捷提问列表 (Suggested Questions)")).toBeDefined();
+
+    // 切换到 首页标语与公告栏
+    fireEvent.click(screen.getByText("首页标语与公告栏"));
+    expect(screen.getByText("首页主标语与人文名言 (home_hero)")).toBeDefined();
+
+    // 切换到 完善手册与渠道声明
+    fireEvent.click(screen.getByText("完善手册与渠道声明"));
+    expect(screen.getByText("完善手册联系渠道 (home_contribute)")).toBeDefined();
+
+    // 切换到 目录二级分类前称
+    fireEvent.click(screen.getByText("目录二级分类前称"));
+    expect(screen.getByText("篇目二级分类与蓝色小标映射 (article_groups)")).toBeDefined();
   });
 
   it("renders EvalDashboard with initial report and metric cards", () => {

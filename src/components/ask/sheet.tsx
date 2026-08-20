@@ -1,7 +1,7 @@
 // 组件：AI 可溯源问答底部弹层，支持推荐提问 Chips、观点与依据溯源跳转（带 Flash 闪烁高亮）与答案有用性反馈
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
 import type { AnswerSession } from "@/lib/ai/session";
@@ -9,13 +9,7 @@ import { AskInputBar } from "@/src/components/ask/input-bar";
 import type { AskStatus, PageContext } from "@/src/components/ask/provider";
 import { HollamaMascot } from "@/src/components/primitives/hollama-mascot";
 import { getFeishuFeedbackUrl } from "@/lib/feishu";
-
-const SUGGESTED_QUESTIONS = [
-  "校内环游车怎么坐？",
-  "转专业有什么条件？",
-  "GPA 绩点怎么计算？",
-  "保卫处电话是多少？",
-];
+import { DEFAULT_AI_CONFIG, type AiConfig } from "@/lib/content/site-config";
 
 type AskSheetProps = {
   open: boolean;
@@ -47,6 +41,22 @@ export function AskSheet({
   resolvePageRoute,
 }: AskSheetProps) {
   const [feedbackGiven, setFeedbackGiven] = useState<boolean | null>(null);
+  const [config, setConfig] = useState<AiConfig>(DEFAULT_AI_CONFIG);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((res) => {
+        if (active && res?.ok && res?.data?.ai_config) {
+          setConfig(res.data.ai_config);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleCitationClick = (pageId: string, anchor?: string) => {
     onCitationNavigate();
@@ -91,7 +101,7 @@ export function AskSheet({
               <HollamaMascot size={26} />
               <div>
                 <Dialog.Title className="text-body-large font-semibold text-ink">询问此间</Dialog.Title>
-                <p className="text-caption text-muted">南大家园官方 AI 知识库助手</p>
+                <p className="text-caption text-muted">{config.assistantSubtitle}</p>
               </div>
             </div>
             <Dialog.Close asChild>
@@ -140,7 +150,7 @@ export function AskSheet({
                           "请帮我提取本篇的关键时间与资费节点",
                           "遇到突发问题如何快速联系或解决？",
                         ]
-                      : SUGGESTED_QUESTIONS
+                      : config.suggestedQuestions
                     ).map((q) => (
                       <button
                         key={q}
@@ -291,7 +301,7 @@ export function AskSheet({
           <AskInputBar
             id="ask-follow-up"
             label="继续追问"
-            placeholder="输入你的问题或继续追问..."
+            placeholder={config.inputPlaceholder}
             submitLabel="提交追问"
             value={draft}
             onChange={onDraftChange}
