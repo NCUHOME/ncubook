@@ -9,6 +9,9 @@ import { FloatingAskButton } from "@/src/components/ask/button";
 import { getSiteUrl } from "@/lib/site";
 import type { SectionSummary } from "@/src/components/primitives/drawer";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   let sections: import("@/lib/content/schema").Page[] = [];
   let routes: Record<string, string> = {};

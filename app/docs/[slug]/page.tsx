@@ -11,7 +11,7 @@ import { AppHeader } from "@/src/components/primitives/header";
 
 import { getSiteUrl } from "@/lib/site";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

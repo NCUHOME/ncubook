@@ -55,6 +55,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
 
+    try {
+      const { revalidatePath, revalidateTag } = await import("next/cache");
+      revalidatePath("/", "page");
+      revalidatePath("/search", "page");
+      revalidatePath("/docs/[slug]", "page");
+      revalidatePath("/api/config");
+      revalidateTag("site_configs");
+    } catch {
+      // 忽略在无静态上下文中的 revalidate 警告
+    }
+
     return NextResponse.json({ ok: true, key, value: body.value });
   } catch (err) {
     return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : "unknown_error" }, { status: 500 });
