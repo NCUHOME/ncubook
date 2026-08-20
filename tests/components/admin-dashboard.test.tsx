@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AdminTabs } from "@/src/components/admin/admin-tabs";
 import { EvalDashboard } from "@/src/components/admin/eval-dashboard";
@@ -6,6 +6,7 @@ import { QAPlayground } from "@/src/components/admin/qa-playground";
 import { VersionTimeline } from "@/src/components/admin/version-timeline";
 import { AnalyticsDashboard } from "@/src/components/admin/analytics-dashboard";
 import { SiteConfigPanel } from "@/src/components/admin/site-config-panel";
+import { FeedbackPanel } from "@/src/components/admin/feedback-panel";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -16,7 +17,74 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("admin dashboard component suite", () => {
-  it("renders AdminTabs and switches between panels smoothly", async () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/api/admin/feedbacks")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                ok: true,
+                stats: { total: 2, helpful: 1, unhelpful: 1, pending: 1, resolved: 0, archived: 0, helpfulRate: "50%" },
+                recent: [
+                  {
+                    id: "1",
+                    target_type: "article",
+                    target_id: "page-xinsheng",
+                    is_helpful: false,
+                    comment: "时间写错了",
+                    created_at: "2026-08-20T12:00:00Z",
+                    status: "pending",
+                    article_title: "新生必看",
+                    section_title: "学习",
+                  },
+                ],
+              }),
+          });
+        }
+        if (url.includes("/api/admin/config") || url.includes("/api/config")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                ok: true,
+                data: [],
+                allArticles: [{ title: "校内出行", slug: "page-chuxing", sectionTitle: "生活" }],
+              }),
+          });
+        }
+        if (url.includes("/api/admin/analytics")) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                ok: true,
+                data: {
+                  todayPv: 120,
+                  todayUv: 45,
+                  totalSearches: 88,
+                  zeroResultSearches: 3,
+                  totalAiAsks: 26,
+                  totalContactCopies: 14,
+                  topArticles: [{ slug: "xinsheng", title: "新生必看指南", views: 50 }],
+                  topSearchQueries: [{ query: "体测", count: 20, zeroResult: false }],
+                  zeroResultQueries: [{ query: "游泳馆", count: 3, lastSearchedAt: "2026-08-20T12:00:00Z" }],
+                  recentEvents: [],
+                },
+              }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ ok: true }),
+        });
+      }),
+    );
+  });
+
+  it("renders AdminTabs and switches between panels smoothly with Keep-Alive", async () => {
     render(<AdminTabs currentVersion="content-test-v1" />);
 
     // 包含 5 个核心 Tab 栏
@@ -34,9 +102,13 @@ describe("admin dashboard component suite", () => {
     fireEvent.click(screen.getByText("AI 评测与沙盒"));
     expect(screen.getByText("35 项黄金基准评测看板")).toBeDefined();
     expect(screen.getByText("AI 问答调试沙盒")).toBeDefined();
+
+    // 点击切换到用户反馈监控
+    fireEvent.click(screen.getByText("用户反馈监控"));
+    expect(screen.getByText("用户反馈与好评监控工单")).toBeDefined();
   });
 
-  it("renders AnalyticsDashboard with metrics and charts", () => {
+  it("renders AnalyticsDashboard with metrics, readable titles and events", () => {
     const mockSummary = {
       todayPv: 120,
       todayUv: 45,
@@ -44,10 +116,27 @@ describe("admin dashboard component suite", () => {
       zeroResultSearches: 3,
       totalAiAsks: 26,
       totalContactCopies: 14,
-      topArticles: [{ slug: "xinsheng", title: "新生必看", views: 50 }],
+      topArticles: [
+        {
+          slug: "xinsheng",
+          title: "新生必看指南",
+          sectionTitle: "学习",
+          routePath: "/docs/xinsheng",
+          views: 50,
+        },
+      ],
       topSearchQueries: [{ query: "体测", count: 20, zeroResult: false }],
       zeroResultQueries: [{ query: "游泳馆", count: 3, lastSearchedAt: "2026-08-20T12:00:00Z" }],
-      recentEvents: [],
+      recentEvents: [
+        {
+          id: 1,
+          eventName: "page_view" as const,
+          eventData: { slug: "xinsheng", device: "mobile" },
+          resolvedTitle: "新生必看指南",
+          resolvedSection: "学习",
+          createdAt: "2026-08-20T12:00:00Z",
+        },
+      ],
     };
 
     render(<AnalyticsDashboard initialSummary={mockSummary} />);
@@ -56,7 +145,17 @@ describe("admin dashboard component suite", () => {
     expect(screen.getByText("搜索使用总量")).toBeDefined();
     expect(screen.getByText("AI 问答提问量")).toBeDefined();
     expect(screen.getByText("电话/服务复制转化")).toBeDefined();
-    expect(screen.getByText("新生必看")).toBeDefined();
+    expect(screen.getByText("新生必看指南")).toBeDefined();
+    expect(screen.getByText("最近实时学生行为流水")).toBeDefined();
+  });
+
+  it("renders FeedbackPanel with status filter tabs and Linear style workflow", () => {
+    render(<FeedbackPanel />);
+    expect(screen.getByText("用户反馈与好评监控工单")).toBeDefined();
+    expect(screen.getAllByText(/待处理/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/全部反馈/)).toBeDefined();
+    expect(screen.getByText("按文章聚合")).toBeDefined();
+    expect(screen.getByText("明细流水")).toBeDefined();
   });
 
   it("renders SiteConfigPanel and switches between 5 configuration sub-tabs", () => {
@@ -78,6 +177,7 @@ describe("admin dashboard component suite", () => {
     // 切换到 首页标语与公告栏
     fireEvent.click(screen.getByText("首页标语与公告栏"));
     expect(screen.getByText("首页主标语与人文名言 (home_hero)")).toBeDefined();
+    expect(screen.getByText(/什么是「导读快捷链接」？/)).toBeDefined();
 
     // 切换到 完善手册与渠道声明
     fireEvent.click(screen.getByText("完善手册与渠道声明"));

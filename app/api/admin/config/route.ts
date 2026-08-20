@@ -22,7 +22,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, data });
+  const { getArticleMetadataLookup } = await import("@/lib/content/metadata-resolver");
+  const { articles } = await getArticleMetadataLookup();
+
+  return NextResponse.json({ ok: true, data, allArticles: articles });
 }
 
 export async function POST(request: Request) {

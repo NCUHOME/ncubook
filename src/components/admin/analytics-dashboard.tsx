@@ -1,4 +1,5 @@
 // 组件：管理后台全站埋点数据与运营洞察大盘 (AnalyticsDashboard)
+// 支持文章中文名解析、一键直通前台/Notion、学生搜索零结果预警与人性化学生轨迹流水
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,6 +13,8 @@ import {
   TrendingUp,
   FileText,
   Clock,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import type { AnalyticsSummary } from "@/lib/analytics/types";
 
@@ -24,7 +27,7 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
     fetch("/api/admin/analytics")
       .then((res) => res.json())
       .then((res) => {
-        if (res.ok && res.data) {
+        if (res?.ok && res?.data) {
           setSummary(res.data);
         }
       })
@@ -141,7 +144,7 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
 
       {/* 核心双列分析 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-s6">
-        {/* 1. 热门阅读篇目 TOP 10 */}
+        {/* 1. 热门阅读篇目 TOP 10（带真实中文名、分类与一键跳转） */}
         <div className="rounded-medium border border-line bg-surface p-s5 space-y-s4">
           <div className="flex items-center justify-between border-b border-line pb-s3">
             <div className="flex items-center gap-s2">
@@ -154,17 +157,49 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
           {data.topArticles.length === 0 ? (
             <p className="text-caption text-muted py-s4 text-center">暂无文章访问记录，学生访问后将实时更新</p>
           ) : (
-            <div className="space-y-s3">
+            <div className="space-y-s3.5">
               {data.topArticles.map((art, idx) => (
-                <div key={art.slug} className="space-y-s1">
+                <div key={art.slug} className="space-y-s1.5 p-s2 rounded-small hover:bg-surface-subtle transition-colors">
                   <div className="flex items-center justify-between text-body">
-                    <span className="font-medium text-ink flex items-center gap-s2 truncate">
-                      <span className="text-caption font-bold text-muted w-s4">{idx + 1}.</span>
-                      <span className="truncate">{art.title || art.slug}</span>
-                    </span>
-                    <span className="text-caption font-semibold text-muted ml-s2 shrink-0">{art.views} 次</span>
+                    <div className="flex items-center gap-s2 truncate min-w-0">
+                      <span className="text-caption font-bold text-muted w-s4 shrink-0">{idx + 1}.</span>
+                      <strong className="font-semibold text-ink truncate">
+                        {art.title || art.slug}
+                      </strong>
+                      {art.sectionTitle && (
+                        <span className="text-caption text-muted bg-surface border border-line rounded-pill px-s2 py-s1 shrink-0">
+                          {art.sectionTitle}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-s2 shrink-0 ml-s2">
+                      <span className="text-caption font-semibold text-brand">{art.views} 次</span>
+                      {art.routePath && (
+                        <a
+                          href={art.routePath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-caption text-muted hover:text-brand transition-colors"
+                          title="在学生端新标签页查看"
+                        >
+                          <ExternalLink className="size-icon-small" />
+                        </a>
+                      )}
+                      {art.notionUrl && (
+                        <a
+                          href={art.notionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-caption text-brand hover:underline"
+                          title="在 Notion 中编辑"
+                        >
+                          <Sparkles className="size-icon-small" />
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div className="h-s1 w-full rounded-pill bg-surface-subtle overflow-hidden">
+                  <div className="h-s1 w-full rounded-pill bg-line-light overflow-hidden">
                     <div
                       className="h-full bg-brand rounded-pill transition-all"
                       style={{ width: `${Math.max(8, Math.round((art.views / maxViews) * 100))}%` }}
@@ -233,12 +268,12 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
         </div>
       </div>
 
-      {/* 实时埋点流水日志 */}
+      {/* 实时埋点流水日志（可视化学生行为流） */}
       <div className="rounded-medium border border-line bg-surface p-s5 space-y-s3">
         <div className="flex items-center justify-between border-b border-line pb-s3">
           <div className="flex items-center gap-s2">
             <Clock className="size-icon text-muted" />
-            <h3 className="text-label font-semibold text-ink">最近实时埋点流水</h3>
+            <h3 className="text-label font-semibold text-ink">最近实时学生行为流水</h3>
           </div>
           <span className="text-caption text-muted">最近 50 条学生端行为</span>
         </div>
@@ -246,30 +281,104 @@ export function AnalyticsDashboard({ initialSummary }: { initialSummary?: Analyt
         {data.recentEvents.length === 0 ? (
           <p className="text-caption text-muted py-s4 text-center">暂无埋点流水记录</p>
         ) : (
-          <div className="divide-y divide-line max-h-80 overflow-y-auto font-mono text-caption">
-            {data.recentEvents.map((ev) => (
-              <div key={ev.id} className="py-s2 flex items-center justify-between gap-s4">
-                <div className="flex items-center gap-s2 truncate">
-                  <span
-                    className={`rounded-small px-s2 py-s1 text-caption font-semibold ${
-                      ev.eventName === "page_view"
-                        ? "bg-brand-tint text-brand"
-                        : ev.eventName === "search_query"
-                        ? "bg-brand text-surface"
-                        : ev.eventName === "ai_ask_submitted"
-                        ? "bg-surface-subtle text-brand"
-                        : "bg-surface-subtle text-ink"
-                    }`}
-                  >
-                    {ev.eventName}
-                  </span>
-                  <span className="text-ink truncate">{JSON.stringify(ev.eventData)}</span>
+          <div className="divide-y divide-line max-h-96 overflow-y-auto text-caption">
+            {data.recentEvents.map((ev) => {
+              const d = (ev.eventData || {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+              return (
+                <div key={ev.id} className="py-s2.5 flex items-center justify-between gap-s4 hover:bg-surface-subtle px-s2 rounded-small transition-colors">
+                  <div className="flex items-center gap-s2 truncate min-w-0">
+                    {ev.eventName === "page_view" && (
+                      <span className="rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        📱 浏览
+                      </span>
+                    )}
+                    {ev.eventName === "search_query" && (
+                      <span className="rounded-pill bg-brand text-surface px-s2 py-s1 text-caption font-bold shrink-0">
+                        🔍 搜索
+                      </span>
+                    )}
+                    {ev.eventName === "ai_ask_submitted" && (
+                      <span className="rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        🤖 AI 提问
+                      </span>
+                    )}
+                    {ev.eventName === "contact_copied" && (
+                      <span className="rounded-pill bg-brand-tint border border-brand px-s2 py-s1 text-caption font-bold text-brand shrink-0">
+                        📋 复制
+                      </span>
+                    )}
+                    {ev.eventName === "article_read_complete" && (
+                      <span className="rounded-pill bg-surface-subtle border border-line px-s2 py-s1 text-caption font-bold text-ink shrink-0">
+                        ✅ 读完
+                      </span>
+                    )}
+
+                    {/* 可读化行为描述 */}
+                    <div className="text-ink truncate">
+                      {ev.eventName === "page_view" && (
+                        <span>
+                          学生阅读了指南{" "}
+                          <strong className="font-semibold text-ink">
+                            《{ev.resolvedTitle || d.pageTitle || d.path || "首页"}》
+                          </strong>
+                          {ev.resolvedSection && <span className="text-muted"> ({ev.resolvedSection})</span>}
+                          {d.device && <span className="text-muted font-mono"> · {d.device}</span>}
+                        </span>
+                      )}
+
+                      {ev.eventName === "search_query" && (
+                        <span>
+                          搜索了「<strong className="font-semibold text-ink">{d.query}</strong>」，匹配到{" "}
+                          <span className={d.resultCount === 0 ? "text-danger font-bold" : "text-brand"}>
+                            {d.resultCount}
+                          </span>{" "}
+                          条结果
+                        </span>
+                      )}
+
+                      {ev.eventName === "ai_ask_submitted" && (
+                        <span>
+                          向 AI 询问「<strong className="font-semibold text-ink">{d.questionPreview}</strong>」
+                        </span>
+                      )}
+
+                      {ev.eventName === "contact_copied" && (
+                        <span>
+                          复制了联系方式 <strong className="font-semibold text-ink">{d.label || d.value}</strong>
+                        </span>
+                      )}
+
+                      {ev.eventName === "article_read_complete" && (
+                        <span>
+                          完整读完了《<strong>{ev.resolvedTitle || d.pageTitle || d.slug}</strong>》
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-s2 shrink-0">
+                    {ev.routePath && (
+                      <a
+                        href={ev.routePath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-caption text-brand hover:underline"
+                      >
+                        预览 ↗
+                      </a>
+                    )}
+                    <span className="text-muted text-caption">
+                      {new Date(ev.createdAt).toLocaleTimeString("zh-CN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-muted text-caption shrink-0">
-                  {new Date(ev.createdAt).toLocaleTimeString()}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

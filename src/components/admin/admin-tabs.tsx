@@ -1,4 +1,4 @@
-// 组件：Admin 控制台多 Tab 容器 (AdminTabs)，组织数据洞察、同步版本、配置编辑、用户反馈与 AI 实验
+// 组件：Admin 控制台多 Tab 容器 (AdminTabs)，支持 Keep-Alive 秒切与状态持久化缓存
 "use client";
 
 import { useEffect, useState } from "react";
@@ -27,6 +27,7 @@ export type AdminTabKey = "analytics" | "sync" | "settings" | "feedbacks" | "ai-
 
 export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }: AdminTabsProps) {
   const [activeTab, setActiveTab] = useState<AdminTabKey>("analytics");
+  const [visitedTabs, setVisitedTabs] = useState<Set<AdminTabKey>>(new Set(["analytics"]));
   const [aiSubTab, setAiSubTab] = useState<"evals" | "playground">("evals");
 
   useEffect(() => {
@@ -39,11 +40,13 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
       hash === "ai-lab"
     ) {
       setActiveTab(hash as AdminTabKey);
+      setVisitedTabs((prev) => new Set([...prev, hash as AdminTabKey]));
     }
   }, []);
 
   const handleTabChange = (tab: AdminTabKey) => {
     setActiveTab(tab);
+    setVisitedTabs((prev) => new Set([...prev, tab]));
     window.location.hash = tab;
   };
 
@@ -83,26 +86,38 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
         })}
       </nav>
 
-      {/* 模块 0: 全站数据洞察与埋点大盘 */}
-      {activeTab === "analytics" && <AnalyticsDashboard />}
+      {/* 模块 0: 全站数据洞察与埋点大盘 (Keep-Alive DOM 保留) */}
+      {visitedTabs.has("analytics") && (
+        <div className={activeTab === "analytics" ? "block" : "hidden"} role="tabpanel">
+          <AnalyticsDashboard />
+        </div>
+      )}
 
       {/* 模块 1: 内容发布与真实版本时间线 */}
-      {activeTab === "sync" && (
-        <div className="space-y-s6">
+      {visitedTabs.has("sync") && (
+        <div className={activeTab === "sync" ? "block space-y-s6" : "hidden"} role="tabpanel">
           <SyncPanel currentVersion={currentVersion} />
           <VersionTimeline currentVersion={currentVersion} initialVersions={initialVersions} />
         </div>
       )}
 
       {/* 模块 2: 网站公告与全局配置 */}
-      {activeTab === "settings" && <SiteConfigPanel />}
+      {visitedTabs.has("settings") && (
+        <div className={activeTab === "settings" ? "block" : "hidden"} role="tabpanel">
+          <SiteConfigPanel />
+        </div>
+      )}
 
-      {/* 模块 3: 用户反馈监控与好评率大盘 */}
-      {activeTab === "feedbacks" && <FeedbackPanel />}
+      {/* 模块 3: 用户反馈监控与工单流转 */}
+      {visitedTabs.has("feedbacks") && (
+        <div className={activeTab === "feedbacks" ? "block" : "hidden"} role="tabpanel">
+          <FeedbackPanel />
+        </div>
+      )}
 
       {/* 模块 4: AI 质量评测与问答沙盒实验室 */}
-      {activeTab === "ai-lab" && (
-        <div className="space-y-s6">
+      {visitedTabs.has("ai-lab") && (
+        <div className={activeTab === "ai-lab" ? "block space-y-s6" : "hidden"} role="tabpanel">
           <div className="flex items-center gap-s2 border-b border-line pb-s2">
             <button
               type="button"
@@ -124,7 +139,12 @@ export function AdminTabs({ currentVersion = "未同步", initialVersions = [] }
             </button>
           </div>
 
-          {aiSubTab === "evals" ? <EvalDashboard /> : <QAPlayground />}
+          <div className={aiSubTab === "evals" ? "block" : "hidden"}>
+            <EvalDashboard />
+          </div>
+          <div className={aiSubTab === "playground" ? "block" : "hidden"}>
+            <QAPlayground />
+          </div>
         </div>
       )}
     </div>

@@ -77,7 +77,14 @@ export type AnalyticsSummary = {
   zeroResultSearches: number;
   totalAiAsks: number;
   totalContactCopies: number;
-  topArticles: Array<{ slug: string; title: string; views: number }>;
+  topArticles: Array<{
+    slug: string;
+    title: string;
+    sectionTitle?: string;
+    routePath?: string;
+    notionUrl?: string;
+    views: number;
+  }>;
   topSearchQueries: Array<{ query: string; count: number; zeroResult: boolean }>;
   zeroResultQueries: Array<{ query: string; count: number; lastSearchedAt: string }>;
   recentEvents: Array<{
@@ -85,5 +92,9 @@ export type AnalyticsSummary = {
     eventName: AnalyticsEventName;
     eventData: Record<string, unknown>;
     createdAt: string;
+    resolvedTitle?: string;
+    resolvedSection?: string;
+    routePath?: string;
+    notionUrl?: string;
   }>;
 };

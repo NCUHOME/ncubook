@@ -1,8 +1,8 @@
-// API 路由：管理后台埋点数据聚合分析看板查询端点 (/api/admin/analytics)
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/integrations/supabase";
 import { authenticateAdminRequest } from "@/lib/publishing/auth";
 import type { AnalyticsSummary } from "@/lib/analytics/types";
+import { getArticleMetadataLookup } from "@/lib/content/metadata-resolver";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +17,9 @@ export async function GET(request: Request) {
   if (!supabase) {
     return NextResponse.json({ ok: false, error: "database_not_configured" }, { status: 500 });
   }
+
+  // 获取全站文章元数据字典，用于反查中文标题与 Notion 链接
+  const { lookup: articleLookup } = await getArticleMetadataLookup();
 
   let rawEvents: Array<{
     id?: number;
@@ -60,7 +63,10 @@ export async function GET(request: Request) {
   let totalAiAsks = 0;
   let totalContactCopies = 0;
 
-  const articleViewCounts: Record<string, { title: string; count: number }> = {};
+  const articleViewCounts: Record<
+    string,
+    { title: string; sectionTitle?: string; routePath?: string; notionUrl?: string; count: number }
+  > = {};
   const queryCounts: Record<string, { count: number; zeroResult: boolean; lastAt: string }> = {};
 
   for (const ev of rawEvents) {
@@ -71,11 +77,26 @@ export async function GET(request: Request) {
         todayPv++;
         todaySessions.add(ev.session_id);
       }
-      const slug = (ev.event_data?.slug as string) || (ev.event_data?.path as string) || "首页";
-      const title = (ev.event_data?.pageTitle as string) || slug;
-      if (slug && slug !== "/") {
-        if (!articleViewCounts[slug]) articleViewCounts[slug] = { title, count: 0 };
-        articleViewCounts[slug].count++;
+      const rawSlug = (ev.event_data?.slug as string) || (ev.event_data?.path as string) || "首页";
+      const cleanKey = rawSlug.replace(/^\/docs\//, "").replace(/^\/sections\//, "");
+      const meta = articleLookup[rawSlug] || articleLookup[cleanKey];
+
+      const title = meta?.title || (ev.event_data?.pageTitle as string) || (rawSlug === "/" ? "首页" : rawSlug);
+      const sectionTitle = meta?.sectionTitle;
+      const routePath = meta?.routePath || (rawSlug.startsWith("/") ? rawSlug : `/docs/${rawSlug}`);
+      const notionUrl = meta?.notionUrl;
+
+      if (rawSlug && rawSlug !== "/") {
+        if (!articleViewCounts[cleanKey]) {
+          articleViewCounts[cleanKey] = {
+            title,
+            sectionTitle,
+            routePath,
+            notionUrl,
+            count: 0,
+          };
+        }
+        articleViewCounts[cleanKey].count++;
       }
     } else if (ev.event_name === "search_query") {
       totalSearches++;
@@ -99,7 +120,14 @@ export async function GET(request: Request) {
 
   // 排序热门文章 Top 10
   const topArticles = Object.entries(articleViewCounts)
-    .map(([slug, data]) => ({ slug, title: data.title, views: data.count }))
+    .map(([slug, data]) => ({
+      slug,
+      title: data.title,
+      sectionTitle: data.sectionTitle,
+      routePath: data.routePath,
+      notionUrl: data.notionUrl,
+      views: data.count,
+    }))
     .sort((a, b) => b.views - a.views)
     .slice(0, 10);
 
@@ -126,12 +154,21 @@ export async function GET(request: Request) {
     topArticles,
     topSearchQueries,
     zeroResultQueries,
-    recentEvents: rawEvents.slice(0, 50).map((e, idx) => ({
-      id: e.id || idx + 1,
-      eventName: e.event_name as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      eventData: e.event_data,
-      createdAt: e.created_at,
-    })),
+    recentEvents: rawEvents.slice(0, 50).map((e, idx) => {
+      const slug = (e.event_data?.slug as string) || (e.event_data?.path as string);
+      const cleanKey = slug ? slug.replace(/^\/docs\//, "").replace(/^\/sections\//, "") : "";
+      const meta = slug ? articleLookup[slug] || articleLookup[cleanKey] : undefined;
+      return {
+        id: e.id || idx + 1,
+        eventName: e.event_name as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        eventData: e.event_data,
+        createdAt: e.created_at,
+        resolvedTitle: meta?.title,
+        resolvedSection: meta?.sectionTitle,
+        routePath: meta?.routePath || (slug?.startsWith("/") ? slug : slug ? `/docs/${slug}` : undefined),
+        notionUrl: meta?.notionUrl,
+      };
+    }),
   };
 
   return NextResponse.json({ ok: true, data: summary });

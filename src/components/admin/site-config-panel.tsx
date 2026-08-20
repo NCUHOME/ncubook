@@ -33,7 +33,7 @@ import {
   type ArticleFeedbackConfig,
 } from "@/lib/content/site-config";
 import { TagInput } from "@/src/components/admin/config/tag-input";
-import { LinkListEditor } from "@/src/components/admin/config/link-list-editor";
+import { ArticleLinkPicker, type ArticleOption } from "@/src/components/admin/config/article-link-picker";
 import { HollamaMascot } from "@/src/components/primitives/hollama-mascot";
 
 type ConfigTabKey = "search" | "ai" | "home" | "channels" | "groups";
@@ -55,6 +55,7 @@ export function SiteConfigPanel() {
   // 5. 目录二级分类
   const [articleGroupsJson, setArticleGroupsJson] = useState(JSON.stringify(DEFAULT_ARTICLE_GROUPS_CONFIG, null, 2));
 
+  const [availableArticles, setAvailableArticles] = useState<ArticleOption[]>([]);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -62,23 +63,26 @@ export function SiteConfigPanel() {
     fetch("/api/admin/config")
       .then((res) => res.json())
       .then((res) => {
-        if (res.ok && Array.isArray(res.data)) {
-          for (const item of res.data) {
-            if (item.key === "search_config" && item.value) setSearchConfig({ ...DEFAULT_SEARCH_CONFIG, ...item.value });
-            if (item.key === "ai_config" && item.value) setAiConfig({ ...DEFAULT_AI_CONFIG, ...item.value });
-            if (item.key === "home_hero" && item.value) setHeroConfig({ ...DEFAULT_HOME_HERO_CONFIG, ...item.value });
-            if (item.key === "home_notice" && item.value) setNoticeConfig({ ...DEFAULT_HOME_NOTICE_CONFIG, ...item.value });
-            if (item.key === "home_contribute" && item.value) setContributeConfig({ ...DEFAULT_HOME_CONTRIBUTE_CONFIG, ...item.value });
-            if (item.key === "footer_config" && item.value) setFooterConfig({ ...DEFAULT_FOOTER_CONFIG, ...item.value });
-            if (item.key === "article_feedback_config" && item.value) setFeedbackConfig({ ...DEFAULT_ARTICLE_FEEDBACK_CONFIG, ...item.value });
-            if (item.key === "article_groups" && item.value) setArticleGroupsJson(JSON.stringify(item.value, null, 2));
+        if (res.ok) {
+          if (Array.isArray(res.allArticles)) setAvailableArticles(res.allArticles);
+          if (Array.isArray(res.data)) {
+            for (const item of res.data) {
+              if (item.key === "search_config" && item.value) setSearchConfig({ ...DEFAULT_SEARCH_CONFIG, ...item.value });
+              if (item.key === "ai_config" && item.value) setAiConfig({ ...DEFAULT_AI_CONFIG, ...item.value });
+              if (item.key === "home_hero" && item.value) setHeroConfig({ ...DEFAULT_HOME_HERO_CONFIG, ...item.value });
+              if (item.key === "home_notice" && item.value) setNoticeConfig({ ...DEFAULT_HOME_NOTICE_CONFIG, ...item.value });
+              if (item.key === "home_contribute" && item.value) setContributeConfig({ ...DEFAULT_HOME_CONTRIBUTE_CONFIG, ...item.value });
+              if (item.key === "footer_config" && item.value) setFooterConfig({ ...DEFAULT_FOOTER_CONFIG, ...item.value });
+              if (item.key === "article_feedback_config" && item.value) setFeedbackConfig({ ...DEFAULT_ARTICLE_FEEDBACK_CONFIG, ...item.value });
+              if (item.key === "article_groups" && item.value) setArticleGroupsJson(JSON.stringify(item.value, null, 2));
+            }
           }
         }
       })
       .catch(() => {});
   }, []);
 
-  const saveConfig = async (key: string, value: unknown, successText: string) => {
+  const saveConfig = async (key: string, value: unknown, successMsg: string) => {
     setSavingKey(key);
     setMessage(null);
     try {
@@ -88,13 +92,13 @@ export function SiteConfigPanel() {
         body: JSON.stringify({ key, value }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "保存失败");
+      if (data.ok) {
+        setMessage({ type: "success", text: successMsg });
+      } else {
+        setMessage({ type: "error", text: `保存失败: ${data.error || "未知错误"}` });
       }
-      setMessage({ type: "success", text: successText });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "保存失败" });
+    } catch {
+      setMessage({ type: "error", text: "网络异常，保存失败" });
     } finally {
       setSavingKey(null);
     }
@@ -110,35 +114,30 @@ export function SiteConfigPanel() {
 
   return (
     <div className="space-y-s6">
-      {/* 顶部标题与提示消息 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-s3">
+      {/* 顶部标题区 */}
+      <div className="flex items-center justify-between border-b border-line pb-s3">
         <div>
           <h2 className="text-title font-semibold text-ink">全站公共信息配置中心</h2>
           <p className="text-caption text-muted mt-s1">
-            动态修改前台搜索推荐词、AI 预设问题、公告与联系方式，100% 数据库持久化
+            动态编辑并即时更新全站搜索推荐、AI预设问题、首页公告与各渠道文案（无需重新发布发版）
           </p>
         </div>
-
-        {message && (
-          <div
-            className={`flex items-center gap-s2 rounded-small px-s3 py-s2 text-caption font-medium animate-in fade-in duration-fast ${
-              message.type === "success"
-                ? "bg-brand-tint text-brand border border-brand"
-                : "bg-danger-bg text-danger border border-danger"
-            }`}
-          >
-            {message.type === "success" ? (
-              <CheckCircle2 className="size-icon-small shrink-0" />
-            ) : (
-              <AlertCircle className="size-icon-small shrink-0" />
-            )}
-            <span>{message.text}</span>
-          </div>
-        )}
       </div>
 
-      {/* 5 大配置域切换导航 */}
-      <div className="flex items-center gap-s2 border-b border-line pb-s2 overflow-x-auto no-scrollbar">
+      {/* 提示消息 */}
+      {message && (
+        <div
+          className={`flex items-center gap-s2 rounded-small p-s3 text-body font-medium ${
+            message.type === "success" ? "bg-brand-tint text-brand border border-brand" : "bg-danger-bg text-danger border border-danger"
+          }`}
+        >
+          {message.type === "success" ? <CheckCircle2 className="size-icon-small" /> : <AlertCircle className="size-icon-small" />}
+          <span>{message.text}</span>
+        </div>
+      )}
+
+      {/* 子分类 Tab 切换 */}
+      <div className="flex items-center gap-s2 overflow-x-auto border-b border-line pb-s2 no-scrollbar">
         {navTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -146,14 +145,15 @@ export function SiteConfigPanel() {
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={`focus-ring tap-target flex shrink-0 items-center gap-s2 rounded-small px-s3 py-s2 text-caption font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? "bg-brand text-surface shadow-subtle font-semibold"
-                  : "text-muted hover:text-ink hover:bg-surface-subtle"
+              onClick={() => {
+                setActiveTab(tab.key);
+                setMessage(null);
+              }}
+              className={`focus-ring tap-target flex shrink-0 items-center gap-s2 rounded-pill px-s4 py-s1.5 text-caption font-medium transition-colors ${
+                isActive ? "bg-brand text-surface shadow-subtle" : "bg-surface-subtle text-muted hover:text-ink"
               }`}
             >
-              <Icon className="size-icon-small" />
+              <Icon className="size-icon-small shrink-0" />
               <span>{tab.label}</span>
             </button>
           );
@@ -165,34 +165,35 @@ export function SiteConfigPanel() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-s6">
           <div className="lg:col-span-2 space-y-s5 rounded-medium border border-line bg-surface p-s5">
             <div className="border-b border-line pb-s3">
-              <h3 className="text-label font-semibold text-ink">搜索输入框与推荐标签 (search_config)</h3>
-              <p className="text-caption text-muted mt-s1">配置学生端全屏搜索抽屉的占位提示与快捷标签</p>
+              <h3 className="text-label font-semibold text-ink">全站即搜即显与推荐配置 (search_config)</h3>
+              <p className="text-caption text-muted mt-s1">控制学生端全屏搜索抽屉的占位语、推荐标签与无结果提示</p>
             </div>
 
-            {/* 1. 热门推荐标签 Chips */}
-            <TagInput
-              label="热门推荐标签 (Chips)"
-              hint="学生点击可立即触发搜索，回车添加，点击 ✕ 移除"
-              tags={searchConfig.chips}
-              onChange={(newChips) => setSearchConfig({ ...searchConfig, chips: newChips })}
-              placeholder="输入推荐词（如：校车时刻表）后回车..."
-            />
-
-            {/* 2. 占位提示语 */}
+            {/* 1. 占位语 */}
             <div className="space-y-s2">
-              <label className="text-label font-medium text-ink">搜索框占位提示语 (Placeholder)</label>
+              <label className="text-label font-medium text-ink">搜索框占位语 (Placeholder)</label>
               <input
                 type="text"
                 value={searchConfig.placeholder}
                 onChange={(e) => setSearchConfig({ ...searchConfig, placeholder: e.target.value })}
                 className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
+                placeholder="搜索手册（如：出行、绩点、报修...）"
               />
             </div>
+
+            {/* 2. Chips 推荐标签 */}
+            <TagInput
+              label="热门推荐标签 (Chips)"
+              hint="学生点击即可一键填入搜索词并触发极速检索"
+              tags={searchConfig.chips}
+              onChange={(newChips) => setSearchConfig({ ...searchConfig, chips: newChips })}
+              placeholder="输入标签词后回车或点击添加..."
+            />
 
             {/* 3. 空态与无结果提示 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-s4">
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">空态引导文案</label>
+                <label className="text-label font-medium text-ink">初始空态引导语</label>
                 <input
                   type="text"
                   value={searchConfig.emptyHint}
@@ -202,7 +203,7 @@ export function SiteConfigPanel() {
               </div>
 
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">未找到结果提示文案</label>
+                <label className="text-label font-medium text-ink">无结果主标题 (支持 {"{query}"} 占位)</label>
                 <input
                   type="text"
                   value={searchConfig.noResultTitle}
@@ -210,6 +211,16 @@ export function SiteConfigPanel() {
                   className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
                 />
               </div>
+            </div>
+
+            <div className="space-y-s2">
+              <label className="text-label font-medium text-ink">无结果副提示文案</label>
+              <input
+                type="text"
+                value={searchConfig.noResultSub}
+                onChange={(e) => setSearchConfig({ ...searchConfig, noResultSub: e.target.value })}
+                className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
+              />
             </div>
 
             <div className="flex items-center justify-between border-t border-line pt-s4">
@@ -224,7 +235,7 @@ export function SiteConfigPanel() {
 
               <button
                 type="button"
-                onClick={() => saveConfig("search_config", searchConfig, "搜索与推荐配置保存成功")}
+                onClick={() => saveConfig("search_config", searchConfig, "搜索配置保存成功")}
                 disabled={savingKey === "search_config"}
                 className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface hover:opacity-90 transition-opacity"
               >
@@ -238,11 +249,11 @@ export function SiteConfigPanel() {
           <div className="rounded-medium border border-line bg-surface p-s5 space-y-s3 self-start">
             <div className="flex items-center gap-s2 text-caption text-muted border-b border-line pb-s2 font-semibold">
               <Sparkles className="size-icon-small text-brand" />
-              <span>前台效果即时预览</span>
+              <span>搜索抽屉即时效果预览</span>
             </div>
             <div className="rounded-small border border-line bg-surface-subtle p-s3 space-y-s3">
-              <div className="flex items-center gap-s2 rounded-small border border-line bg-surface px-s3 py-s2 text-caption text-muted">
-                <Search className="size-icon-small text-muted" />
+              <div className="h-9 rounded-medium border border-line bg-surface px-s3 flex items-center text-caption text-muted">
+                <Search className="size-icon-small mr-s2 text-muted" />
                 <span className="truncate">{searchConfig.placeholder}</span>
               </div>
               <div className="flex flex-wrap gap-s1">
@@ -391,69 +402,102 @@ export function SiteConfigPanel() {
             </div>
           </div>
 
-          {/* 2. 公告栏 */}
-          <div className="rounded-medium border border-line bg-surface p-s5 space-y-s5">
-            <div className="border-b border-line pb-s3">
-              <h3 className="text-label font-semibold text-ink">首页公告栏与重点导读 (home_notice)</h3>
-            </div>
+          {/* 2. 公告栏与导读文章选择器 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-s6">
+            <div className="lg:col-span-2 rounded-medium border border-line bg-surface p-s5 space-y-s5">
+              <div className="border-b border-line pb-s3">
+                <h3 className="text-label font-semibold text-ink">首页公告栏与重点导读推荐 (home_notice)</h3>
+                <p className="text-caption text-muted mt-s1">
+                  编辑展示在学生端首页顶部的公告卡片，可直接下拉选择已有指南文章作为快捷导读按钮
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-s4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-s4">
+                <div className="space-y-s2">
+                  <label className="text-label font-medium text-ink">公告标题</label>
+                  <input
+                    type="text"
+                    value={noticeConfig.title}
+                    onChange={(e) => setNoticeConfig({ ...noticeConfig, title: e.target.value })}
+                    className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
+                  />
+                </div>
+
+                <div className="space-y-s2">
+                  <label className="text-label font-medium text-ink">发布/更新日期</label>
+                  <input
+                    type="text"
+                    value={noticeConfig.date}
+                    onChange={(e) => setNoticeConfig({ ...noticeConfig, date: e.target.value })}
+                    className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">公告标题</label>
-                <input
-                  type="text"
-                  value={noticeConfig.title}
-                  onChange={(e) => setNoticeConfig({ ...noticeConfig, title: e.target.value })}
+                <label className="text-label font-medium text-ink">公告正文说明</label>
+                <textarea
+                  rows={2}
+                  value={noticeConfig.desc}
+                  onChange={(e) => setNoticeConfig({ ...noticeConfig, desc: e.target.value })}
                   className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
                 />
               </div>
 
+              {/* 智能文章导读选择器 */}
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">发布/更新日期</label>
-                <input
-                  type="text"
-                  value={noticeConfig.date}
-                  onChange={(e) => setNoticeConfig({ ...noticeConfig, date: e.target.value })}
-                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
+                <label className="text-label font-semibold text-ink">公告内导读快捷推荐列表</label>
+                <ArticleLinkPicker
+                  links={noticeConfig.links}
+                  onChange={(newLinks) => setNoticeConfig({ ...noticeConfig, links: newLinks })}
+                  availableArticles={availableArticles}
                 />
+              </div>
+
+              <div className="flex justify-end pt-s2 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => saveConfig("home_notice", noticeConfig, "首页公告配置保存成功")}
+                  disabled={savingKey === "home_notice"}
+                  className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface"
+                >
+                  <Save className="size-icon-small" />
+                  <span>{savingKey === "home_notice" ? "正在保存..." : "保存公告配置"}</span>
+                </button>
               </div>
             </div>
 
-            <div className="space-y-s2">
-              <label className="text-label font-medium text-ink">公告正文说明</label>
-              <textarea
-                rows={2}
-                value={noticeConfig.desc}
-                onChange={(e) => setNoticeConfig({ ...noticeConfig, desc: e.target.value })}
-                className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
-              />
-            </div>
-
-            {/* 动态导读链接列表 */}
-            <LinkListEditor
-              links={noticeConfig.links}
-              onChange={(newLinks) => setNoticeConfig({ ...noticeConfig, links: newLinks })}
-            />
-
-            <div className="flex justify-end pt-s2 border-t border-line">
-              <button
-                type="button"
-                onClick={() => saveConfig("home_notice", noticeConfig, "首页公告配置保存成功")}
-                disabled={savingKey === "home_notice"}
-                className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface"
-              >
-                <Save className="size-icon-small" />
-                <span>{savingKey === "home_notice" ? "正在保存..." : "保存公告配置"}</span>
-              </button>
+            {/* 首页公告 1:1 即时微预览 */}
+            <div className="rounded-medium border border-line bg-surface p-s5 space-y-s3 self-start">
+              <div className="flex items-center gap-s2 text-caption text-muted border-b border-line pb-s2 font-semibold">
+                <Sparkles className="size-icon-small text-brand" />
+                <span>首页公告卡片 1:1 实景微预览</span>
+              </div>
+              <div className="rounded-r-small border-l-[3px] border-brand bg-surface-subtle p-s4 space-y-s2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-body font-semibold text-ink">{noticeConfig.title || "公告"}</span>
+                  {noticeConfig.date && <span className="text-caption text-muted">{noticeConfig.date}</span>}
+                </div>
+                {noticeConfig.desc && <p className="text-body leading-body text-ink-body">{noticeConfig.desc}</p>}
+                {noticeConfig.links && noticeConfig.links.length > 0 && (
+                  <ul className="list-disc pl-s4 text-body leading-body text-ink-body space-y-s1">
+                    {noticeConfig.links.map((link, idx) => (
+                      <li key={idx}>
+                        请先查阅 <span className="text-brand font-semibold underline">{link.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 4: 完善手册、页脚与渠道声明 */}
+      {/* Tab 4: 完善手册、页脚与反馈 */}
       {activeTab === "channels" && (
         <div className="space-y-s6">
-          {/* 1. 完善手册卡片 */}
+          {/* 完善手册联系 */}
           <div className="rounded-medium border border-line bg-surface p-s5 space-y-s4">
             <div className="border-b border-line pb-s3">
               <h3 className="text-label font-semibold text-ink">完善手册联系渠道 (home_contribute)</h3>
@@ -461,28 +505,28 @@ export function SiteConfigPanel() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-s4">
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">投稿/联系邮箱</label>
+                <label className="text-label font-medium text-ink">投稿/纠错邮箱</label>
                 <input
-                  type="email"
+                  type="text"
                   value={contributeConfig.email}
                   onChange={(e) => setContributeConfig({ ...contributeConfig, email: e.target.value })}
-                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink font-mono text-caption"
+                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
                 />
               </div>
 
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">交流 QQ 群号</label>
+                <label className="text-label font-medium text-ink">交流/加入 QQ 群号</label>
                 <input
                   type="text"
                   value={contributeConfig.qq_group}
                   onChange={(e) => setContributeConfig({ ...contributeConfig, qq_group: e.target.value })}
-                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink font-mono text-caption"
+                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink"
                 />
               </div>
             </div>
 
             <div className="space-y-s2">
-              <label className="text-label font-medium text-ink">卡片说明正文</label>
+              <label className="text-label font-medium text-ink">招新与加入文案</label>
               <input
                 type="text"
                 value={contributeConfig.desc}
@@ -494,7 +538,7 @@ export function SiteConfigPanel() {
             <div className="flex justify-end pt-s2 border-t border-line">
               <button
                 type="button"
-                onClick={() => saveConfig("home_contribute", contributeConfig, "联系渠道配置保存成功")}
+                onClick={() => saveConfig("home_contribute", contributeConfig, "联系方式配置保存成功")}
                 disabled={savingKey === "home_contribute"}
                 className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface"
               >
@@ -504,14 +548,14 @@ export function SiteConfigPanel() {
             </div>
           </div>
 
-          {/* 2. 页脚致谢与声明 */}
+          {/* 页脚致谢与声明 */}
           <div className="rounded-medium border border-line bg-surface p-s5 space-y-s4">
             <div className="border-b border-line pb-s3">
               <h3 className="text-label font-semibold text-ink">页脚致谢与免责声明 (footer_config)</h3>
             </div>
 
             <div className="space-y-s2">
-              <label className="text-label font-medium text-ink">致谢前缀文案</label>
+              <label className="text-label font-medium text-ink">致谢文案前缀</label>
               <input
                 type="text"
                 value={footerConfig.thankPrefix}
@@ -521,7 +565,7 @@ export function SiteConfigPanel() {
             </div>
 
             <div className="space-y-s2">
-              <label className="text-label font-medium text-ink">非盈利免责声明正文</label>
+              <label className="text-label font-medium text-ink">非盈利免责声明</label>
               <textarea
                 rows={2}
                 value={footerConfig.disclaimer}
@@ -543,15 +587,15 @@ export function SiteConfigPanel() {
             </div>
           </div>
 
-          {/* 3. 文章反馈与飞书工单 */}
+          {/* 文章底部反馈条 */}
           <div className="rounded-medium border border-line bg-surface p-s5 space-y-s4">
             <div className="border-b border-line pb-s3">
-              <h3 className="text-label font-semibold text-ink">文章反馈与飞书收集表 (article_feedback_config)</h3>
+              <h3 className="text-label font-semibold text-ink">文章有用性反馈与飞书工单 (article_feedback_config)</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-s4">
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">反馈引导提示语</label>
+                <label className="text-label font-medium text-ink">底部反馈引导语</label>
                 <input
                   type="text"
                   value={feedbackConfig.prompt}
@@ -561,7 +605,7 @@ export function SiteConfigPanel() {
               </div>
 
               <div className="space-y-s2">
-                <label className="text-label font-medium text-ink">点赞感谢语</label>
+                <label className="text-label font-medium text-ink">点赞感谢提示</label>
                 <input
                   type="text"
                   value={feedbackConfig.thankMsg}
@@ -572,26 +616,26 @@ export function SiteConfigPanel() {
             </div>
 
             <div className="space-y-s2">
-              <div className="flex items-center justify-between">
-                <label className="text-label font-medium text-ink">飞书多维表格收集表地址</label>
+              <label className="text-label font-medium text-ink">飞书工单表单 URL (点踩没帮助直通)</label>
+              <div className="flex items-center gap-s2">
+                <input
+                  type="text"
+                  value={feedbackConfig.feishuUrl}
+                  onChange={(e) => setFeedbackConfig({ ...feedbackConfig, feishuUrl: e.target.value })}
+                  className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink font-mono text-caption"
+                />
                 {feedbackConfig.feishuUrl && (
                   <a
                     href={feedbackConfig.feishuUrl}
                     target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-s1 text-caption text-brand hover:underline"
+                    rel="noopener noreferrer"
+                    className="focus-ring tap-target grid place-items-center rounded-small border border-line p-s2 text-muted hover:text-ink"
+                    title="在浏览器中测试打开"
                   >
-                    <span>测试打开</span>
                     <ExternalLink className="size-icon-small" />
                   </a>
                 )}
               </div>
-              <input
-                type="url"
-                value={feedbackConfig.feishuUrl}
-                onChange={(e) => setFeedbackConfig({ ...feedbackConfig, feishuUrl: e.target.value })}
-                className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 text-body text-ink font-mono text-caption"
-              />
             </div>
 
             <div className="flex justify-end pt-s2 border-t border-line">
@@ -602,41 +646,41 @@ export function SiteConfigPanel() {
                 className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface"
               >
                 <Save className="size-icon-small" />
-                <span>{savingKey === "article_feedback_config" ? "正在保存..." : "保存反馈配置"}</span>
+                <span>{savingKey === "article_feedback_config" ? "正在保存..." : "保存文章反馈配置"}</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 5: 目录二级分类前称 */}
+      {/* Tab 5: 目录二级分类 */}
       {activeTab === "groups" && (
         <div className="rounded-medium border border-line bg-surface p-s5 space-y-s4">
           <div className="border-b border-line pb-s3">
             <h3 className="text-label font-semibold text-ink">篇目二级分类与蓝色小标映射 (article_groups)</h3>
             <p className="text-caption text-muted mt-s1">
-              配置各板块下文章所属分类（如：入学必看、考试、基本认识、常识等），前端自动按分类桶连续聚类
+              定义每个大板块（如“学习”、“生活”）下各篇文章所属的二级分类小标（如“入学必看”、“考试”、“常识”等）
             </p>
           </div>
 
           <div className="space-y-s2">
-            <label className="text-label font-medium text-ink">分类映射 JSON</label>
+            <label className="text-label font-medium text-ink">分类映射 JSON 配置</label>
             <textarea
-              rows={14}
+              rows={12}
               value={articleGroupsJson}
               onChange={(e) => setArticleGroupsJson(e.target.value)}
-              className="focus-ring w-full rounded-small border border-line bg-surface px-s3 py-s2 font-mono text-caption text-ink"
+              className="focus-ring w-full font-mono rounded-small border border-line bg-surface-subtle p-s3 text-caption text-ink"
             />
           </div>
 
-          <div className="flex justify-between items-center pt-s2 border-t border-line">
+          <div className="flex items-center justify-between border-t border-line pt-s4">
             <button
               type="button"
               onClick={() => setArticleGroupsJson(JSON.stringify(DEFAULT_ARTICLE_GROUPS_CONFIG, null, 2))}
               className="focus-ring tap-target flex items-center gap-s1 text-caption text-muted hover:text-ink transition-colors"
             >
               <RotateCcw className="size-icon-small" />
-              <span>恢复默认分类</span>
+              <span>恢复默认分类映射</span>
             </button>
 
             <button
@@ -644,13 +688,13 @@ export function SiteConfigPanel() {
               onClick={() => {
                 try {
                   const parsed = JSON.parse(articleGroupsJson);
-                  saveConfig("article_groups", parsed, "目录分类配置保存成功");
+                  saveConfig("article_groups", parsed, "二级分类配置保存成功");
                 } catch {
-                  setMessage({ type: "error", text: "JSON 格式有误，请检查语法" });
+                  setMessage({ type: "error", text: "JSON 格式有误，请核对后再保存" });
                 }
               }}
               disabled={savingKey === "article_groups"}
-              className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface"
+              className="focus-ring tap-target flex items-center gap-s2 rounded-small bg-brand px-s4 py-s2 text-label font-medium text-surface hover:opacity-90 transition-opacity"
             >
               <Save className="size-icon-small" />
               <span>{savingKey === "article_groups" ? "正在保存..." : "保存分类配置"}</span>
