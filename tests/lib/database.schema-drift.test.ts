@@ -83,6 +83,7 @@ describe("database schema drift gate (M-2)", () => {
       "rate_limit_buckets",
       "site_configs",
       "user_feedbacks",
+      "analytics_events",
     ];
 
     const sqlTableNames = Object.keys(sqlTables).sort();
@@ -224,6 +225,13 @@ describe("database schema drift gate (M-2)", () => {
         "is_helpful",
         "comment",
         "metadata",
+        "created_at",
+      ],
+      analytics_events: [
+        "id",
+        "session_id",
+        "event_name",
+        "event_data",
         "created_at",
       ],
     };

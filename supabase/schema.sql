@@ -545,6 +545,17 @@ create table if not exists user_feedbacks (
 create index if not exists idx_user_feedbacks_target on user_feedbacks(target_type, target_id);
 create index if not exists idx_user_feedbacks_created_at on user_feedbacks(created_at desc);
 
+-- 21.3 学生端轻量级埋点流水表（PV/UV、搜索流、AI 问答转化）
+create table if not exists analytics_events (
+  id bigint generated always as identity primary key,
+  session_id text not null,
+  event_name text not null,
+  event_data jsonb default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_analytics_events_name on analytics_events(event_name);
+create index if not exists idx_analytics_events_created_at on analytics_events(created_at desc);
+
 -- 22. RLS（产品红线：anon 只读当前指针版本）
 alter table content_versions enable row level security;
 alter table published_pages enable row level security;
@@ -560,6 +571,7 @@ alter table evaluation_cases enable row level security;
 alter table rate_limit_buckets enable row level security;
 alter table site_configs enable row level security;
 alter table user_feedbacks enable row level security;
+alter table analytics_events enable row level security;
 
 drop policy if exists current_pages_are_public on published_pages;
 create policy current_pages_are_public on published_pages
@@ -586,6 +598,10 @@ create policy site_configs_are_public on site_configs
 
 drop policy if exists feedbacks_insert_public on user_feedbacks;
 create policy feedbacks_insert_public on user_feedbacks
+  for insert with check (true);
+
+drop policy if exists analytics_events_insert_public on analytics_events;
+create policy analytics_events_insert_public on analytics_events
   for insert with check (true);
 
 -- 23. RPC 执行权限：管理级全部 revoke，仅 service_role
