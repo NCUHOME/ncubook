@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="350" height="130" viewBox="0 0 350 130">
+  <defs>
+    <pattern id="stripes" width="22.627" height="22.627" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="11.314" height="22.627" fill="#f2f5f9"/>
+      <rect x="11.314" width="11.314" height="22.627" fill="#e7ecf2"/>
+    </pattern>
+  </defs>
+  <rect width="350" height="130" fill="url(#stripes)"/>
+  <text x="175" y="69" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#767676">环游车照片 × 2</text>
+</svg>

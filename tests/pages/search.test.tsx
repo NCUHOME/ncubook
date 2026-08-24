@@ -8,7 +8,7 @@ import { SearchExperience } from "@/src/components/search/box";
 import { AppHeader } from "@/src/components/primitives/header";
 
 describe("keyword search page", () => {
-  it("shows source paths, original excerpts and direct anchor cards without an AI answer", () => {
+  it("shows the prototype's document-level result rows without an AI answer", () => {
     const results = searchGroupedEntries("环游车", searchIndexFixture, resolvePageRoute);
     render(
       <>
@@ -19,11 +19,10 @@ describe("keyword search page", () => {
       </>
     );
 
-    expect(screen.getByText(/找到 1 篇相关文档/)).toBeVisible();
+    expect(screen.getByText("「环游车」· 1 篇匹配")).toBeVisible();
     expect(screen.getByText("校园生活")).toBeVisible();
-    expect(screen.getByRole("link", { name: "校园环游车乘坐指南" })).toHaveAttribute("href", "/docs/campus-shuttle");
-    // 整卡直接包含章节标题与摘要内容链接至对应锚点
-    expect(screen.getByRole("link", { name: /校园交通.*环游车/ })).toHaveAttribute("href", "/docs/campus-shuttle#b-shuttle-intro");
+    expect(screen.getByRole("link", { name: "校园环游车乘坐指南校园生活" })).toHaveAttribute("href", "/docs/campus-shuttle");
+    expect(screen.queryByText(/校园交通.*环游车/)).not.toBeInTheDocument();
     expect(screen.queryByText(/AI 回答|生成答案|已找到可引用信息/)).not.toBeInTheDocument();
   });
 });

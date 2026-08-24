@@ -3,7 +3,6 @@
 
 import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import type { PageTreeNode } from "@/lib/content/server";
 import { useSearch } from "@/src/components/search/search-provider";
@@ -17,95 +16,86 @@ const PageTreeDrawer = dynamic(
 type AppHeaderProps = {
   title?: string;
   backHref?: string;
-  breadcrumb?: string;
   sectionTitle?: string;
   sectionTree?: PageTreeNode[];
   allSections?: SectionSummary[];
   currentPageId?: string;
-  variant?: "home" | "doc";
+  variant?: "home" | "doc" | "search";
   hideSearchAction?: boolean;
+  progress?: number;
 };
 
 export function AppHeader({
   title = "此间",
   backHref,
-  breadcrumb,
   sectionTitle,
   sectionTree,
   allSections,
   currentPageId,
-  variant = backHref ? "doc" : "home",
+  variant = backHref ? "search" : "home",
   hideSearchAction = false,
+  progress,
 }: AppHeaderProps) {
   const { openSearch } = useSearch();
 
   return (
-    <header className="sticky top-0 z-header flex min-h-tap items-center justify-between border-b border-line bg-surface/95 px-s4 py-s2 backdrop-blur-md">
+    <header className="header-glass sticky top-0 z-header border-b border-line font-sans">
       {variant === "home" ? (
-        <>
-          {/* 首页模式：左侧品牌标题（带小家园吉祥物图标），右侧目录与搜索 */}
-          <Link
-            href="/"
-            className="flex items-center gap-s2 text-body-large font-semibold text-ink tracking-tight hover:opacity-80 transition-opacity group"
-          >
-            <Image
-              src="/icon.svg"
-              alt="此间"
-              width={26}
-              height={26}
-              className="size-[26px] shrink-0 rounded-round group-hover:scale-105 transition-transform"
-              priority
-            />
-            <span>{title}</span>
+        <div className="flex min-h-header items-center justify-between pl-s5 pr-s3">
+          <Link href="/" className="text-ui-title font-semibold text-ink">
+            {title}
           </Link>
 
-          <div className="flex items-center gap-s1">
-            <PageTreeDrawer allSections={allSections} />
+          <div className="gap-hairline flex items-center">
             {!hideSearchAction ? (
               <button
                 type="button"
                 onClick={() => openSearch()}
-                className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+                className="focus-ring h-header-action w-header-action grid place-items-center text-ink"
                 aria-label="全屏搜索"
               >
-                <Search className="size-icon" strokeWidth={1.9} />
+                <Search className="size-icon" strokeWidth={1.7} />
               </button>
             ) : null}
+            <PageTreeDrawer allSections={allSections} />
           </div>
-        </>
-      ) : (
-        <>
-          {/* 阅读器模式：左返回、中进度与大标题、右抽屉与搜索 */}
+        </div>
+      ) : variant === "search" ? (
+        <div className="flex min-h-header items-center gap-s1 pl-s2 pr-s3">
           <Link
             href={backHref || "/"}
-            className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+            className="focus-ring h-header-action w-header-action grid place-items-center text-ink"
             aria-label="返回首页"
           >
-            <ArrowLeft className="size-icon" strokeWidth={1.9} />
+            <ArrowLeft className="size-icon" strokeWidth={1.7} />
           </Link>
-
-          <div className="flex-1 min-w-0 px-s2 text-center">
-            {breadcrumb && <div className="text-caption leading-tight text-muted truncate">{breadcrumb}</div>}
-            <strong className="block text-label font-semibold text-ink truncate leading-tight mt-s1">{title}</strong>
-          </div>
-
-          <div className="flex items-center gap-s1">
+          <strong className="text-body font-semibold text-ink">{title}</strong>
+        </div>
+      ) : (
+        <>
+          <div className="flex min-h-header items-center gap-s1 pl-s2 pr-s3">
             <PageTreeDrawer
               sectionTitle={sectionTitle}
               currentPageId={currentPageId}
               nodes={sectionTree}
               allSections={allSections}
             />
+            <div className="min-w-0 flex-1">
+              <strong className="block truncate text-label font-semibold leading-tight text-ink">{title}</strong>
+            </div>
             {!hideSearchAction ? (
               <button
                 type="button"
                 onClick={() => openSearch()}
-                className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+                className="focus-ring h-header-action w-doc-search-action grid place-items-center text-ink"
                 aria-label="搜索手册"
               >
-                <Search className="size-icon" strokeWidth={1.9} />
+                <Search className="size-icon" strokeWidth={1.7} />
               </button>
             ) : null}
+          </div>
+          <div className="h-0.5 bg-action-subtle">
+            <div className="h-full bg-ink" style={{ width: `${Math.max(0, Math.min(100, progress ?? 0))}%` }} />
           </div>
         </>
       )}

@@ -11,10 +11,10 @@ export function PageLinkBlock({ block, href, resolvePageRoute }: { block: Extrac
       href={href}
       className="focus-ring flex min-h-tap items-center justify-between border-b border-line py-s3 font-body text-body leading-body hover:bg-brand-tint/40 transition-colors group"
     >
-      <span className="font-medium text-brand group-hover:underline" style={{ color: "var(--brand-blue)" }}>
+      <span className="font-medium text-brand" style={{ color: "var(--brand-blue)" }}>
         <RichText value={block.richText} resolvePageRoute={resolvePageRoute} />
       </span>
-      <ChevronRight className="size-icon-small text-brand flex-shrink-0 group-hover:translate-x-0.5 transition-transform" strokeWidth={1.9} />
+      <ChevronRight className="size-icon-small flex-shrink-0 text-brand" strokeWidth={1.9} />
     </Link>
   );
 }

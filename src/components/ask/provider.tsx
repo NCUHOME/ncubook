@@ -7,7 +7,7 @@ import { resolvePageRoute as defaultResolvePageRoute } from "@/lib/content/fixtu
 import { trackEvent } from "@/lib/analytics/client";
 import { AskSheet } from "@/src/components/ask/sheet";
 
-export type PageContext = { pageId: string; anchor?: string };
+export type PageContext = { pageId: string; anchor?: string; pageTitle?: string };
 export type AskInput = { question?: string; pageContext?: PageContext };
 export type AnswerRequest = (input: { question: string; pageContext?: PageContext }) => Promise<AnswerSession>;
 export type AskStatus = "idle" | "loading" | "ready" | "error";

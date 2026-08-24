@@ -10,9 +10,31 @@ export function TableBlock({
   block: Extract<Block, { type: "table" }>;
   resolvePageRoute: (pageId: string) => string;
 }) {
+  if (block.presentation === "registration-timeline") {
+    return (
+      <div id={block.anchor} className="prototype-registration-timeline">
+        {block.rows.map((row) => (
+          <div id={anchorFromSourceId(row.id)} key={row.id} className="prototype-registration-row">
+            <span className="prototype-registration-time">
+              <RichText value={row.cells[0] ?? []} resolvePageRoute={resolvePageRoute} />
+            </span>
+            <span className="min-w-0 flex-1 text-small leading-compact text-ink">
+              <RichText value={row.cells[1] ?? []} resolvePageRoute={resolvePageRoute} />
+              {row.cells[2]?.some((part) => part.plainText) ? (
+                <span className="text-muted"> · <RichText value={row.cells[2]} resolvePageRoute={resolvePageRoute} /></span>
+              ) : null}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const isSalesScriptTable = block.presentation === "sales-script-table";
+
   return (
-    <div id={block.anchor} className="overflow-x-auto rounded-small border border-line my-s4 shadow-subtle bg-surface">
-      <table className="w-full min-w-max border-collapse font-body text-label leading-body">
+    <div id={block.anchor} className="overflow-x-auto rounded-small border border-line bg-surface">
+      <table className="w-full table-fixed border-collapse font-body leading-body">
         <tbody>
           {block.rows.map((row, rowIndex) => {
             const isHeader = block.hasHeaderRow && rowIndex === 0;
@@ -27,7 +49,7 @@ export function TableBlock({
                   return (
                     <Cell
                       key={`${row.id}-${cellIndex}`}
-                      className={`px-s4 py-s3 text-left align-top ${isHeader ? "font-semibold text-ink" : "font-normal"}`}
+                      className={`border-r border-line px-control text-left align-top last:border-r-0 ${isHeader ? "py-s2 text-feedback font-semibold text-ink" : `py-table-row text-feedback font-normal leading-compact ${isSalesScriptTable && cellIndex === 1 ? "text-ink-sub" : ""}`}`}
                     >
                       <RichText value={cell} resolvePageRoute={resolvePageRoute} />
                     </Cell>

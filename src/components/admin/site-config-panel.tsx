@@ -473,7 +473,7 @@ export function SiteConfigPanel() {
                 <Sparkles className="size-icon-small text-brand" />
                 <span>首页公告卡片 1:1 实景微预览</span>
               </div>
-              <div className="rounded-r-small border-l-[3px] border-brand bg-surface-subtle p-s4 space-y-s2">
+              <div className="space-y-s2 rounded-r-small border-l-3 border-brand bg-surface-subtle p-s4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-body font-semibold text-ink">{noticeConfig.title || "公告"}</span>
                   {noticeConfig.date && <span className="text-caption text-muted">{noticeConfig.date}</span>}

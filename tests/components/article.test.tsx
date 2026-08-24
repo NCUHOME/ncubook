@@ -93,4 +93,21 @@ describe("article renderer", () => {
     expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(first).toHaveAttribute("id", "b-first-file");
   });
+
+  it("keeps one normal space around links embedded in body text", () => {
+    const blocks: Block[] = [{
+      id: "inline-link-spacing",
+      anchor: "b-inline-link-spacing",
+      type: "paragraph",
+      richText: [
+        { plainText: "前文", annotations: {} },
+        { plainText: "链接", href: "https://example.com", annotations: {} },
+        { plainText: "后文", annotations: {} },
+      ],
+    }];
+
+    render(<ArticleRenderer blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />);
+
+    expect(document.getElementById("b-inline-link-spacing")).toHaveTextContent("前文 链接 后文");
+  });
 });

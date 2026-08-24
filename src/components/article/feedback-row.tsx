@@ -45,43 +45,39 @@ export function ArticleFeedbackRow({ slug, pageTitle }: { slug: string; pageTitl
   });
 
   return (
-    <div className="mt-s6 flex flex-wrap items-center gap-s2 border-t border-line pt-s4 text-caption text-muted">
+    <div className="font-body gap-hairline text-feedback mt-notice flex min-h-8 flex-wrap items-center text-muted">
       {submitted === null ? (
         <>
-          <span>{config.prompt}</span>
+          <span className="sr-only">{config.prompt}</span>
+          <span className="mr-s2">这一页有用吗</span>
           <button
             type="button"
             onClick={() => handleFeedback(true)}
-            className="focus-ring rounded-small px-s2 py-s1 font-semibold text-brand hover:bg-brand-tint transition-colors"
+            className="focus-ring font-body px-compact py-compact text-brand"
           >
-            有帮助
+            有用
           </button>
           <span>·</span>
           <button
             type="button"
             onClick={() => handleFeedback(false)}
-            className="focus-ring rounded-small px-s2 py-s1 font-semibold text-brand hover:bg-brand-tint transition-colors"
+            className="focus-ring font-body px-compact py-compact text-brand"
           >
-            没帮助
+            没帮上
           </button>
         </>
       ) : (
-        <div className="text-ink-body">
-          {submitted ? (
-            <span>{config.thankMsg}</span>
-          ) : (
-            <span>
-              已记录您的反馈！若有错漏或补充，欢迎{" "}
-              <a
-                href={feishuUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand font-semibold hover:underline"
-              >
-                前往飞书提交详细反馈 ↗
-              </a>
-            </span>
-          )}
+        <div className="leading-evidence text-ink-sub">
+          {submitted ? "感谢你的支持，有任何想说的可以点击「" : "感谢你的指正，可以点击「"}
+          <a
+            href={feishuUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="focus-ring font-semibold text-brand"
+          >
+            反馈
+          </a>
+          {submitted ? "」联系我们" : "」进一步表达建议！"}
         </div>
       )}
     </div>

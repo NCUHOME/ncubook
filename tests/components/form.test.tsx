@@ -26,7 +26,7 @@ describe("shared ask entry", () => {
 
     await user.click(screen.getByRole("button", { name: "询问当前文档" }));
 
-    expect(await screen.findByText("基于当前文档与所在段落")).toBeVisible();
+    expect(await screen.findByText("基于当前文档「本页」与全库")).toBeVisible();
     expect(screen.queryByText(/page-campus-shuttle|b-fare/)).not.toBeInTheDocument();
   });
 });

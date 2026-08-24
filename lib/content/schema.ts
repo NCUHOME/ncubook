@@ -24,7 +24,26 @@ export type RichText = Array<{
   };
 }>;
 
-export type BaseBlock = { id: string; anchor: string };
+export type BlockPresentation =
+  | "emphasis-label"
+  | "sales-script-table"
+  | "registration-timeline"
+  | "media-grid"
+  | "route-columns"
+  | "map-card"
+  | "placeholder-chat"
+  | "placeholder-calendar"
+  | "placeholder-map"
+  | "placeholder-map-north"
+  | "placeholder-map-south"
+  | "placeholder-shuttle";
+
+/**
+ * `presentation` is a render-only hint added after content is loaded. It is
+ * deliberately optional so published Supabase blocks remain the content
+ * source of truth and require no schema migration.
+ */
+export type BaseBlock = { id: string; anchor: string; presentation?: BlockPresentation };
 
 export type Block =
   | (BaseBlock & { type: "paragraph"; richText: RichText })

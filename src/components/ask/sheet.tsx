@@ -1,15 +1,13 @@
 // 组件：AI 可溯源问答底部弹层，支持推荐提问 Chips、观点与依据溯源跳转（带 Flash 闪烁高亮）与答案有用性反馈
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import type { AnswerSession } from "@/lib/ai/session";
 import { AskInputBar } from "@/src/components/ask/input-bar";
 import type { AskStatus, PageContext } from "@/src/components/ask/provider";
-import { HollamaMascot } from "@/src/components/primitives/hollama-mascot";
 import { getFeishuFeedbackUrl } from "@/lib/feishu";
-import { DEFAULT_AI_CONFIG, type AiConfig } from "@/lib/content/site-config";
 
 type AskSheetProps = {
   open: boolean;
@@ -41,22 +39,6 @@ export function AskSheet({
   resolvePageRoute,
 }: AskSheetProps) {
   const [feedbackGiven, setFeedbackGiven] = useState<boolean | null>(null);
-  const [config, setConfig] = useState<AiConfig>(DEFAULT_AI_CONFIG);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/config")
-      .then((res) => res.json())
-      .then((res) => {
-        if (active && res?.ok && res?.data?.ai_config) {
-          setConfig(res.data.ai_config);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const handleCitationClick = (pageId: string, anchor?: string) => {
     onCitationNavigate();
@@ -90,104 +72,79 @@ export function AskSheet({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-drawer bg-ink/45 backdrop-blur-[2px] animate-in fade-in duration-fast" />
+        <Dialog.Overlay className="shell-fixed-overlay fixed inset-y-0 z-drawer bg-overlay animate-in fade-in duration-fast" />
         <Dialog.Content
-          className="fixed inset-x-0 bottom-0 z-modal mx-auto max-w-2xl rounded-t-large bg-surface px-s5 pb-s6 pt-s5 shadow-floating focus:outline-none animate-in slide-in-from-bottom duration-fast"
+          className="fixed inset-x-0 bottom-0 z-modal mx-auto flex max-h-sheet-content max-w-shell flex-col rounded-t-card bg-surface font-sans shadow-drawer focus:outline-none animate-in slide-in-from-bottom duration-fast"
           aria-describedby={undefined}
         >
           {/* 弹层顶部栏 */}
-          <div className="flex items-center justify-between border-b border-line pb-s3">
-            <div className="flex items-center gap-s2">
-              <HollamaMascot size={26} />
-              <div>
-                <Dialog.Title className="text-body-large font-semibold text-ink">询问此间</Dialog.Title>
-                <p className="text-caption text-muted">{config.assistantSubtitle}</p>
-              </div>
+          <div className="flex items-center justify-between border-b border-line pb-control pl-s5 pr-s2 pt-notice">
+            <div>
+              <Dialog.Title className="text-sheet-title font-semibold text-ink">询问此间</Dialog.Title>
+              <p className="mt-hairline text-caption text-muted">
+                {pageContext ? `基于当前文档「${pageContext.pageTitle ?? "本页"}」与全库` : "基于手册全库，回答保留出处"}
+              </p>
             </div>
             <Dialog.Close asChild>
               <button
                 type="button"
-                className="focus-ring tap-target grid place-items-center rounded-round text-muted hover:text-ink"
+                className="tap-target grid place-items-center text-ink focus:outline-none"
                 aria-label="关闭回答"
               >
-                <X className="size-icon" />
+                <X className="size-icon-close" strokeWidth={1.7} />
               </button>
             </Dialog.Close>
           </div>
 
-          {/* 页面上下文提示 */}
-          {pageContext ? (
-            <div className="border-b border-line py-s2 bg-surface-subtle -mx-s5 px-s5">
-              <p className="text-caption text-brand">
-                {pageContext.anchor ? "基于当前文档与所在段落" : "基于当前文档"}
-              </p>
-            </div>
-          ) : null}
-
           {/* 对话正文区 */}
-          <div className="max-h-sheet-content overflow-y-auto py-s4 space-y-s4">
+          <div className="flex-1 overflow-y-auto px-s5 py-s4">
             {question && (
-              <div>
-                <span className="text-caption text-muted">问题</span>
-                <p className="mt-s1 text-body-large font-semibold text-ink">{question}</p>
+              <div className="flex justify-end">
+                <p className="max-w-question rounded-bubble bg-action-subtle px-notice py-control text-quote leading-ui text-ink">{question}</p>
               </div>
             )}
 
             {/* 初始空状态与快捷提问 Chips */}
             {status === "idle" && !question && (
-              <div className="space-y-s3 py-s2">
-                <p className="text-body text-ink-sub">
-                  你好！我是南大家园官方 AI 知识助手。所有回答均严格基于南昌大学已发布的权威校园指南与日常规范。
-                </p>
-                <div className="space-y-s2">
-                  <span className="text-caption text-muted">
-                    {pageContext ? "关于当前文档的快捷提问：" : "猜你想问："}
-                  </span>
-                  <div className="flex flex-wrap gap-s2">
-                    {(pageContext
-                      ? [
-                          "本篇指南有哪些核心规则与注意事项？",
-                          "请帮我提取本篇的关键时间与资费节点",
-                          "遇到突发问题如何快速联系或解决？",
-                        ]
-                      : config.suggestedQuestions
-                    ).map((q) => (
+              <div>
+                <p className="text-label leading-relaxed text-ink-sub">回答只依据手册原文，并标出出处。试试：</p>
+                <div className="mt-control flex flex-col gap-s2">
+                    {["校园环游车怎么收费？", "宿舍空调怎么申请？"].map((q) => (
                       <button
                         key={q}
                         type="button"
                         onClick={() => onSubmit(q)}
-                        className="focus-ring rounded-pill border border-line bg-surface-subtle px-s3 py-s1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
+                        className="focus-ring rounded-medium border border-line-mid bg-surface px-s3 py-chip text-left text-label text-ink"
                       >
                         {q}
                       </button>
                     ))}
-                  </div>
                 </div>
               </div>
             )}
 
             {status === "loading" && (
-              <div className="flex items-center gap-s2 text-body text-brand py-s2" role="status">
+              <div className="mt-s4 flex items-center gap-s2 py-s2 text-body text-brand" role="status">
                 <Sparkles className="size-icon-small animate-spin" />
                 <span>正在核对南大家园已发布校园知识库…</span>
               </div>
             )}
 
             {status === "error" && (
-              <p className="text-body text-danger py-s2" role="alert">
+              <p className="mt-s4 py-s2 text-body text-danger" role="alert">
                 {error}
               </p>
             )}
 
             {session?.confidence === "insufficient" && (
-              <div className="rounded-small border-l-3 border-line-mid bg-surface-subtle p-s3 text-body text-ink-body">
+              <div className="mt-s4 rounded-r-small border-l-3 border-line-mid bg-surface-subtle px-notice py-s3 text-body leading-body text-ink-body">
                 抱歉，在当前的校园指南中暂未检索到确切依据。为保证真实可信，小家园不提供无据推测。建议换个提问方式，或通过首页邮箱反馈补充该词条。
               </div>
             )}
 
             {session && session.claims.length > 0 && (
-              <div className="space-y-s3">
-                <ol className="space-y-s2 font-body text-body leading-body text-ink">
+              <div className="mt-s4">
+                <ul className="flex list-disc flex-col gap-s1 pl-s5 font-body text-quote leading-body text-ink">
                   {session.claims.map((claim, index) => {
                     const citation = session.citations.find((item) => item.id === claim.citationIds[0]);
                     return (
@@ -200,38 +157,36 @@ export function AskSheet({
                               e.preventDefault();
                               handleCitationClick(citation.pageId, citation.anchor);
                             }}
-                            className="focus-ring inline-flex h-4 min-w-4 items-center justify-center rounded-pill bg-brand-tint px-1.5 align-baseline font-mono text-caption font-bold text-brand hover:bg-brand hover:text-surface transition-colors cursor-pointer"
+                            className="focus-ring cursor-pointer align-super text-micro text-brand"
                             aria-label={`查看结论 ${index + 1} 的依据`}
                             title={`出处：${citation.pageTitle}`}
                           >
-                            [{index + 1}]
+                            {index + 1}
                           </a>
                         ) : null}
                       </li>
                     );
                   })}
-                </ol>
+                </ul>
 
                 {/* AI 回答有用性反馈按钮 */}
-                <div className="flex flex-wrap items-center gap-s2 border-t border-line pt-s3 text-caption text-muted">
+                <div className="gap-hairline text-feedback mt-hero flex min-h-8 flex-wrap items-center border-t border-line pt-s3 text-muted">
                   {feedbackGiven === null ? (
                     <>
-                      <span>本回答是否有帮助？</span>
+                      <span className="mr-s2">本回答是否对你有帮助</span>
                       <button
                         type="button"
                         onClick={() => handleAnswerFeedback(true)}
-                        className="flex items-center gap-s1 font-semibold text-brand hover:underline"
+                        className="px-compact py-compact text-brand"
                       >
-                        <ThumbsUp className="size-icon-small" />
                         <span>有帮助</span>
                       </button>
                       <span>·</span>
                       <button
                         type="button"
                         onClick={() => handleAnswerFeedback(false)}
-                        className="flex items-center gap-s1 font-semibold text-danger hover:underline"
+                        className="px-compact py-compact text-brand"
                       >
-                        <ThumbsDown className="size-icon-small" />
                         <span>没帮助</span>
                       </button>
                     </>
@@ -251,7 +206,7 @@ export function AskSheet({
                             })}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand font-semibold hover:underline"
+                            className="text-brand font-semibold"
                           >
                             前往飞书提交详细反馈 ↗
                           </a>
@@ -265,11 +220,11 @@ export function AskSheet({
 
             {/* 完整依据卡片 */}
             {session && session.citations.length > 0 && (
-              <section className="mt-s4 border-t border-line pt-s3" aria-labelledby="answer-evidence-title">
-                <h2 id="answer-evidence-title" className="text-label font-semibold text-ink">
-                  完整依据
+              <section className="mt-s4" aria-labelledby="answer-evidence-title">
+                <h2 id="answer-evidence-title" aria-label="完整依据" className="text-micro font-semibold tracking-eyebrow text-eyebrow">
+                  依据原文
                 </h2>
-                <div className="mt-s2 divide-y divide-line border-y border-line">
+                <div className="mt-compact flex flex-col items-start gap-compact">
                   {session.citations.map((citation, index) => (
                     <a
                       key={citation.id}
@@ -278,18 +233,11 @@ export function AskSheet({
                         e.preventDefault();
                         handleCitationClick(citation.pageId, citation.anchor);
                       }}
-                      className="focus-ring block py-s2 hover:bg-surface-subtle transition-colors group cursor-pointer"
+                      className="focus-ring text-feedback flex cursor-pointer items-baseline gap-compact leading-evidence"
                       aria-label={`打开依据 ${index + 1}：${citation.pageTitle}`}
                     >
-                      <div className="flex items-center justify-between text-body font-semibold text-ink group-hover:text-brand">
-                        <span>
-                          [{index + 1}] {citation.pageTitle}
-                        </span>
-                        <span className="text-caption text-brand">定位段落 ↗</span>
-                      </div>
-                      <p className="mt-s1 font-body text-caption leading-ui text-muted line-clamp-2">
-                        {citation.excerpt}
-                      </p>
+                      <span className="shrink-0 text-muted">{index + 1}</span>
+                      <span className="rounded-evidence py-hairline bg-brand-subtle px-compact font-semibold text-brand">{citation.pageTitle}</span>
                     </a>
                   ))}
                 </div>
@@ -301,13 +249,14 @@ export function AskSheet({
           <AskInputBar
             id="ask-follow-up"
             label="继续追问"
-            placeholder={config.inputPlaceholder}
+            placeholder="继续追问"
             submitLabel="提交追问"
             value={draft}
             onChange={onDraftChange}
             onSubmit={() => onSubmit(draft)}
-            innerClassName="border-t border-line pt-s3"
-            inputClassName="text-body"
+            className="border-t border-line px-s5 pb-s4 pt-control"
+            inputClassName="text-label"
+            variant="sheet"
           />
         </Dialog.Content>
       </Dialog.Portal>

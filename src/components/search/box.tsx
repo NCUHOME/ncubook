@@ -1,11 +1,11 @@
 // 组件：交互式关键词搜索容器，支持前端 5ms 零延迟打字即搜 (Instant Search as you type) 与文档级聚合展示
 "use client";
 
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cleanHeadingPunctuation, extractSnippet, type GroupedSearchResult, type SearchSnippet } from "@/lib/content/search";
 import type { CompactSearchItem } from "@/app/api/search/index/route";
-import { SearchResultItem } from "@/src/components/search/item";
+import Link from "next/link";
 
 type SearchResponse = { query?: string; results?: GroupedSearchResult[] };
 
@@ -195,74 +195,63 @@ export function SearchExperience({
     }
   }
 
-  function handleClear() {
-    setValue("");
-    setSubmittedQuery("");
-    syncUrl("");
-    setResults([]);
-    setPending(false);
-  }
-
-  const totalMatchesCount = results.reduce((acc, curr) => acc + curr.totalMatches, 0);
-
   return (
     <>
       <form action="/search" method="get" onSubmit={handleSubmit}>
         <label htmlFor="keyword-search" className="sr-only">
           关键词
         </label>
-        <div className="flex min-h-tap items-center gap-s3 border-b border-ink">
-          <Search className="size-icon text-muted" strokeWidth={1.9} />
+        <div className="flex min-h-header items-center gap-control rounded-medium border border-line-mid px-s3">
+          <Search className="size-icon-small text-muted" strokeWidth={1.7} />
           <input
             id="keyword-search"
             name="q"
             value={value}
             onChange={(event) => handleInputChange(event.target.value)}
             autoFocus
-            className="min-w-0 flex-1 bg-transparent font-body text-body outline-none placeholder:text-muted"
-            placeholder="搜索文档和段落"
+            className="min-w-0 flex-1 bg-transparent font-sans text-body text-ink outline-none placeholder:text-muted"
+            placeholder="关键词"
             autoComplete="off"
           />
-          {submittedQuery ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="focus-ring tap-target grid place-items-center rounded-round"
-              aria-label="清除关键词"
-            >
-              <X className="size-icon-small" />
-            </button>
-          ) : null}
         </div>
       </form>
 
       {!submittedQuery ? (
-        <section className="py-s7">
-          <h1 className="font-display text-heading leading-heading font-semibold">输入一个关键词</h1>
-          <p className="mt-s3 font-body text-body leading-body text-muted">
-            结果会按文档聚合显示匹配的章节、原文段落与精确位置。
+        <section className="pt-s7">
+          <h1 className="font-display text-search-heading font-semibold leading-heading">输入一个关键词</h1>
+          <p className="mt-control font-body text-label leading-relaxed text-ink-sub">
+            结果会按文档聚合，显示匹配的章节、原文段落与精确位置。试试「出行」「绩点」「校园卡」。
           </p>
         </section>
       ) : null}
 
-      {submittedQuery ? (
-        <p className="py-s5 text-caption text-muted">
-          {pending
-            ? "搜索中…"
-            : results.length === 0
-            ? "未找到相关文档"
-            : `找到 ${results.length} 篇相关文档（共 ${totalMatchesCount} 处匹配）`}
-        </p>
+      {submittedQuery && (pending || results.length > 0) ? (
+        <section className="pt-footer">
+          <p className="mb-s1 font-sans text-caption text-muted">
+            {pending ? "搜索中…" : `「${submittedQuery}」· ${results.length} 篇匹配`}
+          </p>
+          {!pending && results.map((result) => (
+            <Link
+              key={result.pageId}
+              href={result.href}
+              className="focus-ring border-soft flex items-baseline gap-control border-t py-s3 text-ink"
+            >
+              <span className="min-w-0 flex-1 text-body font-semibold text-ink">{result.pageTitle}</span>
+              <span className="shrink-0 font-sans text-caption text-muted">{result.sectionPath[0]}</span>
+            </Link>
+          ))}
+        </section>
       ) : null}
 
-      {results.map((result) => (
-        <SearchResultItem key={result.pageId} result={result} query={submittedQuery} />
-      ))}
-
       {submittedQuery && !pending && results.length === 0 ? (
-        <p className="border-y border-line py-s5 font-body text-label leading-body text-muted">
-          没有找到匹配内容。可以尝试更短或更具体的关键词。
-        </p>
+        <div className="pt-s7">
+          <p className="font-body text-body leading-relaxed text-ink-sub">
+            手册里还没有和「{submittedQuery}」相关的内容。
+          </p>
+          <p className="mt-control font-body text-label leading-relaxed text-muted">
+            知道答案的话，欢迎通过首页「完善手册」投稿。
+          </p>
+        </div>
       ) : null}
     </>
   );

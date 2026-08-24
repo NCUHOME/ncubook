@@ -2,7 +2,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowRight, ArrowUp } from "lucide-react";
 
 type AskInputBarProps = {
   id: string;
@@ -20,6 +20,7 @@ type AskInputBarProps = {
   inputClassName?: string;
   autoComplete?: "off";
   iconStrokeWidth?: number;
+  variant?: "plain" | "sheet";
 };
 
 export function AskInputBar({
@@ -35,6 +36,7 @@ export function AskInputBar({
   inputClassName = "text-body",
   autoComplete,
   iconStrokeWidth,
+  variant = "plain",
 }: AskInputBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,17 +46,23 @@ export function AskInputBar({
   return (
     <form onSubmit={handleSubmit} className={className}>
       <label className="sr-only" htmlFor={id}>{label}</label>
-      <div className={innerClassName ? `flex items-center ${innerClassName}` : "flex items-center"}>
+      <div className={innerClassName ? `flex items-center gap-s2 ${innerClassName}` : "flex items-center gap-s2"}>
         <input
           id={id}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className={`min-w-0 flex-1 bg-transparent font-body ${inputClassName} outline-none placeholder:text-muted`}
+          className={`min-w-0 flex-1 font-sans ${inputClassName} outline-none placeholder:text-muted ${
+            variant === "sheet" ? "rounded-medium border border-line-mid bg-surface px-s3 py-chip text-ink" : "bg-transparent"
+          }`}
           placeholder={placeholder}
           autoComplete={autoComplete}
         />
         <button type="submit" className="focus-ring tap-target grid place-items-center rounded-round bg-action text-surface" aria-label={submitLabel}>
-          <ArrowUp className="size-icon" {...(iconStrokeWidth === undefined ? {} : { strokeWidth: iconStrokeWidth })} />
+          {variant === "sheet" ? (
+            <ArrowRight className="size-icon" {...(iconStrokeWidth === undefined ? {} : { strokeWidth: iconStrokeWidth })} />
+          ) : (
+            <ArrowUp className="size-icon" {...(iconStrokeWidth === undefined ? {} : { strokeWidth: iconStrokeWidth })} />
+          )}
         </button>
       </div>
     </form>

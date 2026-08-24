@@ -117,18 +117,20 @@ export function RichText({
                 parts.push(<PhoneTag key={`phone-${mIdx}`} phone={String(match.text)} />);
               } else if (match.type === "url" || match.type === "email" || match.type === "internal") {
                 const isExt = match.type === "url" || match.type === "email";
+                if (match.start > 0) parts.push(" ");
                 parts.push(
                   <a
                     key={`link-${mIdx}`}
                     href={match.url}
                     target={isExt ? "_blank" : undefined}
                     rel={isExt ? "noopener noreferrer" : undefined}
-                    className="focus-ring underline underline-offset-4 text-brand font-medium hover:underline transition-colors"
+                    className="focus-ring text-brand font-medium"
                     style={{ color: "var(--brand-blue)" }}
                   >
                     {match.text}
                   </a>,
                 );
+                if (match.end < text.length) parts.push(" ");
               }
               cursor = match.end;
             });
@@ -142,6 +144,9 @@ export function RichText({
 
         if (segment.annotations.bold) node = <strong key={index}>{node}</strong>;
         if (segment.annotations.italic) node = <em key={index}>{node}</em>;
+        if (segment.annotations.color === "red") {
+          node = <span key={index} className="text-risk-text">{node}</span>;
+        }
         if (segment.annotations.code) {
           node = (
             <code
@@ -155,17 +160,25 @@ export function RichText({
         if (segment.href || segment.pageId) {
           const href = segment.pageId ? resolvePageRoute(segment.pageId) : segment.href ?? "#";
           const isExternal = href.startsWith("http") || href.startsWith("mailto:");
-          node = (
+          const hasTextBefore = value.slice(0, index).some((part) => part.plainText.length > 0);
+          const hasTextAfter = value.slice(index + 1).some((part) => part.plainText.length > 0);
+          const link = (
             <a
-              key={index}
               href={href}
               target={isExternal ? "_blank" : undefined}
               rel={isExternal ? "noopener noreferrer" : undefined}
-              className="focus-ring underline underline-offset-4 text-brand font-medium hover:underline transition-colors"
+              className="focus-ring text-brand font-medium"
               style={{ color: "var(--brand-blue)" }}
             >
               {node}
             </a>
+          );
+          node = (
+            <>
+              {hasTextBefore ? " " : null}
+              {link}
+              {hasTextAfter ? " " : null}
+            </>
           );
         }
         return <span key={index}>{node}</span>;

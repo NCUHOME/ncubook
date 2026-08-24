@@ -5,8 +5,8 @@ import { showToast } from "@/src/components/primitives/toast";
 import { trackEvent } from "@/lib/analytics/client";
 
 export function ContributeCard({
-  email = "book@nchuhome.club",
-  qqGroup = "930991836",
+  email = "book[AT]nchuhome.club",
+  qqGroup = "1056385156",
   desc = "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～",
 }: {
   email?: string;
@@ -14,9 +14,10 @@ export function ContributeCard({
   desc?: string;
 }) {
   const handleCopyEmail = () => {
-    navigator.clipboard?.writeText(email).catch(() => {});
-    trackEvent("contact_copied", { targetType: "email", value: email, label: "投稿邮箱" });
-    showToast(`已复制邮箱：${email}`);
+    const copyValue = email.replace("[AT]", "@");
+    navigator.clipboard?.writeText(copyValue).catch(() => {});
+    trackEvent("contact_copied", { targetType: "email", value: copyValue, label: "投稿邮箱" });
+    showToast(`已复制邮箱：${copyValue}`);
   };
 
   const handleCopyQQ = () => {
@@ -26,50 +27,35 @@ export function ContributeCard({
   };
 
   return (
-    <section className="mt-s7" aria-labelledby="home-contribute-title">
-      <h2 id="home-contribute-title" className="text-title font-semibold text-ink">
+    <section className="mt-s6" aria-labelledby="home-contribute-title">
+      <h2 id="home-contribute-title" className="text-ui-title font-semibold leading-heading text-ink">
         完善手册
       </h2>
-      <p className="mt-s1 text-body text-ink-sub leading-body">{desc}</p>
+      <p className="mt-contribute-lead text-small leading-body text-ink-sub">{desc}</p>
 
-      <div className="mt-s3 grid grid-cols-[auto_1fr] items-baseline gap-x-s4 gap-y-s2 text-body">
-        <span className="text-caption text-muted">邮箱</span>
+      <div className="grid-label-value mt-s2 grid items-baseline gap-x-notice gap-y-compact text-small">
+        <span className="text-contact-label text-muted">邮箱</span>
         <div>
           <button
             type="button"
             onClick={handleCopyEmail}
-            className="text-brand font-medium hover:underline text-left cursor-pointer"
+            className="cursor-pointer text-left text-brand"
             style={{ color: "var(--brand-blue)" }}
           >
             {email}
           </button>
-          <button
-            type="button"
-            onClick={handleCopyEmail}
-            className="ml-s2 text-caption text-brand hover:underline cursor-pointer"
-            style={{ color: "var(--brand-blue)" }}
-          >
-            （点击复制）
-          </button>
+          <span className="ml-s1 text-caption text-muted">（替换 @）</span>
         </div>
 
-        <span className="text-caption text-muted">QQ群</span>
+        <span className="text-contact-label text-muted">QQ</span>
         <div>
           <button
             type="button"
             onClick={handleCopyQQ}
-            className="text-brand font-medium hover:underline text-left cursor-pointer"
+            className="cursor-pointer text-left text-brand"
             style={{ color: "var(--brand-blue)" }}
           >
             {qqGroup}
-          </button>
-          <button
-            type="button"
-            onClick={handleCopyQQ}
-            className="ml-s2 text-caption text-brand hover:underline cursor-pointer"
-            style={{ color: "var(--brand-blue)" }}
-          >
-            （点击复制）
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { loadPublishedRepository, type PageTreeNode } from "@/lib/content/server";
+import { adaptFreshmanBlocksToPrototype } from "@/lib/content/freshman-prototype";
 import { ArticleRenderer } from "@/src/components/article/renderer";
 import { ArticleFeedbackRow } from "@/src/components/article/feedback-row";
 import { DocumentAskEntry } from "@/src/components/ask/entry";
@@ -178,6 +179,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   const assetMap = new Map((view.assets ?? []).map((a) => [a.id, a]));
   const getAsset = (assetId: string) => assetMap.get(assetId) ?? null;
   const resolvePageRoute = (pageId: string) => routes[pageId] || repository.resolvePageRoute(pageId);
+  const articleBlocks = slug === "xinsheng" ? adaptFreshmanBlocksToPrototype(view.blocks) : view.blocks;
 
   // 计算当前文章在板块篇目树中的位置与下一篇
   const flattenedNodes: PageTreeNode[] = [];
@@ -192,8 +194,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
   const currentIdx = flattenedNodes.findIndex((n) => n.id === view?.page.id);
   const totalCount = flattenedNodes.length > 0 ? flattenedNodes.length : 1;
   const nextNode = currentIdx >= 0 && currentIdx + 1 < flattenedNodes.length ? flattenedNodes[currentIdx + 1] : null;
-
-  const breadcrumb = `${section.title} · ${currentIdx >= 0 ? currentIdx + 1 : 1} / ${totalCount}`;
 
   const siteUrl = getSiteUrl();
   const jsonLd = {
@@ -257,40 +257,49 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
       <AppHeader
         variant="doc"
         title={view.page.title}
-        breadcrumb={breadcrumb}
         backHref="/"
         sectionTitle={section.title}
         sectionTree={tree}
         allSections={allSections}
         currentPageId={view.page.id}
+        progress={((currentIdx >= 0 ? currentIdx + 1 : 1) / totalCount) * 100}
       />
 
-      <main className="px-s5 pb-s7 pt-s4">
+      <main className="px-s5 pb-article-bottom pt-hero">
         <article className="min-h-full">
-          <h1 className="text-heading font-semibold text-ink leading-heading">{view.page.title}</h1>
-          <div className="mt-s2 pb-s4 border-b border-line text-caption text-muted">
-            {section.title} · 更新于 {formatDate(view.page.lastPublishedAt)}
+          <h1 className="text-heading font-semibold leading-heading text-ink">{view.page.title}</h1>
+          <div className="mt-s2 font-sans text-caption tracking-wide text-muted">
+            {formatDocumentMeta(section.title, view.page.slug, view.page.lastPublishedAt)}
           </div>
 
-          <div className="pt-s4 space-y-s4">
-            <ArticleRenderer blocks={view.blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
+          <div className="mt-s4">
+            {slug === "xinsheng" ? (
+              <>
+                <FreshmanContents blocks={articleBlocks} />
+                <div className="mt-section-lead">
+                  <ArticleRenderer blocks={articleBlocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
+                </div>
+              </>
+            ) : (
+              <ArticleRenderer blocks={articleBlocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />
+            )}
           </div>
 
           {/* 下一篇推荐卡片 */}
           {nextNode && (
             <Link
               href={nextNode.href}
-              className="focus-ring mt-s7 flex items-center justify-between rounded-medium border border-line-mid p-s4 hover:border-brand hover:bg-brand-tint transition-all group"
+              className="focus-ring mt-next flex items-center gap-control overflow-hidden rounded-medium border border-line px-notice py-control text-ink"
             >
-              <div>
-                <span className="text-caption text-muted">
+              <div className="min-w-0 flex-1">
+                <span className="font-sans text-caption text-muted">
                   下一篇 · {currentIdx + 2} / {totalCount}
                 </span>
-                <div className="text-body font-semibold text-ink group-hover:text-brand transition-colors mt-s1">
+                <div className="text-body font-semibold text-ink">
                   {nextNode.title}
                 </div>
               </div>
-              <ChevronRight className="size-icon text-brand group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="size-icon-next shrink-0 text-brand" />
             </Link>
           )}
 
@@ -301,7 +310,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ slug:
 
       <DocumentAskEntry
         pageId={view.page.id}
-        initialAnchor={view.blocks.find((block) => block.type === "heading")?.anchor}
+        pageTitle={view.page.title}
+        initialAnchor={articleBlocks.find((block) => block.type === "heading")?.anchor}
       />
     </div>
   );
@@ -325,9 +335,52 @@ export async function generateStaticParams() {
   }
 }
 
-function formatDate(isoDate: string | null | undefined): string {
-  if (!isoDate) return "2026 年 8 月";
+function formatPublishedMonth(isoDate: string | null | undefined): string | null {
+  if (!isoDate) return null;
   const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) return "2026 年 8 月";
-  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+  if (Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月`;
+}
+
+function formatDocumentMeta(sectionTitle: string, slug: string, isoDate: string | null | undefined): string {
+  const publishedMonth = formatPublishedMonth(isoDate);
+  return [
+    sectionTitle,
+    publishedMonth ? `更新于 ${publishedMonth}` : null,
+    slug === "xinsheng" ? "约 25 分钟" : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function FreshmanContents({ blocks }: { blocks: import("@/lib/content/schema").Block[] }) {
+  const definitions = [
+    ["一", "预防诈骗"],
+    ["二", "新生报到"],
+    ["三", "校历"],
+    ["四", "校园地图"],
+    ["五", "生活相关"],
+    ["六", "学习相关"],
+    ["七", "附言与致谢"],
+  ] as const;
+  const items = definitions.flatMap(([number, label]) => {
+    const heading = blocks.find(
+      (block) => block.type === "heading" && block.richText.map((part) => part.plainText).join("").includes(label.replace("与致谢", "")),
+    );
+    return heading ? [[number, label, heading.anchor] as const] : [];
+  });
+
+  return (
+    <nav className="prototype-toc rounded-medium border border-line px-notice py-s3" aria-label="本页目录">
+      <div className="font-sans text-micro font-semibold tracking-eyebrow text-eyebrow">本页目录</div>
+      <div className="mt-compact grid grid-cols-2 gap-x-notice gap-y-0">
+        {items.map(([number, label, anchor]) => (
+          <a key={number} href={`#${anchor}`} className="flex items-baseline gap-compact py-toc-row text-small text-ink">
+            <span className="font-mono text-toc-number font-normal text-brand">{number}</span>
+            {label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
 }

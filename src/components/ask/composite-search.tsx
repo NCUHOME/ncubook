@@ -12,27 +12,27 @@ export function CompositeSearch() {
 
   return (
     <div className="w-full">
-      <div className="flex min-h-tap items-center rounded-medium border border-line-mid bg-surface transition-all hover:border-brand">
+      <div className="flex min-h-header items-center rounded-medium border border-line-mid bg-surface">
         {/* 左侧：点击进入关键词全屏搜索 */}
         <button
           type="button"
           onClick={() => openSearch()}
-          className="focus-ring flex h-11 flex-1 items-center gap-s3 px-s4 text-left text-muted transition-opacity hover:text-ink active:opacity-70"
+          className="focus-ring flex min-h-header flex-1 items-center gap-control px-s3 text-left text-muted active:opacity-70"
           aria-label="搜索手册词条"
         >
           <Search className="size-icon-small shrink-0 text-muted" />
-          <span className="truncate text-body text-muted">搜索手册，或直接提问</span>
+          <span className="truncate text-quote text-muted">搜索手册，或直接提问</span>
         </button>
 
         {/* 分割线与右侧：向小家园知识库直接提问 */}
         <button
           type="button"
           onClick={() => openAsk({})}
-          className="focus-ring flex h-8 items-center border-l border-line px-s3 transition-transform active:scale-90"
+          className="focus-ring flex h-header-action items-center border-l border-line px-s3 transition-transform active:scale-90"
           aria-label="向此间知识库直接提问"
           title="向此间知识库直接提问"
         >
-          <HollamaMascot size={22} />
+          <HollamaMascot size={20} />
         </button>
       </div>
     </div>

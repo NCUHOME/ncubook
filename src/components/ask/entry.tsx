@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { FloatingAskButton } from "@/src/components/ask/button";
 
-export function DocumentAskEntry({ pageId, initialAnchor }: { pageId: string; initialAnchor?: string }) {
+export function DocumentAskEntry({ pageId, pageTitle, initialAnchor }: { pageId: string; pageTitle: string; initialAnchor?: string }) {
   const [anchor, setAnchor] = useState(initialAnchor);
 
   useEffect(() => {
@@ -18,5 +18,5 @@ export function DocumentAskEntry({ pageId, initialAnchor }: { pageId: string; in
     return () => observer.disconnect();
   }, []);
 
-  return <FloatingAskButton pageContext={{ pageId, anchor }} />;
+  return <FloatingAskButton pageContext={{ pageId, pageTitle, anchor }} />;
 }

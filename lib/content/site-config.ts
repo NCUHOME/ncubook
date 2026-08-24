@@ -84,7 +84,7 @@ export const DEFAULT_HOME_HERO_CONFIG: HomeHeroConfig = {
 export const DEFAULT_HOME_NOTICE_CONFIG: HomeNoticeConfig = {
   title: "公告",
   date: "2026 年 8 月",
-  desc: "南大家园《此间》校园知识库持续更新中，涵盖学业、生活、出行等各类指南；遇到问题可直接向小家园 AI 提问～",
+  desc: "目前手册还在持续更新中……",
   links: [
     { text: "新生必看", slug: "xinsheng" },
     { text: "关于我们", slug: "why" },
@@ -92,13 +92,13 @@ export const DEFAULT_HOME_NOTICE_CONFIG: HomeNoticeConfig = {
 };
 
 export const DEFAULT_HOME_CONTRIBUTE_CONFIG: HomeContributeConfig = {
-  email: "book@nchuhome.club",
-  qq_group: "930991836",
-  desc: "发现内容有错漏，或想分享你的校园经验？欢迎通过下方邮箱或 QQ 群加入我们～",
+  email: "book[AT]nchuhome.club",
+  qq_group: "1056385156",
+  desc: "如有发现错漏，或想把自己的经验写进来，欢迎加入我们～",
 };
 
 export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
-  thankPrefix: "感谢所有参与编写与完善本手册的同学",
+  thankPrefix: "感谢所有参与编写与完善本手册的同学。",
   extraContributors: [],
   disclaimer:
     "自发组织、非盈利社区，并非任何官方机构，内容仅供交流学习；若认为内容侵犯您的合法权益，请通过上方邮箱联系我们。",

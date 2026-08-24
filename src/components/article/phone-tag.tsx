@@ -14,7 +14,7 @@ export function PhoneTag({ phone }: { phone: string }) {
     <button
       type="button"
       onClick={handleClick}
-      className="focus-ring inline-flex items-center gap-s1 font-semibold text-brand underline underline-offset-2 hover:opacity-80 active:opacity-60 cursor-pointer"
+      className="focus-ring inline-flex cursor-pointer items-center gap-s1 font-semibold text-brand active:opacity-60"
       title={`拨打电话：${phone}`}
     >
       <span>{phone}</span>

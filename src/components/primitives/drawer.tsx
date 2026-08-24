@@ -72,13 +72,13 @@ export function PageTreeDrawer({
     const buckets = groupAndSortSectionNodes(section.title, section.nodes);
 
     return buckets.map((bucket, bIdx) => (
-      <div key={bucket.groupName || `bucket-${bIdx}`} className="space-y-s1">
+      <div key={bucket.groupName || `bucket-${bIdx}`}>
         {bucket.groupName && (
-          <div className="pt-s3 pb-s1 text-caption font-semibold tracking-widest text-brand">
+          <div className="pb-hairline text-drawer-group tracking-drawer-group px-control pt-s3 font-semibold text-brand">
             {bucket.groupName}
           </div>
         )}
-        <div className="space-y-s1">
+        <div>
           {bucket.nodes.map((node) => {
             const current = node.id === currentPageId;
             return (
@@ -87,17 +87,17 @@ export function PageTreeDrawer({
                   href={node.href}
                   onClick={() => setOpen(false)}
                   aria-current={current ? "page" : undefined}
-                  className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+                  className={`focus-ring ml-compact flex min-h-drawer-row items-center justify-between border-l px-control text-small leading-ui transition-colors ${
                     current
                       ? "border-brand bg-brand-tint font-semibold text-brand"
                       : "border-line text-ink-body hover:bg-surface-subtle"
                   }`}
                 >
                   <span className="truncate leading-body">{node.title}</span>
-                  {node.children.length > 0 ? <ChevronRight className="size-icon-small text-muted shrink-0" /> : null}
+                  {node.children.length > 0 ? <ChevronRight className="size-icon-small shrink-0 text-muted" /> : null}
                 </Link>
                 {node.children.length > 0 && (
-                  <div className="pl-s3 space-y-s1">
+                  <div>
                     {node.children.map((child) => {
                       const childCurrent = child.id === currentPageId;
                       return (
@@ -106,7 +106,7 @@ export function PageTreeDrawer({
                           href={child.href}
                           onClick={() => setOpen(false)}
                           aria-current={childCurrent ? "page" : undefined}
-                          className={`focus-ring flex min-h-tap items-center justify-between ml-s1 px-s3 py-s2 border-l-2 text-body transition-colors rounded-r-small ${
+                          className={`focus-ring ml-compact flex min-h-drawer-row items-center justify-between border-l px-control text-small leading-ui transition-colors ${
                             childCurrent
                               ? "border-brand bg-brand-tint font-semibold text-brand"
                               : "border-line text-ink-body hover:bg-surface-subtle"
@@ -131,60 +131,62 @@ export function PageTreeDrawer({
       <Dialog.Trigger asChild>
         <button
           type="button"
-          className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+          className="focus-ring h-header-action w-header-action grid place-items-center text-ink"
           aria-label={sectionTitle ? `打开${sectionTitle}页面列表` : "打开目录抽屉"}
         >
-          <Menu className="size-icon" strokeWidth={1.9} />
+          {nodes.length > 0 ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <line x1="4" x2="20" y1="7" y2="7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              <line x1="4" x2="14" y1="12" y2="12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              <line x1="4" x2="18" y1="17" y2="17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <Menu className="size-icon" strokeWidth={1.7} />
+          )}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-drawer bg-ink/45 backdrop-blur-[2px] animate-in fade-in duration-fast" />
+        <Dialog.Overlay className="shell-fixed-overlay fixed inset-y-0 z-drawer bg-overlay animate-in fade-in duration-fast" />
         <Dialog.Content
-          className="fixed inset-y-0 left-0 z-modal flex w-5/6 max-w-xs flex-col bg-surface shadow-side focus:outline-none animate-in slide-in-from-left duration-fast"
+          className="shell-fixed-left fixed inset-y-0 z-side-drawer flex w-drawer max-w-drawer flex-col bg-surface font-sans shadow-side focus:outline-none animate-in slide-in-from-left duration-fast"
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">{sectionTitle ? `${sectionTitle}页面列表` : "板块目录导航"}</Dialog.Title>
 
           {/* 抽屉顶部栏 */}
-          <div className="flex min-h-tap items-center justify-between border-b border-line px-s4 py-s3">
-            <div>
-              <span className="text-caption leading-tight text-muted">目录导航</span>
-              <Link
-                href="/"
-                onClick={() => setOpen(false)}
-                className="block text-body font-semibold text-ink hover:text-brand transition-colors"
-              >
-                此间 · 回到首页
-              </Link>
-            </div>
+          <div className="flex min-h-drawer-header items-center gap-s2 border-b border-line pl-s5 pr-compact">
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="flex-1 text-body font-semibold text-ink"
+            >
+              此间 · 回到首页
+            </Link>
             <Dialog.Close asChild>
               <button
                 type="button"
-                className="focus-ring tap-target grid place-items-center rounded-round text-muted hover:text-ink"
+                className="tap-target grid place-items-center text-ink focus:outline-none"
                 aria-label="关闭目录"
               >
-                <X className="size-icon" strokeWidth={1.9} />
+                <X className="size-icon-close" strokeWidth={1.7} />
               </button>
             </Dialog.Close>
           </div>
 
           {/* 抽屉动态内容区 */}
-          <div className="flex-1 overflow-y-auto px-s4 py-s3">
+          <div className="flex-1 overflow-y-auto px-control pb-s5 pt-compact">
             {/* Mode 1: 全部板块列表 */}
             {mode === "sections" && (
-              <div className="divide-y divide-line">
+              <div>
                 {allSections.map((sec) => (
                   <button
                     key={sec.id}
                     type="button"
                     onClick={() => handleSelectSection(sec)}
-                    className="focus-ring flex w-full min-h-tap items-center justify-between py-s3 text-left hover:text-brand transition-colors"
+                    className="focus-ring flex min-h-header w-full items-center gap-s2 rounded-medium px-control text-left font-semibold text-ink"
                   >
-                    <span className="text-body font-semibold text-ink">{sec.title}</span>
-                    <div className="flex items-center gap-s1 text-muted text-caption">
-                      {sec.count ? <span>{sec.count} 篇</span> : null}
-                      <ChevronRight className="size-icon-small" />
-                    </div>
+                    <span className="flex-1 text-body">{sec.title}</span>
+                    <ChevronRight className="size-icon-drawer text-light" />
                   </button>
                 ))}
               </div>
@@ -192,35 +194,32 @@ export function PageTreeDrawer({
 
             {/* Mode 2: 板块内篇目树 (完全对齐原型图样式) */}
             {mode === "tree" && activeSection && (
-              <div className="space-y-s2">
+              <div>
                 {allSections.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setMode("sections")}
-                    className="focus-ring flex items-center gap-s1 text-caption font-medium text-brand hover:underline pb-s2"
+                    className="focus-ring flex min-h-tap items-center gap-compact px-control text-small text-muted"
                   >
-                    <ArrowLeft className="size-icon-small" />
+                    <ArrowLeft className="size-icon-drawer" strokeWidth={1.7} />
                     <span>全部板块</span>
                   </button>
                 )}
 
-                <div className="flex items-baseline justify-between border-b border-line pb-s2">
-                  <div className="flex items-baseline gap-s2">
-                    <strong className="text-title font-semibold text-ink">{activeSection.title}</strong>
-                    <span className="text-caption text-muted">{activeSection.nodes.length} 篇</span>
-                  </div>
+                <div className="flex items-baseline gap-s2 px-control pb-s1 pt-s1">
+                  <strong className="text-sheet-title font-semibold text-ink">{activeSection.title}</strong>
                   {activeSection.nodes[0] && (
                     <Link
                       href={activeSection.nodes[0].href}
                       onClick={() => setOpen(false)}
-                      className="text-caption font-medium text-brand hover:underline"
+                      className="text-contact-label ml-auto text-brand"
                     >
                       从头读
                     </Link>
                   )}
                 </div>
 
-                <nav className="space-y-s2 py-s2" aria-label={`${activeSection.title}篇目树`}>
+                <nav aria-label={`${activeSection.title}篇目树`}>
                   {renderGroupedTree(activeSection)}
                 </nav>
               </div>

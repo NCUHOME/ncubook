@@ -32,23 +32,18 @@ describe("search component interactions", () => {
     render(<SearchExperience initialQuery="" initialResults={[]} />);
 
     expect(screen.getByRole("heading", { name: "输入一个关键词" })).toBeVisible();
-    const input = screen.getByPlaceholderText("搜索文档和段落");
+    const input = screen.getByPlaceholderText("关键词");
     expect(input).toHaveValue("");
 
     await user.type(input, "环游车");
     expect(input).toHaveValue("环游车");
   });
 
-  it("clears search query and results when clear button is clicked", async () => {
-    const user = userEvent.setup();
+  it("keeps the prototype input free of an extra clear control", () => {
     render(<SearchExperience initialQuery="费用" initialResults={[]} />);
 
-    const clearButton = screen.getByRole("button", { name: "清除关键词" });
-    expect(clearButton).toBeVisible();
-
-    await user.click(clearButton);
-    expect(screen.getByPlaceholderText("搜索文档和段落")).toHaveValue("");
-    expect(screen.getByRole("heading", { name: "输入一个关键词" })).toBeVisible();
+    expect(screen.getByPlaceholderText("关键词")).toHaveValue("费用");
+    expect(screen.queryByRole("button", { name: "清除关键词" })).not.toBeInTheDocument();
   });
 
   it("renders SearchResultItem in title-only match mode", () => {

@@ -2,10 +2,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics/client";
-import { DEFAULT_SEARCH_CONFIG, type SearchConfig } from "@/lib/content/site-config";
 
 type SearchItem = {
   pageId: string;
@@ -27,23 +26,7 @@ export function SearchOverlay({
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [config, setConfig] = useState<SearchConfig>(DEFAULT_SEARCH_CONFIG);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/config")
-      .then((res) => res.json())
-      .then((res) => {
-        if (active && res?.ok && res?.data?.search_config) {
-          setConfig(res.data.search_config);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -71,8 +54,9 @@ export function SearchOverlay({
         .then((res) => res.json())
         .then((res) => {
           if (Array.isArray(res.items)) {
-            setResults(res.items);
-            trackEvent("search_query", { query: trimmed, resultCount: res.items.length, source: "overlay" });
+            const unique = Array.from(new Map<SearchItem["pageId"], SearchItem>(res.items.map((item: SearchItem) => [item.pageId, item])).values());
+            setResults(unique);
+            trackEvent("search_query", { query: trimmed, resultCount: unique.length, source: "overlay" });
           } else {
             setResults([]);
             trackEvent("search_query", { query: trimmed, resultCount: 0, source: "overlay" });
@@ -88,96 +72,63 @@ export function SearchOverlay({
     return () => clearTimeout(timer);
   }, [query]);
 
-  const highlightText = (text: string, highlight: string) => {
-    if (!highlight.trim()) return text;
-    const parts = text.split(new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"));
-    return parts.map((part, i) =>
-      part.toLowerCase() === highlight.toLowerCase() ? (
-        <mark key={i} className="rounded-small bg-brand-subtle text-brand font-semibold px-s1">
-          {part}
-        </mark>
-      ) : (
-        part
-      ),
-    );
-  };
-
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="全屏搜索手册"
-      className="fixed inset-0 z-search flex flex-col bg-surface animate-in fade-in slide-in-from-right duration-fast"
+      className="fixed inset-y-0 left-1/2 z-search flex w-full max-w-shell -translate-x-1/2 flex-col bg-surface font-body animate-in fade-in slide-in-from-right duration-fast"
     >
-      {/* 顶部搜索框栏 */}
-      <div className="flex min-h-tap items-center gap-s2 border-b border-line px-s3 py-s2">
+      <div className="flex min-h-header items-center gap-s1 border-b border-line pl-s2 pr-s3 font-sans">
         <button
           type="button"
           onClick={onClose}
-          className="focus-ring tap-target grid place-items-center rounded-round text-ink hover:bg-surface-subtle"
+          className="focus-ring h-header-action w-header-action grid place-items-center text-ink"
           aria-label="关闭搜索"
         >
-          <ArrowLeft className="size-icon" strokeWidth={1.9} />
+          <ArrowLeft className="size-icon" strokeWidth={1.7} />
         </button>
+        <strong className="text-body font-semibold text-ink">搜索文档</strong>
+      </div>
 
-        <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-s3 size-icon-small text-muted pointer-events-none" />
+      <div className="px-s5 pt-hero">
+        <div className="flex min-h-header items-center gap-control rounded-medium border border-line-mid px-s3 font-sans">
+          <Search className="size-icon-small shrink-0 text-muted" strokeWidth={1.7} />
           <input
             ref={inputRef}
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={config.placeholder}
-            className="focus-ring w-full h-10 rounded-medium border border-line bg-surface-subtle pl-s6 pr-s6 text-body text-ink placeholder:text-muted"
+            placeholder="关键词"
+            className="min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-muted"
           />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="absolute right-s2 tap-target grid place-items-center rounded-round text-muted hover:text-ink"
-              aria-label="清空输入"
-            >
-              <X className="size-icon-small" />
-            </button>
-          )}
         </div>
       </div>
 
-      {/* 快捷搜索 Chips 标签行 */}
-      <div className="flex items-center gap-s2 overflow-x-auto border-b border-line bg-surface-subtle px-s4 py-s2 no-scrollbar">
-        {config.chips.map((chip) => (
-          <button
-            key={chip}
-            type="button"
-            onClick={() => setQuery(chip)}
-            className="focus-ring shrink-0 rounded-pill border border-line bg-surface px-s3 py-s1 text-caption text-ink hover:border-brand hover:text-brand transition-colors"
-          >
-            {chip}
-          </button>
-        ))}
-      </div>
-
       {/* 搜索结果列表区 */}
-      <div className="flex-1 overflow-y-auto px-s5 py-s4">
+      <div className="flex-1 overflow-y-auto px-s5">
         {loading && <p className="text-caption text-muted py-s3 text-center">正在极速检索校园指南...</p>}
 
         {!loading && !query.trim() && (
-          <p className="text-caption text-muted py-s3 text-center">{config.emptyHint}</p>
+          <div className="pt-s7">
+            <h1 className="text-search-heading font-semibold leading-heading text-ink">输入一个关键词</h1>
+            <p className="mt-control text-label leading-body text-ink-sub">结果会按文档聚合，显示匹配的章节、原文段落与精确位置。试试「出行」「绩点」「校园卡」。</p>
+          </div>
         )}
 
         {!loading && query.trim() && results.length === 0 && (
-          <div className="py-s7 text-center">
-            <p className="text-body text-muted">{config.noResultTitle.replace("{query}", query)}</p>
-            <p className="mt-s2 text-caption text-muted">{config.noResultSub}</p>
+          <div className="pt-s7">
+            <p className="text-body leading-relaxed text-ink-sub">手册里还没有和「{query}」相关的内容。</p>
+            <p className="mt-control text-label leading-relaxed text-muted">知道答案的话，欢迎通过首页「完善手册」投稿。</p>
           </div>
         )}
 
         {!loading && results.length > 0 && (
-          <div className="space-y-s4">
-            <p className="text-caption text-muted">
-              「{query}」· 找到 {results.length} 条匹配结果
+          <div className="pt-footer">
+            <p className="pb-s1 font-sans text-caption text-muted">
+              「{query}」· {results.length} 篇匹配
             </p>
-            <div className="divide-y divide-line border-t border-line">
+            <div>
               {results.map((item, idx) => (
                 <Link
                   key={`${item.pageId}-${item.anchor || idx}`}
@@ -191,19 +142,14 @@ export function SearchOverlay({
                     });
                     onClose();
                   }}
-                  className="focus-ring block py-s3 hover:bg-surface-subtle transition-colors"
+                  className="focus-ring flex items-baseline gap-control border-t border-line py-s3 text-ink"
                 >
-                  <div className="text-body font-semibold text-ink">
-                    {highlightText(item.pageTitle, query)}
+                  <div className="min-w-0 flex-1 text-body font-semibold text-ink">
+                    {item.pageTitle}
                   </div>
-                  {item.snippet && (
-                    <p className="mt-s1 text-caption leading-ui text-muted line-clamp-2">
-                      {highlightText(item.snippet, query)}
-                    </p>
-                  )}
                   {item.sectionPath && (
-                    <span className="mt-s1 inline-block text-caption text-brand">
-                      {item.sectionPath} · 点击阅读 ↗
+                    <span className="shrink-0 font-sans text-caption text-muted">
+                      {item.sectionPath}
                     </span>
                   )}
                 </Link>

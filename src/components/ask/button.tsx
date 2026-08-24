@@ -17,12 +17,12 @@ export function FloatingAskButton({
     <button
       type="button"
       onClick={() => openAsk({ pageContext })}
-      className="safe-area-fab focus-ring fixed z-floating-action grid place-items-center rounded-round border border-line bg-surface shadow-fab transition-transform active:scale-90"
-      style={{ width: 50, height: 50 }}
+      className="safe-area-fab focus-ring fixed z-floating-action grid place-items-center rounded-round bg-transparent shadow-fab transition-transform active:scale-90"
+      style={{ width: 52, height: 52 }}
       aria-label={label}
       title={label}
     >
-      <HollamaMascot size={34} />
+      <HollamaMascot size={52} />
     </button>
   );
 }

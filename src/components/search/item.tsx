@@ -12,15 +12,15 @@ export function SearchResultItem({ result, query }: { result: GroupedSearchResul
   const hiddenCount = result.snippets.length - 2;
 
   return (
-    <article className="border-b border-line py-s5">
+    <article className="border-t border-line py-s3">
       {/* 顶部板块面包屑 */}
       {result.sectionPath.length > 0 ? (
-        <p className="text-caption leading-ui text-muted">{result.sectionPath.join(" / ")}</p>
+        <p className="font-sans text-caption leading-ui text-muted">{result.sectionPath.join(" / ")}</p>
       ) : null}
 
       {/* 文档主标题 */}
-      <h2 className="mt-s1 text-body-large leading-heading font-semibold text-ink">
-        <Link href={result.href} className="focus-ring hover:underline">
+      <h2 className="mt-s1 text-body font-semibold leading-heading text-ink">
+        <Link href={result.href} className="focus-ring">
           <HighlightedText text={result.pageTitle} query={query} />
         </Link>
       </h2>
@@ -39,7 +39,7 @@ export function SearchResultItem({ result, query }: { result: GroupedSearchResul
               阅读《<HighlightedText text={result.pageTitle} query={query} />》完整章节与通讯录内容
             </p>
           </div>
-          <ChevronRight className="size-icon-small text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-ink flex-shrink-0" />
+          <ChevronRight className="size-icon-small flex-shrink-0 text-muted" />
         </Link>
       ) : null}
 
@@ -67,7 +67,7 @@ export function SearchResultItem({ result, query }: { result: GroupedSearchResul
                         <HighlightedText text={snippet.text} query={query} />
                       </p>
                     </div>
-                    <ChevronRight className="size-icon-small text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-ink flex-shrink-0 mt-s1" />
+                    <ChevronRight className="mt-s1 size-icon-small flex-shrink-0 text-muted" />
                   </div>
                 </Link>
               );
@@ -79,7 +79,7 @@ export function SearchResultItem({ result, query }: { result: GroupedSearchResul
             <button
               type="button"
               onClick={() => setExpanded((prev) => !prev)}
-              className="focus-ring mt-s2 inline-flex min-h-tap items-center gap-s1 text-caption font-medium text-muted hover:text-ink"
+              className="focus-ring mt-s2 inline-flex min-h-tap items-center gap-s1 text-caption font-medium text-muted"
             >
               {expanded ? (
                 <>

@@ -19,7 +19,7 @@ export type ArticleRendererProps = {
 };
 
 export function ArticleRenderer({ blocks, getAsset, resolvePageRoute }: ArticleRendererProps) {
-  return <ArticleBlockList blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="space-y-s5" />;
+  return <ArticleBlockList blocks={blocks} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="prototype-article-flow" />;
 }
 
 function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: ArticleRendererProps & { className: string }) {
@@ -27,10 +27,10 @@ function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: Art
     <div className={className}>
       {blocks.map((block) => {
         switch (block.type) {
-          case "paragraph": return <p id={block.anchor} key={block.id} className="font-body text-body leading-body"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>;
+          case "paragraph": return <p id={block.anchor} key={block.id} className={`font-body leading-body ${block.presentation === "emphasis-label" ? "text-feedback font-semibold" : "text-body"}`}><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>;
           case "quote": return <QuoteBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
             {block.children.length > 0
-              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3 text-ink" />
+              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="prototype-article-flow mt-s3 text-ink" />
               : null}
           </QuoteBlock>;
           case "heading": return <HeadingBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute} />;
@@ -38,7 +38,7 @@ function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: Art
           case "numbered-list": return <ListBlock key={block.id} block={block} getAsset={getAsset} resolvePageRoute={resolvePageRoute} />;
           case "callout": return <CalloutBlock key={block.id} block={block} resolvePageRoute={resolvePageRoute}>
             {block.children.length > 0
-              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="mt-s3 space-y-s3" />
+              ? <ArticleBlockList blocks={block.children} getAsset={getAsset} resolvePageRoute={resolvePageRoute} className="prototype-article-flow mt-s2" />
               : null}
           </CalloutBlock>;
           case "divider": return <DividerBlock key={block.id} block={block} />;
@@ -56,9 +56,9 @@ function ArticleBlockList({ blocks, getAsset, resolvePageRoute, className }: Art
 }
 
 function HeadingBlock({ block, resolvePageRoute }: { block: Extract<Block, { type: "heading" }>; resolvePageRoute: (pageId: string) => string }) {
-  if (block.level === 1) return <h1 id={block.anchor} className="font-display text-heading leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h1>;
-  if (block.level === 2) return <h2 id={block.anchor} className="text-title leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h2>;
-  return <h3 id={block.anchor} className="text-body-large leading-heading font-semibold"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h3>;
+  if (block.level === 1) return <h1 id={block.anchor} className="font-display text-section font-semibold leading-section"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h1>;
+  if (block.level === 2) return <h2 id={block.anchor} className="text-subheading font-semibold leading-section"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h2>;
+  return <h3 id={block.anchor} className="text-ui-title font-semibold leading-subsection"><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></h3>;
 }
 
 function assertNever(block: never): never {

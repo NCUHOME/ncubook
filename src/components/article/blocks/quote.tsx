@@ -5,7 +5,7 @@ import { RichText } from "@/src/components/article/blocks/richtext";
 
 export function QuoteBlock({ block, resolvePageRoute, children }: { block: Extract<Block, { type: "quote" }>; resolvePageRoute: (pageId: string) => string; children?: ReactNode }) {
   return (
-    <blockquote id={block.anchor} className="border-l-2 border-ink pl-s4 font-body text-body leading-body italic text-muted">
+    <blockquote id={block.anchor} className="border-l-2 border-line-mid pl-notice font-body text-quote leading-body text-ink-sub">
       <p><RichText value={block.richText} resolvePageRoute={resolvePageRoute} /></p>
       {children}
     </blockquote>

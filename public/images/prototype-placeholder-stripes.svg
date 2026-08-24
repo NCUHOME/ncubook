@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23">
+  <defs>
+    <pattern id="stripes" width="22.627" height="22.627" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="11.314" height="22.627" fill="#f2f5f9"/>
+      <rect x="11.314" width="11.314" height="22.627" fill="#e7ecf2"/>
+    </pattern>
+  </defs>
+  <rect width="23" height="23" fill="url(#stripes)"/>
+</svg>
